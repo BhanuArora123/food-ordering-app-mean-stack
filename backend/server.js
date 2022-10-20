@@ -5,12 +5,17 @@ var cors = require("cors");
 // using .env
 require("dotenv").config("./.env");
 
-var jwt = require("jsonwebtoken");
 var passport = require("passport");
-var applyJwtStrategy = require("./utils/auth.verification").applyJwtStrategy;
-passport.use("jwt",applyJwtStrategy());
 
-var userRouter = require("./routes/users.route")(passport);
+var applyJwtStrategy = require("./utils/auth.verification").applyJwtStrategy();
+
+passport.use("jwt",applyJwtStrategy);
+
+var userRouter = require("./routes/users.route");
+
+var outletRouter = require("./routes/outlets.route");
+
+var adminRouter = require("./routes/admin.route");
 
 // middlewares
 
@@ -27,6 +32,10 @@ app.use(express.urlencoded());
 
 
 app.use("/user",userRouter);
+
+app.use("/outlet",outletRouter);
+
+app.use("/admin",adminRouter);
 
 // connecting to database
 mongoose.connect(process.env.DB_URL)
