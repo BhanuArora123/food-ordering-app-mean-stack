@@ -9,7 +9,6 @@ const orderSchema = new schema({
         type:ObjectId,
         required:true
     },
-    // one to few relationship - preferring embedding
     orderedItems:[
         {
             foodItemId:{

@@ -10,7 +10,6 @@ const cartSchema = new schema({
         required:true,
         ref:"user"
     },
-    // one to few relationship - preferring embedding
     cartItems:[
         {
             foodItemId:{
