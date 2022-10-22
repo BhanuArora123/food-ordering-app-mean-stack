@@ -31,6 +31,10 @@ const foodSchema = new schema({
     ratingCount:{
         type:Number,
         default:0
+    },
+    isVeg:{
+        type:Boolean,
+        default:true
     }
 });
 
