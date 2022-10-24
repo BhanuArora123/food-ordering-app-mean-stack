@@ -17,9 +17,22 @@ const userSchema = new schema({
         type:String,
         required:true
     },
-    createdBy:{
-        type:ObjectId
-    }
+    deliveryAddresses : [
+        {
+            street:{
+                type:String,
+                required:true
+            },
+            city:{
+                type:String,
+                required:true
+            },
+            pinCode:{
+                type:String,
+                required:true
+            }
+        }
+    ]
 });
 
 module.exports = mongoose.model("user",userSchema);

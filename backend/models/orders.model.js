@@ -11,10 +11,13 @@ const orderSchema = new schema({
     },
     orderedItems:[
         {
-            foodItemId:{
-                type:ObjectId,
-                required:true,
-                ref:"food"
+            foodName:{
+                type:String,
+                required:true
+            },
+            price:{
+                type:Number,
+                required:true
             },
             quantity:{
                 type:Number,

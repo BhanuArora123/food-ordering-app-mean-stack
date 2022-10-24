@@ -25,11 +25,18 @@ exports.checkoutFromCart = function (req,res,next) {
             let totalPrice = cartItems.reduce(function (priceTillNow, currentCartItem) {
                 return priceTillNow + (currentCartItem.quantity * currentCartItem.foodItemId.price)
             });
+            let orderedItems = cartItems.map(function (cartItem) {
+                return {
+                    foodName:cartItem.foodItemId.name,
+                    price:cartItem.foodItemId.price,
+                    quantity:cartItem.quantity
+                };
+            })
             let newOrder = new orderModel({
                 userId:userId,
                 totalPrice:totalPrice,
                 outletId:cartData.outletId,
-                orderedItems:cartItems
+                orderedItems:orderedItems
             })
             return newOrder.save();
         })

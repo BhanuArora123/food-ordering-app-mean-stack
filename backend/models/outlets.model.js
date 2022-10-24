@@ -24,9 +24,6 @@ const outletSchema = new schema({
     ratingCount:{
         type:Number,
         default:0
-    },
-    createdBy:{
-        type:ObjectId
     }
 },{
     timestamps:true
