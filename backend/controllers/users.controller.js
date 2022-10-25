@@ -15,6 +15,7 @@ exports.registerUser = function (req, res, next) {
             email: email
         })
             .then(function (userData) {
+                console.log(userData);
                 if (userData) {
                     return res.status(403).json({
                         message: "user email already exist"
@@ -61,6 +62,7 @@ exports.loginUser = function (req, res, next) {
         })
             .then(function (userData) {
                 if (!userData) {
+                    console.log("here");
                     return res.status(404).json({
                         message: "user doesn't exist"
                     });
