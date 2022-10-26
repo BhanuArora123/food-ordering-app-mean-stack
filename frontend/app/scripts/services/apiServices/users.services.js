@@ -2,7 +2,7 @@
 
 // user service
 appModule
-    .factory("userService", function ($http) {
+    .factory("userService", function ($http,$state) {
         return {
             userData: {},
             signup: function (name,email, password) {
@@ -14,10 +14,12 @@ appModule
                     })
                     .then(function (response) {
                         alert(response.data.message);
+                        $state.go("home.dashboard");
                         return response.data;
                     })
                     .catch(function (error) {
                         console.log(error);
+                        $state.go("home.signup");
                         alert(error.message);
                     })
             },
@@ -29,11 +31,12 @@ appModule
                     })
                     .then(function (response) {
                         alert(response.data.message);
+                        $state.go("home.dashboard");
                         return response.data;
                     })
                     .catch(function (error) {
                         console.log(error);
-                        alert(error);
+                        $state.go("home.login");
                     })
             },
             getUserData:function () {

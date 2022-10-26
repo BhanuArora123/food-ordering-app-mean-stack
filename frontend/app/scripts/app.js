@@ -19,7 +19,7 @@ var appModule = angular
     "ui.bootstrap"
   ])
 
-appModule.config(function ($stateProvider, $locationProvider) {
+appModule.config(function ($stateProvider, $locationProvider,$httpProvider,$urlRouterProvider) {
   $stateProvider
     .state({
       name: "home",
@@ -36,16 +36,16 @@ appModule.config(function ($stateProvider, $locationProvider) {
     .state({
       name: "home.login",
       url: "/login",
-      controller: "loginController",
+      controller: "loginSignupController",
       templateUrl: "views/login.html"
     })
-    .state({
-      name: "home.signup",
-      url: "/signup",
-      controller: "signupController",
-      templateUrl: "views/signup.html"
-    })
-  $locationProvider.html5Mode(true);
+  // $locationProvider.html5Mode(true);
+
+  // default route 
+  $urlRouterProvider.otherwise("/");
+
+  // adding interceptor
+  $httpProvider.interceptors.push('intercepterService');
 })
   .run(function ($state,$timeout) {
     // route safety 
