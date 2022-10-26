@@ -1,5 +1,7 @@
 var cartModel = require("../models/cart.model");
 
+var throwError = require("../utils/errors");
+
 exports.addToCart = function (req, res, next) {
     try {
         var foodItemId = req.body.foodItemId;
@@ -9,38 +11,38 @@ exports.addToCart = function (req, res, next) {
             userId: userId
         })
             .then(function (cartData) {
-                if(!cartData){
+                if (!cartData) {
                     cartData = new cartModel({
-                        userId:userId,
-                        cartItems:[]
+                        userId: userId,
+                        cartItems: []
                     });
                 }
                 var existingItemIndex = cartData.cartItems
                     .findIndex(function (cartItem) {
                         return cartItem.foodItemId.toString() === foodItemId.toString();
                     });
-                if(existingItemIndex !== -1){
+                if (existingItemIndex !== -1) {
                     cartData.cartItems[existingItemIndex].quantity++;
                 }
-                else{
+                else {
                     cartData.cartItems.push({
-                        foodItemId:foodItemId,
-                        quantity:1
+                        foodItemId: foodItemId,
+                        quantity: 1
                     })
                 }
                 return cartData.save();
             })
             .then(function (cartData) {
                 return res.status(200).json({
-                    cartData:cartData,
-                    message:"item added to cart successfully"
+                    cartData: cartData,
+                    message: "item added to cart successfully"
                 })
             })
             .catch(function (error) {
-                console.log(error);
-                return res.status(500).json({
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
                     message: error.message
-                });
+                })
             });
     } catch (error) {
         return res.status(500).json({
@@ -49,50 +51,47 @@ exports.addToCart = function (req, res, next) {
     }
 }
 
-exports.removeFromCart = function (req,res,next) {
+exports.removeFromCart = function (req, res, next) {
     try {
         var foodItemId = req.body.foodItemId;
         var userId = req.user.userId;
-        
+
         cartModel.findOne({
-            userId:userId
+            userId: userId
         })
-        .then(function (cartData) {
-            if(!cartData){
-                return res.status(404).json({
-                    message:"no cart found!"
+            .then(function (cartData) {
+                if (!cartData) {
+                    throwError("incorrect password", 404);
+                }
+                var userCart = cartData.cartItems;
+                var existingItemIndex = userCart.findIndex(function (cartItem) {
+                    return cartItem.foodItemId.toString() === foodItemId.toString();
                 })
-            }
-            var userCart = cartData.cartItems;
-            var existingItemIndex = userCart.findIndex(function (cartItem) {
-                return cartItem.foodItemId.toString() === foodItemId.toString();
-            })
-            if(existingItemIndex === -1){
-                return res.status(404).json({
-                    message:"cart item not found!"
-                });
-            }
-            else{
-                if(userCart[existingItemIndex].quantity === 1){
-                    userCart.splice(existingItemIndex,1);
+                if (existingItemIndex === -1) {
+                    throwError("cart item not found!", 404);
                 }
-                else{
-                    userCart[existingItemIndex].quantity--;
+                else {
+                    if (userCart[existingItemIndex].quantity === 1) {
+                        userCart.splice(existingItemIndex, 1);
+                    }
+                    else {
+                        userCart[existingItemIndex].quantity--;
+                    }
                 }
-            }
-            return cartData.save();
-        })
-        .then(function (cartData){
-            return res.status(200).json({
-                message:"cart saved successfully!",
-                cartData:cartData
+                return cartData.save();
             })
-        })
-        .catch(function (error) {
-            return res.status(500).json({
-                message:error.message
+            .then(function (cartData) {
+                return res.status(200).json({
+                    message: "cart saved successfully!",
+                    cartData: cartData
+                })
             })
-        })
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
     } catch (error) {
         return res.status(500).json({
             message: error.message

@@ -4,14 +4,14 @@ var bcrypt = require("bcryptjs");
 
 var jwt = require("jsonwebtoken");
 
+var throwError = require("../utils/errors");
+
 require("dotenv").config("./.env");
 
 exports.registerAdmin = function (req, res, next) {
     try {
         if (req.role !== "superadmin") {
-            return res.status(401).json({
-                message: "Access Denied!"
-            })
+            throwError("Access Denied!",401);
         }
         var name = req.body.name;
         var email = req.body.email;
@@ -22,9 +22,7 @@ exports.registerAdmin = function (req, res, next) {
         })
             .then(function (adminData) {
                 if (adminData) {
-                    return res.status(403).json({
-                        message: "admin email already exist"
-                    });
+                    throwError("admin email already exist",403);
                 }
                 return bcrypt.genSalt(12);
             })
@@ -47,7 +45,8 @@ exports.registerAdmin = function (req, res, next) {
                 })
             })
             .catch(function (error) {
-                return res.status(500).json({
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
                     message: error.message
                 })
             })
@@ -68,9 +67,7 @@ exports.loginAdmin = function (req, res, next) {
         })
             .then(function (adminData) {
                 if (!adminData) {
-                    return res.status(404).json({
-                        message: "admin doesn't exist"
-                    });
+                    throwError("admin doesn't exist",404);
                 }
                 return adminData;
             })
@@ -79,9 +76,7 @@ exports.loginAdmin = function (req, res, next) {
             })
             .then(function (result) {
                 if (!result) {
-                    return res.status(401).json({
-                        message: "unauthorised!"
-                    });
+                    throwError("incorrect password",401);
                 }
                 return jwt.sign({
                     email: email
@@ -96,9 +91,10 @@ exports.loginAdmin = function (req, res, next) {
                 });
             })
             .catch(function (error) {
-                return res.status(500).json({
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
                     message: error.message
-                });
+                })
             })
     } catch (error) {
         return res.status(500).json({

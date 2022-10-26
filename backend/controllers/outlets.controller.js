@@ -4,6 +4,8 @@ var bcrypt = require("bcryptjs");
 
 var jwt = require("jsonwebtoken");
 
+var throwError = require("../utils/errors");
+
 require("dotenv").config("./.env");
 
 exports.registerOutlet = function (req, res, next) {
@@ -12,18 +14,14 @@ exports.registerOutlet = function (req, res, next) {
         var email = req.body.email;
         var password = req.body.password;
         if (req.role !== "superadmin" && req.role !== "admin") {
-            return res.status(401).json({
-                message: "Access Denied!"
-            })
+            throwError("Access Denied!",401);
         }
         outlets.findOne({
             email: email
         })
             .then(function (outletData) {
                 if (outletData) {
-                    return res.status(403).json({
-                        message: "outlet email already exist"
-                    });
+                    throwError("outlet email already exist",403);
                 }
                 return bcrypt.genSalt(12);
             })
@@ -45,7 +43,8 @@ exports.registerOutlet = function (req, res, next) {
                 })
             })
             .catch(function (error) {
-                return res.status(500).json({
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
                     message: error.message
                 })
             })
@@ -66,9 +65,7 @@ exports.loginOutlet = function (req, res, next) {
         })
             .then(function (outletData) {
                 if (!outletData) {
-                    return res.status(404).json({
-                        message: "outlet doesn't exist"
-                    });
+                    throwError("outlet doesn't exist",404);
                 }
                 return outletData;
             })
@@ -77,9 +74,7 @@ exports.loginOutlet = function (req, res, next) {
             })
             .then(function (result) {
                 if (!result) {
-                    return res.status(401).json({
-                        message: "unauthorised!"
-                    });
+                    throwError("unauthorised!",401);
                 }
                 return jwt.sign({
                     email: email
@@ -94,9 +89,10 @@ exports.loginOutlet = function (req, res, next) {
                 });
             })
             .catch(function (error) {
-                return res.status(500).json({
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
                     message: error.message
-                });
+                })
             })
     } catch (error) {
         return res.status(500).json({

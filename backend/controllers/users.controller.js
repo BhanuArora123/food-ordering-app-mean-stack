@@ -4,6 +4,8 @@ var bcrypt = require("bcryptjs");
 
 var jwt = require("jsonwebtoken");
 
+var throwError = require("../utils/errors");
+
 require("dotenv").config("./.env");
 
 exports.registerUser = function (req, res, next) {
@@ -17,9 +19,7 @@ exports.registerUser = function (req, res, next) {
             .then(function (userData) {
                 console.log(userData);
                 if (userData) {
-                    return res.status(403).json({
-                        message: "user email already exist"
-                    });
+                    throwError("user email already exist", 404);
                 }
                 return bcrypt.genSalt(12);
             })
@@ -41,7 +41,9 @@ exports.registerUser = function (req, res, next) {
                 })
             })
             .catch(function (error) {
-                return res.status(500).json({
+                console.log(error.cause);
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
                     message: error.message
                 })
             })
@@ -62,10 +64,7 @@ exports.loginUser = function (req, res, next) {
         })
             .then(function (userData) {
                 if (!userData) {
-                    console.log("here");
-                    return res.status(404).json({
-                        message: "user doesn't exist"
-                    });
+                    throwError("user doesn't exist", 404);
                 }
                 return userData;
             })
@@ -74,9 +73,7 @@ exports.loginUser = function (req, res, next) {
             })
             .then(function (result) {
                 if (!result) {
-                    return res.status(401).json({
-                        message: "unauthorised!"
-                    });
+                    throwError("unauthorised!", 401);
                 }
                 return jwt.sign({
                     email: email
@@ -91,9 +88,10 @@ exports.loginUser = function (req, res, next) {
                 });
             })
             .catch(function (error) {
-                return res.status(500).json({
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
                     message: error.message
-                });
+                })
             })
     } catch (error) {
         return res.status(500).json({
@@ -111,9 +109,7 @@ exports.getUserData = function (req, res, next) {
         })
             .then(function (userData) {
                 if (!userData) {
-                    return res.status(404).json({
-                        message: "user doesn't exist"
-                    })
+                    throwError("user doesn't exist", 404);
                 }
                 return res.status(200).json({
                     message: "user data fetched successfully",
@@ -121,7 +117,8 @@ exports.getUserData = function (req, res, next) {
                 });
             })
             .catch(function (error) {
-                return res.status(500).json({
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
                     message: error.message
                 })
             })

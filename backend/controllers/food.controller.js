@@ -1,5 +1,7 @@
 const foodModel = require("../models/food.model");
 
+var throwError = require("../utils/errors");
+
 exports.addOrEditFoodItem = function (req, res, next) {
     try {
         var foodName = req.body.foodName;
@@ -11,9 +13,7 @@ exports.addOrEditFoodItem = function (req, res, next) {
         var existingFoodItemId = req.body.existingFoodItemId;
         // checking the allowed role for creating food item
         if (req.role !== "admin" && req.role !== "superadmin" && req.role !== "outlet") {
-            return res.status(401).json({
-                message: "Access Denied! you don't have correct privileges to perform this action"
-            });
+            throwError("Access Denied! you don't have correct privileges to perform this action", 401);
         }
         // checking if item already exist or if item need to edit by id;
         foodModel.findOne({
@@ -30,9 +30,7 @@ exports.addOrEditFoodItem = function (req, res, next) {
             .then(function (existingFoodItem) {
                 if (existingFoodItem) {
                     if (!existingFoodItemId) {
-                        return res.status(403).json({
-                            message: "food item already exist!"
-                        });
+                        throwError("food item already exist!", 403);
                     }
                     return foodModel.findOneAndUpdate({
                         _id: existingFoodItemId
@@ -62,10 +60,10 @@ exports.addOrEditFoodItem = function (req, res, next) {
                 })
             })
             .catch(function (error) {
-                console.log(error);
-                return res.status(500).json({
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
                     message: error.message
-                });
+                })
             });
     } catch (error) {
         console.log(error);
@@ -128,7 +126,8 @@ exports.displayFoodItem = function (req, res, next) {
                 })
             })
             .catch(function (error) {
-                return res.status(500).json({
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
                     message: error.message
                 })
             })
@@ -139,28 +138,27 @@ exports.displayFoodItem = function (req, res, next) {
     }
 }
 
-exports.deleteFoodItem = function name(req,res,next) {
+exports.deleteFoodItem = function name(req, res, next) {
     try {
         var foodItemId = req.query.foodItemId;
         if (req.role !== "admin" && req.role !== "superadmin" && req.role !== "outlet") {
-            return res.status(401).json({
-                message: "Access Denied! you don't have correct privileges to perform this action"
-            });
+            throwError("Access Denied! you don't have correct privileges to perform this action", 401);
         }
         foodModel.findByIdAndDelete(foodItemId)
-        .then(function () {
-            return res.status(200).json({
-                message:"food item deleted successfully"
+            .then(function () {
+                return res.status(200).json({
+                    message: "food item deleted successfully"
+                })
             })
-        })
-        .catch(function (error) {
-            return res.status(500).json({
-                message:error.message
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
             })
-        })
     } catch (error) {
         return res.status(500).json({
-            message:error.message
+            message: error.message
         })
     }
 }
