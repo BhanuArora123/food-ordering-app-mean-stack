@@ -17,6 +17,8 @@ var outletRouter = require("./routes/outlets.route");
 
 var adminRouter = require("./routes/admin.route");
 
+var foodRouter = require("./routes/food.route");
+
 // middlewares
 
 // cors setup
@@ -36,6 +38,8 @@ app.use("/user",userRouter);
 app.use("/outlet",outletRouter);
 
 app.use("/admin",adminRouter);
+
+app.use("/food",foodRouter);
 
 // connecting to database
 mongoose.connect(process.env.DB_URL)

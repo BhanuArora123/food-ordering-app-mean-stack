@@ -118,6 +118,9 @@ exports.displayFoodItem = function (req, res, next) {
                 $options: "i"
             }
         }
+        if(matchQuery.$and.length === 0){
+            delete matchQuery["$and"];
+        }
         foodModel.find(matchQuery)
             .then(function (matchedFoodItems) {
                 return res.status(200).json({
