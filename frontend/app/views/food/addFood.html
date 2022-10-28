@@ -1,0 +1,38 @@
+<div class="d-flex w-100 justify-content-evenly flex-column align-items-center h-500p">
+    <h1 class="w-50 d-flex justify-content-center">
+        Add Food Item
+    </h1>
+    <form class="w-50 d-flex justify-content-evenly align-items-center flex-column h-75" name="addFoodForm" novalidate>
+        <div class="w-75 d-flex justify-content-evenly align-items-start flex-column">
+            <label>Name*</label>
+            <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="text" placeholder="Enter Name" name="name" ng-model="food.name" ng-required="true">
+        </div>
+        <div class="w-75 d-flex justify-content-evenly align-items-start flex-column">
+            <label>Description</label>
+            <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="text" placeholder="Enter Description" name="desc" ng-model="food.desc" ng-required="true">
+        </div>
+        <div class="w-75 d-flex justify-content-evenly align-items-start flex-column">
+            <label>Price(in dollars)</label>
+            <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="number" placeholder="Enter Price" name="price" ng-model="food.price" ng-required="true" step="any">
+        </div>
+        <div class="w-75 d-flex justify-content-evenly align-items-start flex-column">
+            <label>Food Image</label>
+            <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="file" placeholder="Upload Food Image" name="image" ng-model="food.imageUrl" ng-required="true" accept="image/png, image/gif, image/jpeg">
+        </div>
+        <div class="w-75 mb-2 d-flex justify-content-evenly align-items-start flex-column">
+            <label>Veg</label>
+            <input type="checkbox" ng-model="food.isVeg" name="isVeg" >
+        </div>
+        <div class="d-flex w-75 justify-content-between" >
+            <button type="button" class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (addFoodForm.name.$invalid || addFoodForm.desc.$invalid || addFoodForm.price.$invalid || addFoodForm.price.$invalid)?'btn-disabled':'' }}" ng-click="getFoodItems(food)">Add Item</button>
+            <!-- <div class="w-65 d-flex justify-content-evenly align-items-start"> -->
+                <!-- <label>Select Outlet</label> -->
+                <!-- <select value="User" ng-model="food.outletId">
+                    <option selected value="User">User</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Outlet">Outlet</option>
+                </select> -->
+            <!-- </div> -->
+        </div>
+    </form>
+</div>

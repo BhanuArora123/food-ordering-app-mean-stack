@@ -10,13 +10,13 @@
  */
 var appModule = angular
   .module('appModule', [
-    'ngAnimate',
     'ngCookies',
     'ngResource',
     'ui.router',
     'ngSanitize',
     'ngTouch',
-    "ui.bootstrap"
+    "ui.bootstrap",
+    'ngAnimate'
   ])
 
 appModule.config(function ($stateProvider, $locationProvider,$httpProvider,$urlRouterProvider) {
@@ -25,7 +25,8 @@ appModule.config(function ($stateProvider, $locationProvider,$httpProvider,$urlR
       name: "home",
       url: "",
       controller: "homeController",
-      templateUrl: "views/main.html"
+      templateUrl: "views/main.html",
+      abstract:true
     })
     .state({
       name: "home.dashboard",
@@ -39,11 +40,28 @@ appModule.config(function ($stateProvider, $locationProvider,$httpProvider,$urlR
       controller: "loginSignupController",
       templateUrl: "views/login.html"
     })
+    .state({
+      name:"home.food",
+      url:"/food",
+      controller:"foodController",
+      templateUrl:"views/food/index.html"
+    })
+    .state({
+      name:"home.food.add",
+      url:"/add",
+      controller:"foodController",
+      templateUrl:"views/food/addFood.html"
+    })
+    .state({
+      name:"home.food.display",
+      url:"/display",
+      controller:"foodController",
+      templateUrl:"views/food/displayFoodItem.html"
+    })
   // $locationProvider.html5Mode(true);
 
   // default route 
   $urlRouterProvider.otherwise("/");
-
   // adding interceptor
   $httpProvider.interceptors.push('intercepterService');
 })

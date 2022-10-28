@@ -1,3 +1,30 @@
-<nav>
-    FoodZ
+<nav class="w-100 d-flex justify-content-around align-items-center h-60p bg-theme-darker">
+    <h4 class="bg-theme-darker">FoodZ</h4>
+    <div class="h-60 w-20">
+        <input type="search" class="h-100 w-75 outline-none bg-theme-light border-0 p-2 rounded" placeholder="Search for Food">
+    </div>
+    <div>
+        <a ui-sref="home.food.add" class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+            <i class="fas fa-hamburger" style="font-size: 18px;"></i>
+            <div class="ms-2 fw-bold">Add Food Item</div> 
+        </a>
+    </div>
+    <div>
+        <a ui-sref="home.login" class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+            <i class="fa fa-utensils" style="font-size: 18px;"></i>
+            <div class="ms-2 fw-bold">Add Outlet</div> 
+        </a>
+    </div>
+    <div>
+        <a ui-sref="home.login" class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+            <i class="fa-sharp fa fa-user-plus" style="font-size: 18px;"></i>
+            <div class="ms-2 fw-bold">Add User</div> 
+        </a>
+    </div>
+    <div>
+        <a ng-click="logoutHandler()" class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+            <i class="fas fa-sign-out-alt" style="font-size: 18px;"></i>
+            <div class="ms-2 fw-bold">Logout</div> 
+        </a>
+    </div>
 </nav>
