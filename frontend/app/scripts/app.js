@@ -58,6 +58,19 @@ appModule.config(function ($stateProvider, $locationProvider,$httpProvider,$urlR
       controller:"foodController",
       templateUrl:"views/food/displayFoodItem.html"
     })
+    .state({
+      name:"home.admin",
+      url:"/admin",
+      controller:"adminController",
+      templateUrl:"views/admin/index.html",
+      abstract:true
+    })
+    .state({
+      name :"home.admin.add",
+      url:"/add",
+      controller:"adminController",
+      templateUrl:"views/admin/createUser.html"
+    })
   // $locationProvider.html5Mode(true);
 
   // default route 

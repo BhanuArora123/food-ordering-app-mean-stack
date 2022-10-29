@@ -1,0 +1,28 @@
+<div class="d-flex w-100 justify-content-evenly flex-column align-items-center h-500p">
+    <h2>Add Users/Outlets/Admins</h2>
+    <form class="w-50 d-flex justify-content-evenly align-items-center flex-column h-75" name="signupForm" novalidate>
+        <div class="w-75 d-flex justify-content-evenly align-items-start flex-column">
+            <label>Name</label>
+            <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="text" placeholder="Enter Name" name="name" ng-model="signup.name" ng-required="true">
+        </div>
+        <div class="w-75 d-flex justify-content-evenly align-items-start flex-column">
+            <label>Email Address</label>
+            <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="email" placeholder="Enter Email" name="email" ng-model="signup.email" ng-required="true">
+        </div>
+        <div class="w-75 d-flex justify-content-evenly align-items-start flex-column">
+            <label>Password</label>
+            <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="password" placeholder="Enter Password" name="password" ng-model="signup.password" ng-required="true">
+        </div>
+        <div class="d-flex w-75 justify-content-between" >
+            <button type="button" class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (signupForm.email.$invalid || signupForm.password.$invalid || signupForm.name.$invalid)?'btn-disabled':'' }}" ng-click="signupHandler(signup.name,signup.email,signup.password)">Sign Up</button>
+            <div class="w-65 d-flex justify-content-end align-items-center">
+                <label class="me-3">Select Type of User :</label>
+                <select value="User" ng-model="signup.userRole" class="me-3">
+                    <option selected value="User">User</option>
+                    <option value="Admin">Admin</option>
+                    <option value="Outlet">Outlet</option>
+                </select>
+            </div>
+        </div>
+    </form>
+</div>
