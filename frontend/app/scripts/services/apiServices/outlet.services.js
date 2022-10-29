@@ -4,7 +4,7 @@
 appModule
     .factory("outletService", function ($http) {
         return {
-            userData: {},
+            outletData: {},
             signup: function (email, password, name) {
                 return $http
                     .post("http://localhost:8080/outlet/register", {

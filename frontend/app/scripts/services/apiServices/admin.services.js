@@ -4,7 +4,7 @@
 appModule
     .factory("adminService", function ($http) {
         return {
-            userData: {},
+            adminData: {},
             signup: function (email, password, name, role) {
                 return $http
                     .post("http://localhost:8080/admin/register", {
