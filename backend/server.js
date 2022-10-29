@@ -5,11 +5,11 @@ var cors = require("cors");
 // using .env
 require("dotenv").config("./.env");
 
+var multer = require("multer");
+
+var path = require("path");
+
 var passport = require("passport");
-
-var applyJwtStrategy = require("./utils/auth.verification").applyJwtStrategy();
-
-passport.use("jwt",applyJwtStrategy);
 
 var userRouter = require("./routes/users.route");
 
@@ -18,6 +18,11 @@ var outletRouter = require("./routes/outlets.route");
 var adminRouter = require("./routes/admin.route");
 
 var foodRouter = require("./routes/food.route");
+
+// passport configuration
+var applyJwtStrategy = require("./utils/auth.verification").applyJwtStrategy();
+
+passport.use("jwt",applyJwtStrategy);
 
 // middlewares
 
@@ -31,7 +36,6 @@ app.use(express.json());
 
 // parsing form requests
 app.use(express.urlencoded());
-
 
 app.use("/user",userRouter);
 

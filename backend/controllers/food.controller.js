@@ -8,13 +8,14 @@ exports.addOrEditFoodItem = function (req, res, next) {
         var foodPrice = req.body.foodPrice;
         var foodDesc = req.body.foodDesc;
         var outletId = req.body.outletId;
-        var foodImage = req.body.foodImage;
+    
+        var foodImage = req.file.path;
         var isVeg = req.body.isVeg;
         var existingFoodItemId = req.body.existingFoodItemId;
         // checking the allowed role for creating food item
-        if (req.role !== "admin" && req.role !== "superadmin" && req.role !== "outlet") {
-            throwError("Access Denied! you don't have correct privileges to perform this action", 401);
-        }
+        // if (req.role !== "admin" && req.role !== "superadmin" && req.role !== "outlet") {
+        //     throwError("Access Denied! you don't have correct privileges to perform this action", 401);
+        // }
         // checking if item already exist or if item need to edit by id;
         foodModel.findOne({
             $or: [
