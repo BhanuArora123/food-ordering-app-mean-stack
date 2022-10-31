@@ -13,9 +13,9 @@ exports.addOrEditFoodItem = function (req, res, next) {
         var isVeg = req.body.isVeg;
         var existingFoodItemId = req.body.existingFoodItemId;
         // checking the allowed role for creating food item
-        // if (req.role !== "admin" && req.role !== "superadmin" && req.role !== "outlet") {
-        //     throwError("Access Denied! you don't have correct privileges to perform this action", 401);
-        // }
+        if (req.user.role !== "admin" && req.user.role !== "superAdmin" && req.user.role !== "outlet") {
+            throwError("Access Denied! you don't have correct privileges to perform this action", 401);
+        }
         // checking if item already exist or if item need to edit by id;
         foodModel.findOne({
             $or: [
@@ -145,7 +145,7 @@ exports.displayFoodItem = function (req, res, next) {
 exports.deleteFoodItem = function name(req, res, next) {
     try {
         var foodItemId = req.query.foodItemId;
-        if (req.role !== "admin" && req.role !== "superadmin" && req.role !== "outlet") {
+        if (req.user.role !== "admin" && req.user.role !== "superAdmin" && req.user.role !== "outlet") {
             throwError("Access Denied! you don't have correct privileges to perform this action", 401);
         }
         foodModel.findByIdAndDelete(foodItemId)

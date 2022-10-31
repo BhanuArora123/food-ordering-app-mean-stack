@@ -15,42 +15,48 @@ exports.applyJwtStrategy = function () {
     };
     return new JwtStrategy(options, function (jwtPayload, done) {
         var email = jwtPayload.email;
+        var isUserFound = false;
         admin.findOne({
             email: email
         })
             .then(function (adminData) {
                 if (adminData) {
-                    done(null, {
+                    isUserFound = true;
+                    return done(null, {
                         email: email,
                         userId: adminData._id,
                         role: adminData.role
                     });
-                    return;
                 }
                 return outlets.findOne({
                     email: email
                 });
             })
             .then(function (outletData) {
+                if (isUserFound) {
+                    return;
+                }
                 if (outletData) {
-                    done(null, {
+                    isUserFound = true;
+                    return done(null, {
                         email: email,
                         userId: outletData._id,
                         role: "outlet"
                     });
-                    return;
                 }
                 return users.findOne({
                     email: email
                 })
             })
             .then(function (userData) {
+                if (isUserFound) {
+                    return;
+                }
                 if (userData) {
-                    done(null, {
+                    return done(null, {
                         email: email,
                         userId: userData._id,
                     });
-                    return;
                 }
                 done(null, false);
             })

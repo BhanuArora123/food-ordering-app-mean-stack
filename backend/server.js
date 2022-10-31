@@ -5,10 +5,6 @@ var cors = require("cors");
 // using .env
 require("dotenv").config("./.env");
 
-var multer = require("multer");
-
-var path = require("path");
-
 var passport = require("passport");
 
 var userRouter = require("./routes/users.route");

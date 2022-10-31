@@ -58,7 +58,7 @@ exports.loginUser = function (req, res, next) {
     try {
         var email = req.body.email;
         var password = req.body.password;
-
+        var userDetails;
         users.findOne({
             email: email
         })
@@ -66,6 +66,7 @@ exports.loginUser = function (req, res, next) {
                 if (!userData) {
                     throwError("user doesn't exist", 404);
                 }
+                userDetails = userData;
                 return userData;
             })
             .then(function (userData) {
@@ -84,7 +85,8 @@ exports.loginUser = function (req, res, next) {
             .then(function (jwtToken) {
                 return res.status(200).json({
                     message: "user logged in successfully",
-                    token: jwtToken
+                    token: jwtToken,
+                    userData:userDetails
                 });
             })
             .catch(function (error) {

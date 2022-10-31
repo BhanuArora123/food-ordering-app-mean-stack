@@ -10,11 +10,15 @@ require("dotenv").config("./.env");
 
 exports.registerOutlet = function (req, res, next) {
     try {
+        console.log("hello.......");
         var name = req.body.name;
         var email = req.body.email;
         var password = req.body.password;
-        if (req.role !== "superadmin" && req.role !== "admin") {
-            throwError("Access Denied!",401);
+        console.log(req.user);
+        if (req.user.role !== "superAdmin" && req.user.role !== "admin") {
+            return res.status(401).json({
+                message:"Access Denied!"
+            })
         }
         outlets.findOne({
             email: email
@@ -59,7 +63,7 @@ exports.loginOutlet = function (req, res, next) {
     try {
         var email = req.body.email;
         var password = req.body.password;
-
+        var outletDetails;
         outlets.findOne({
             email: email
         })
@@ -67,6 +71,7 @@ exports.loginOutlet = function (req, res, next) {
                 if (!outletData) {
                     throwError("outlet doesn't exist",404);
                 }
+                outletDetails = outletData;
                 return outletData;
             })
             .then(function (outletData) {
@@ -85,7 +90,8 @@ exports.loginOutlet = function (req, res, next) {
             .then(function (jwtToken) {
                 return res.status(200).json({
                     message: "outlet logged in successfully",
-                    token: jwtToken
+                    token: jwtToken,
+                    outletData:outletDetails
                 });
             })
             .catch(function (error) {
@@ -98,5 +104,34 @@ exports.loginOutlet = function (req, res, next) {
         return res.status(500).json({
             message: error.message
         });
+    }
+}
+
+exports.getOutletData = function (req,res,next) {
+    try {
+        var outletId = req.userId;
+        outlets.findOne({
+            _id:outletId
+        })
+        .then(function (outletData) {
+            if(!outletData){
+                throwError("outlet doesn't exist",404);
+            }
+            return res.status(200).json({
+                message:"success",
+                outletData:outletData
+            });
+        })
+        .catch(function (error) {
+            let statusCode = error.cause ? error.cause.statusCode : 500;
+            return res.status(statusCode).json({
+                message:error.message
+            })
+        })
+
+    } catch (error) {
+        return res.status(500).json({
+            message:error.message
+        })
     }
 }
