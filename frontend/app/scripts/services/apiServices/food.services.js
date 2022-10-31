@@ -21,11 +21,12 @@ appModule.factory("foodService",function ($http) {
         },
         addFoodItem : function (data) {
             var foodData = new FormData();
-            foodData.append("name",data.name);
-            foodData.append("price",data.price);
+            var isVeg = (data.isVeg === undefined)?false:true; 
+            foodData.append("foodName",data.name);
+            foodData.append("foodPrice",data.price);
             foodData.append("description",data.desc);
             foodData.append("outletId",data.outletId);
-            foodData.append("isVeg",data.isVeg);
+            foodData.append("isVeg",isVeg);
             foodData.append("foodImage",data.foodImage);
             return $http({
                 url:"http://localhost:8080/food/addFoodItem",

@@ -2,10 +2,9 @@
 
 // user service
 appModule
-    .factory("outletService", function ($http) {
+    .factory("outletService", function ($http,$state) {
         return {
-            outletData: {},
-            signup: function (email, password, name) {
+            signup: function (name, email, password) {
                 return $http
                     .post("http://localhost:8080/outlet/register", {
                         email: email,
@@ -13,6 +12,7 @@ appModule
                         name: name
                     })
                     .then(function (response) {
+                        alert(response.data.message);
                         return response.data;
                     })
                     .catch(function (error) {
@@ -27,12 +27,34 @@ appModule
                         password: password
                     })
                     .then(function (response) {
+                        localStorage.setItem("outletData",JSON.stringify(response.data.outletData));
+                        localStorage.setItem("role","outlet");
+                        alert(response.data.message);
+                        $state.go("home.dashboard");
                         return response.data;
                     })
                     .catch(function (error) {
                         console.log(error);
                         alert(error.message);
                     })
+            },
+            getOutletData: function () {
+                return $http
+                    .get("http://localhost:8080/outletData")
+                    .then(function (response) {
+                        localStorage.setItem("outletData",JSON.stringify(response.data.outletData));
+                        localStorage.setItem("role","outlet");
+                        return response.data;
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    })
+            },
+            getServiceData : function () {
+                return {
+                    outletData:JSON.parse(localStorage.getItem("outletData")),
+                    role:localStorage.getItem("role")
+                }
             }
         }
     })

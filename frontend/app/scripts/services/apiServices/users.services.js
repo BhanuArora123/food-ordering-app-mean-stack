@@ -4,7 +4,6 @@
 appModule
     .factory("userService", function ($http,$state) {
         return {
-            userData: {},
             signup: function (name,email, password) {
                 return $http
                     .post("http://localhost:8080/user/register", {
@@ -31,6 +30,8 @@ appModule
                     })
                     .then(function (response) {
                         alert(response.data.message);
+                        localStorage.setItem("userData",response.data.userData);
+                        localStorage.setItem("role","user");
                         $state.go("home.dashboard");
                         return response.data;
                     })
@@ -43,13 +44,20 @@ appModule
                 return $http
                     .get("http://localhost:8080/user/userData")
                     .then(function (response) {
-                        this.userData = response.data;
+                        localStorage.setItem("userData",response.data.userData);
+                        localStorage.setItem("role","user");
                         return response.data;
                     })
                     .catch(function (error) {
                         console.log(error);
                         alert(error.message);
                     })
+            },
+            getServiceData:function () {
+                return {
+                    userData:localStorage.getItem("userData"),
+                    role:localStorage.getItem("role")
+                };
             }
         }
     })

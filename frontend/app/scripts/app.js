@@ -16,17 +16,38 @@ var appModule = angular
     'ngSanitize',
     'ngTouch',
     "ui.bootstrap",
-    'ngAnimate'
+    'ngAnimate',
+    'ngStorage'
   ])
 
-appModule.config(function ($stateProvider, $locationProvider,$httpProvider,$urlRouterProvider) {
+appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider,$localStorageProvider) {
   $stateProvider
     .state({
       name: "home",
       url: "",
       controller: "homeController",
       templateUrl: "views/main.html",
-      abstract:true
+      abstract: true,
+      resolve: {
+        userData: function (adminService, userService, outletService) {
+          var role = $localStorageProvider.get("role");
+          if(!role){
+            return ;
+          }
+          if (role === "outlet") {
+            return outletService
+              .getOutletData()
+          }
+          else if (role === "user") {
+            return userService
+              .getUserData();
+          }
+          else {
+            return adminService
+              .getAdminData()
+          }
+        }
+      }
     })
     .state({
       name: "home.dashboard",
@@ -41,35 +62,35 @@ appModule.config(function ($stateProvider, $locationProvider,$httpProvider,$urlR
       templateUrl: "views/login.html"
     })
     .state({
-      name:"home.food",
-      url:"/food",
-      controller:"foodController",
-      templateUrl:"views/food/index.html"
+      name: "home.food",
+      url: "/food",
+      controller: "foodController",
+      templateUrl: "views/food/index.html"
     })
     .state({
-      name:"home.food.add",
-      url:"/add",
-      controller:"foodController",
-      templateUrl:"views/food/addFood.html"
+      name: "home.food.add",
+      url: "/add",
+      controller: "foodController",
+      templateUrl: "views/food/addFood.html"
     })
     .state({
-      name:"home.food.display",
-      url:"/display",
-      controller:"foodController",
-      templateUrl:"views/food/displayFoodItem.html"
+      name: "home.food.display",
+      url: "/display",
+      controller: "foodController",
+      templateUrl: "views/food/displayFoodItem.html"
     })
     .state({
-      name:"home.admin",
-      url:"/admin",
-      controller:"adminController",
-      templateUrl:"views/admin/index.html",
-      abstract:true
+      name: "home.admin",
+      url: "/admin",
+      controller: "adminController",
+      templateUrl: "views/admin/index.html",
+      abstract: true
     })
     .state({
-      name :"home.admin.add",
-      url:"/add",
-      controller:"adminController",
-      templateUrl:"views/admin/createUser.html"
+      name: "home.admin.add",
+      url: "/add",
+      controller: "adminController",
+      templateUrl: "views/admin/createUser.html"
     })
   // $locationProvider.html5Mode(true);
 
@@ -78,7 +99,7 @@ appModule.config(function ($stateProvider, $locationProvider,$httpProvider,$urlR
   // adding interceptor
   $httpProvider.interceptors.push('intercepterService');
 })
-  .run(function ($state,$timeout) {
+  .run(function ($state, $timeout) {
     // route safety 
     var token = localStorage.getItem("token");
     if (!token) {

@@ -59,7 +59,7 @@ body{
   cursor: not-allowed !important;
 }
 .opacity-low{
-  opacity: 0.20;
+  opacity: 0.35;
 }
 .z-index-popover{
   z-index: 1000;

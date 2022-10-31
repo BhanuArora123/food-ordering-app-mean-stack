@@ -15,16 +15,16 @@ appModule.controller("foodController",function ($scope,$location,foodService,out
 
     $scope.addFoodItems = function (food) {
         // attaching outlet id 
-        var outletId = outletService.outletData._id;
+        var outletId = outletService.getServiceData().outletData._id;
         if(outletId){
             food.outletId = outletId;
         }
         foodService
         .addFoodItem(food)
         .then(function (response) {
-            console.log(response.data);
+            // console.log(response.data);
             alert("food item added successfully");
-            return response.data;
+            return response;
         })
     }
 

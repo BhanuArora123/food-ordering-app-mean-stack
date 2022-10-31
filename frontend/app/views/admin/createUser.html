@@ -14,7 +14,7 @@
             <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="password" placeholder="Enter Password" name="password" ng-model="signup.password" ng-required="true">
         </div>
         <div class="d-flex w-75 justify-content-between" >
-            <button type="button" class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (signupForm.email.$invalid || signupForm.password.$invalid || signupForm.name.$invalid)?'btn-disabled':'' }}" ng-click="signupHandler(signup.name,signup.email,signup.password)">Sign Up</button>
+            <button type="button" class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (signupForm.email.$invalid || signupForm.password.$invalid || signupForm.name.$invalid)?'btn-disabled':'' }}" ng-click="signupHandler(signup.name,signup.email,signup.password,signup.userRole)">Sign Up</button>
             <div class="w-65 d-flex justify-content-end align-items-center">
                 <label class="me-3">Select Type of User :</label>
                 <select value="User" ng-model="signup.userRole" class="me-3">
