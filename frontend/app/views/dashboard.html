@@ -10,7 +10,7 @@
             Now</button>
     </div>
 </section>
-<section class="h-550p d-flex justify-content-evenly flex-column align-items-center">
+<section class="h-550p d-flex justify-content-evenly flex-column align-items-center" ng-init="onload()">
     <div class="d-flex justify-content-evenly align-items-center h-25 w-50">
         <div class="fs-3 fw-bold {{ getActiveClass(0) }}" ng-click="getFoodItems('burger',0)">Burgers</div>
         <div class="fs-3 fw-bold {{ getActiveClass(1) }}" ng-click="getFoodItems('pizza',1)">Pizza</div>
@@ -19,7 +19,7 @@
     </div>
     <div class="h-75 w-100 d-flex justify-content-evenly align-items-center">
         <div ng-repeat="food in foodItemsToDisplay | limitTo : 4" class="card" style="width: 18rem;">
-            <img src="..." class="card-img-top" alt="...">
+            <img src="{{ food.imageUrl }}" class="card-img-top card-image" alt="food.name">
             <div class="card-body">
                 <h5 class="card-title">{{ food.name }}</h5>
                 <p class="card-text">{{ food.description }}</p>

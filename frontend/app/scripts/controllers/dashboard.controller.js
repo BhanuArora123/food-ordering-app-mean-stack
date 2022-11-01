@@ -1,8 +1,8 @@
 
 
 appModule.controller("dashboardController", function ($scope,foodService) {
-
     // for displaying food items
+
     $scope.foodItemsToDisplay = [];
     $scope.getFoodItems = function (foodName,index) {
         // updating active class item 
@@ -21,5 +21,11 @@ appModule.controller("dashboardController", function ($scope,foodService) {
     $scope.activeItem = 0;
     $scope.getActiveClass = function (index) {
         return (index === $scope.activeItem)?'text-white text-decoration-underline':'text-secondary';
+    }
+
+    // display food item on window load
+    $scope.onload = function () {
+        console.log("hey!");
+        $scope.getFoodItems("burger",0);
     }
 })

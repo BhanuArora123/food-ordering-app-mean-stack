@@ -27,7 +27,7 @@
         </div>
         <div>{{food.imageUrl.name}}</div>
         <div class="d-flex w-75 justify-content-between" >
-            <button type="button" class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (addFoodForm.name.$invalid || addFoodForm.desc.$invalid || addFoodForm.price.$invalid || addFoodForm.price.$invalid)?'btn-disabled':'' }}" ng-click="addFoodItems(food)">Add Item</button>
+            <button type="button" class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (addFoodForm.name.$invalid || addFoodForm.desc.$invalid || addFoodForm.price.$invalid || addFoodForm.image.$invalid)?'btn-disabled':'' }}" ng-click="addFoodItems(food)">Add Item</button>
             <!-- <div class="w-65 d-flex justify-content-evenly align-items-start"> -->
                 <!-- <label>Select Outlet</label> -->
                 <!-- <select value="User" ng-model="food.outletId">
