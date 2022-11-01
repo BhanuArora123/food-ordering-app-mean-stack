@@ -27,6 +27,9 @@ app.use(cors({
     origin:"*"
 }));
 
+// serving files statically
+app.use("/public",express.static('public'));
+
 // parsing json req.
 app.use(express.json());
 

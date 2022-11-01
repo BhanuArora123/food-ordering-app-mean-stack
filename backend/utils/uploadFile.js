@@ -11,7 +11,9 @@ exports.getFileUploader = function (destinationFolder, allowedMimetypes) {
             cb(null, imageDest);
         },
         filename: function (req, file, cb) {
-            var incomingFileName = file.originalname + (new Date().toISOString().replaceAll(":", "-"));
+            var fileName = file.originalname.split(".")[0];
+            var fileExtension = file.originalname.split(".")[1];
+            var incomingFileName = fileName + (new Date().toISOString().replaceAll(":", "-")) + "." + fileExtension;
             cb(null, incomingFileName);
         }
     })

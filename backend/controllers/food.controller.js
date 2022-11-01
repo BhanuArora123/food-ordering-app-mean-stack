@@ -4,12 +4,13 @@ var throwError = require("../utils/errors");
 
 exports.addOrEditFoodItem = function (req, res, next) {
     try {
+        // console.log(req.file);
         var foodName = req.body.foodName;
         var foodPrice = req.body.foodPrice;
         var foodDesc = req.body.foodDesc;
         var outletId = req.body.outletId;
     
-        var foodImage = req.file.path;
+        var foodImage = 'http://localhost:8080/public/' + req.file.filename;
         var isVeg = req.body.isVeg;
         var existingFoodItemId = req.body.existingFoodItemId;
         // checking the allowed role for creating food item
@@ -86,7 +87,6 @@ exports.displayFoodItem = function (req, res, next) {
 
         var matchQuery = {
             $and: [],
-            outletId: outletId
         };
 
         if (minPrice) {
@@ -114,14 +114,18 @@ exports.displayFoodItem = function (req, res, next) {
             matchQuery["isVeg"] = isVeg;
         }
         if (foodName) {
-            matchQuery["foodName"] = {
+            matchQuery["name"] = {
                 $regex: foodName,
                 $options: "i"
             }
         }
+        if(outletId){
+            matchQuery["outletId"] = outletId;
+        }
         if(matchQuery.$and.length === 0){
             delete matchQuery["$and"];
         }
+        console.log(matchQuery);
         foodModel.find(matchQuery)
             .then(function (matchedFoodItems) {
                 return res.status(200).json({
@@ -142,7 +146,7 @@ exports.displayFoodItem = function (req, res, next) {
     }
 }
 
-exports.deleteFoodItem = function name(req, res, next) {
+exports.deleteFoodItem = function (req, res, next) {
     try {
         var foodItemId = req.query.foodItemId;
         if (req.user.role !== "admin" && req.user.role !== "superAdmin" && req.user.role !== "outlet") {
