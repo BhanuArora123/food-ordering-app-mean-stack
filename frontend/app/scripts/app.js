@@ -20,7 +20,7 @@ var appModule = angular
     'ngStorage'
   ])
 
-appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider,$localStorageProvider) {
+appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, $localStorageProvider) {
   $stateProvider
     .state({
       name: "home",
@@ -30,9 +30,9 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider,$lo
       abstract: true,
       resolve: {
         userData: function (adminService, userService, outletService) {
-          var role = $localStorageProvider.get("role");
-          if(!role){
-            return ;
+          var role = localStorage.getItem("role");
+          if (!role) {
+            return;
           }
           if (role === "outlet") {
             return outletService
@@ -65,7 +65,18 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider,$lo
       name: "home.food",
       url: "/food",
       controller: "foodController",
-      templateUrl: "views/food/index.html"
+      templateUrl: "views/food/index.html",
+      abstract: true,
+      resolve: {
+        foodItems: function (foodService) {
+          var foodItemsData = foodService
+            .getFoodItems({})
+            .then(function (data) {
+              return data.matchedFoodItems;
+            });
+          return foodItemsData;
+        }
+      }
     })
     .state({
       name: "home.food.add",
@@ -77,7 +88,7 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider,$lo
       name: "home.food.display",
       url: "/display",
       controller: "foodController",
-      templateUrl: "views/food/displayFoodItem.html"
+      templateUrl: "views/food/displayFood.html"
     })
     .state({
       name: "home.admin",

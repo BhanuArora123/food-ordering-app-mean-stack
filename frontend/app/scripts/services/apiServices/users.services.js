@@ -44,7 +44,7 @@ appModule
                 return $http
                     .get("http://localhost:8080/user/userData")
                     .then(function (response) {
-                        localStorage.setItem("userData",response.data.userData);
+                        localStorage.setItem("userData",JSON.stringify(response.data.userData));
                         localStorage.setItem("role","user");
                         return response.data;
                     })
@@ -52,6 +52,19 @@ appModule
                         console.log(error);
                         alert(error.message);
                     })
+            },
+            addToCart:function (foodName,foodPrice,outletName) {
+                return $http.put("http://localhost:8080/user/addToCart",{
+                    foodItemName:foodName,
+                    foodItemPrice:foodPrice,
+                    outletName:outletName
+                })
+                .then(function (response) {
+                    return response.data;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
             },
             getServiceData:function () {
                 return {

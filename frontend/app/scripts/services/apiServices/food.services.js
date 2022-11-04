@@ -25,9 +25,11 @@ appModule.factory("foodService",function ($http) {
             foodData.append("foodName",data.name);
             foodData.append("foodPrice",data.price);
             foodData.append("description",data.desc);
-            foodData.append("outletId",data.outletId);
+            foodData.append("outletName",data.outletName);
             foodData.append("isVeg",isVeg);
             foodData.append("foodImage",data.foodImage);
+            foodData.append("subCategory",data.subCategory);
+            foodData.append("category",data.category);
             return $http({
                 url:"http://localhost:8080/food/addFoodItem",
                 method:"POST",
@@ -35,8 +37,8 @@ appModule.factory("foodService",function ($http) {
                 headers:{
                     "Content-Type":undefined
                 },
-                transformRequest: function(data, headersGetterFunction) {
-                    return data; // do nothing! FormData is very good!
+                transformRequest: function(data) {
+                    return data; 
                 }            
             })
             .then(function (response) {

@@ -55,6 +55,9 @@ body{
 .h-60{
   height: 60%;
 }
+.h-150p{
+  height: 150px;
+}
 .btn-disabled{
   cursor: not-allowed !important;
 }

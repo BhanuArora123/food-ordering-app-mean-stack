@@ -40,7 +40,7 @@ appModule
             },
             getOutletData: function () {
                 return $http
-                    .get("http://localhost:8080/outletData")
+                    .get("http://localhost:8080/outlet/outletData")
                     .then(function (response) {
                         localStorage.setItem("outletData",JSON.stringify(response.data.outletData));
                         localStorage.setItem("role","outlet");
