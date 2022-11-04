@@ -2,8 +2,6 @@ var mongoose = require("mongoose");
 
 var schema = mongoose.Schema;
 
-var ObjectId = mongoose.Schema.Types.ObjectId;
-
 const outletSchema = new schema({
     name:{
         type:String,
@@ -16,14 +14,6 @@ const outletSchema = new schema({
     password:{
         type:String,
         required:true
-    },
-    rating:{
-        type:Number,
-        default:0
-    },
-    ratingCount:{
-        type:Number,
-        default:0
     }
 },{
     timestamps:true

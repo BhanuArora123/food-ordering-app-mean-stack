@@ -2,8 +2,6 @@ var mongoose = require("mongoose");
 
 var schema = mongoose.Schema;
 
-var ObjectId = mongoose.Schema.Types.ObjectId;
-
 const userSchema = new schema({
     name:{
         type:String,
@@ -30,6 +28,63 @@ const userSchema = new schema({
             pinCode:{
                 type:String,
                 required:true
+            }
+        }
+    ],
+    cart:[
+        {
+            foodName:{
+                type:String,
+                required:true,
+            },
+            foodPrice:{
+                type:Number,
+                required:true
+            },
+            quantity:{
+                type:Number,
+                default:1
+            },
+            outletName:{
+                type:String,
+                required:true
+            }
+        }
+    ],
+    orders:[
+        {
+            orderedItems : [
+                {
+                    foodName:{
+                        type:String,
+                        required:true,
+                    },
+                    foodPrice:{
+                        type:Number,
+                        required:true
+                    },
+                    quantity:{
+                        type:Number,
+                        default:1
+                    }
+                }
+            ],
+            amountPaid:{
+                type:Number,
+                default:0
+            },
+            createdAt:{
+                type: Date,
+                required:true
+            },
+            outletName:{
+                type:String,
+                required:true
+            },
+            status:{
+                type:String,
+                status:["Preparing","Out For Delivery","Closed"],
+                default:"Preparing"
             }
         }
     ]

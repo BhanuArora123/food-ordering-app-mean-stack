@@ -16,26 +16,29 @@ const foodSchema = new schema({
         type:Number,
         required:true
     },
-    outletId:{
-        type:ObjectId,
-        required:true
+    outlet:{
+        name:{
+            type:String,
+            required:true
+        }
     },
     imageUrl:{
         type:String,
         required:true
     },
-    rating:{
-        type:Number,
-        default:0
+    category:{
+        type:String,
+        required:true
     },
-    ratingCount:{
-        type:Number,
-        default:0
+    subCategory:{
+        type:String,
+        required:true
     },
     isVeg:{
         type:Boolean,
         default:true
-    }
+    },
+    
 });
 
 module.exports = mongoose.model("food",foodSchema);

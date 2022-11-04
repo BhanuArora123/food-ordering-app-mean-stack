@@ -8,7 +8,9 @@ exports.addOrEditFoodItem = function (req, res, next) {
         var foodName = req.body.foodName;
         var foodPrice = req.body.foodPrice;
         var foodDesc = req.body.foodDesc;
-        var outletId = req.body.outletId;
+        var outletName = req.body.outletName;
+        var category = req.body.category;
+        var subCategory = req.body.subCategory;
     
         var foodImage = 'http://localhost:8080/public/' + req.file.filename;
         var isVeg = req.body.isVeg;
@@ -22,7 +24,7 @@ exports.addOrEditFoodItem = function (req, res, next) {
             $or: [
                 {
                     name: foodName,
-                    outletId: outletId
+                    "outlet.name": outletName
                 },
                 {
                     _id: existingFoodItemId
@@ -50,7 +52,11 @@ exports.addOrEditFoodItem = function (req, res, next) {
                     price: foodPrice,
                     description: foodDesc,
                     imageUrl: foodImage,
-                    outletId: outletId,
+                    outlet: {
+                        name:outletName
+                    },
+                    category:category,
+                    subCategory:subCategory,
                     isVeg: isVeg
                 });
                 return foodItemData.save();
