@@ -13,9 +13,13 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
     //     }
     // })()
 
-    var userData = JSON.parse(userService.getServiceData().userData);
+    
     $scope.foodItemsToDisplay = foodItems;
-    $scope.userCart = userData?userData.cart:[];
+    // getting user cart 
+    (function () {
+        var userData = JSON.parse(userService.getServiceData().userData);
+        $scope.userCart = userData?userData.cart:[];
+    })()
     // display food item
     $scope.getFoodItems = function () {
         $scope.foodItemsToDisplay = foodItems;
@@ -46,7 +50,9 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
             .then(function (response) {
                 console.log(response.cartData);
                 $scope.userCart = response.cartData;
-                // $scope.$apply();
+            })
+            .then(function () {
+                return userService.getUserData();
             })
             .catch(function (error) {
                 console.log(error);

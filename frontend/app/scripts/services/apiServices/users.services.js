@@ -66,6 +66,15 @@ appModule
                     console.log(error);
                 })
             },
+            placeOrder:function () {
+                return $http.post("http://localhost:8080/user/placeOrder",{})
+                .then(function (res) {
+                    return res.data;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
+            },
             getServiceData:function () {
                 return {
                     userData:localStorage.getItem("userData"),

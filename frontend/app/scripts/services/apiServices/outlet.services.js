@@ -2,7 +2,7 @@
 
 // user service
 appModule
-    .factory("outletService", function ($http,$state) {
+    .factory("outletService", function ($http, $state) {
         return {
             signup: function (name, email, password) {
                 return $http
@@ -27,8 +27,8 @@ appModule
                         password: password
                     })
                     .then(function (response) {
-                        localStorage.setItem("outletData",JSON.stringify(response.data.outletData));
-                        localStorage.setItem("role","outlet");
+                        localStorage.setItem("outletData", JSON.stringify(response.data.outletData));
+                        localStorage.setItem("role", "outlet");
                         alert(response.data.message);
                         $state.go("home.dashboard");
                         return response.data;
@@ -42,18 +42,35 @@ appModule
                 return $http
                     .get("http://localhost:8080/outlet/outletData")
                     .then(function (response) {
-                        localStorage.setItem("outletData",JSON.stringify(response.data.outletData));
-                        localStorage.setItem("role","outlet");
+                        localStorage.setItem("outletData", JSON.stringify(response.data.outletData));
+                        localStorage.setItem("role", "outlet");
                         return response.data;
                     })
                     .catch(function (error) {
                         console.log(error);
                     })
             },
-            getServiceData : function () {
+            getAllOrders: function (status) {
+                var statusParam = {};
+                if (status) {
+                    statusParam["status"] = status;
+                }
+                return $http
+                    .get("http://localhost:8080/outlet/getAllOrders", {
+                        params: statusParam
+                    })
+                    .then(function (res) {
+                        return res.data;
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    })
+            }
+            ,
+            getServiceData: function () {
                 return {
-                    outletData:JSON.parse(localStorage.getItem("outletData")),
-                    role:localStorage.getItem("role")
+                    outletData: JSON.parse(localStorage.getItem("outletData")),
+                    role: localStorage.getItem("role")
                 }
             }
         }

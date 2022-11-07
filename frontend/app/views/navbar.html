@@ -3,37 +3,69 @@
     <div ng-show="getRole() === 'user'">
         <a ui-sref="home.food.display" class="d-flex justify-content-center align-items-center text-decoration-none text-white">
             <i class="fas fa-pizza-slice" style="font-size: 18px;"></i>
-            <div class="ms-2 fw-bold">Food Seach</div> 
+            <div class="ms-2 fw-bold">Food Search</div>
+        </a>
+    </div>
+    <div ng-show="getRole() === 'user'">
+        <a ng-click="openModal('views/cart.html','cartController','cartModal')" class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+            <i class="fas fa-cart-plus" style="font-size: 18px;"></i>
+            <div class="ms-2 fw-bold">Cart</div>
+        </a>
+    </div>
+
+    <!-- <div class="btn-group mb-2" uib-dropdown is-open="status.isopen">
+        <i class="fas fa-biking-mountain"></i>
+        <a id="single-button" type="button" class="text-decoration-none text-white fw-bold" uib-dropdown-toggle>
+            Outlet Actions<span class="caret"></span>
+        </a>
+        <div dropdown-menu uib-dropdown-menu role="menu" aria-labelledby="single-button">
+            <a href="#" class="dropdown-item">Action</a>
+            <a href="#" class="dropdown-item">Another action</a>
+            <a href="#" class="dropdown-item">Something else here</a>
+            <div class="dropdown-divider"></div>
+            <a href="#" class="dropdown-item">Separated link</a>
+        </div>
+    </div> -->
+    <div ng-show="getRole() === 'outlet'">
+        <a ui-sref="home.orders.display"
+            class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+            <i class="fas fa-file-invoice"></i>
+            <div class="ms-2 fw-bold">Orders</div>
         </a>
     </div>
     <div ng-show="getRole() === 'admin' || getRole() === 'superAdmin' || getRole() === 'outlet'">
-        <a ui-sref="home.food.add" class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+        <a ui-sref="home.food.add"
+            class="d-flex justify-content-center align-items-center text-decoration-none text-white">
             <i class="fas fa-hamburger" style="font-size: 18px;"></i>
-            <div class="ms-2 fw-bold">Add Food Item</div> 
+            <div class="ms-2 fw-bold">Add Food Item</div>
         </a>
     </div>
     <div ng-show="getRole() === 'admin' || getRole() === 'superAdmin'">
-        <a ui-sref="home.admin.add" class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+        <a ui-sref="home.admin.add"
+            class="d-flex justify-content-center align-items-center text-decoration-none text-white">
             <i class="fa fa-utensils" style="font-size: 18px;"></i>
-            <div class="ms-2 fw-bold">Add Outlet</div> 
+            <div class="ms-2 fw-bold">Add Outlet</div>
         </a>
     </div>
     <div ng-show="getRole() === 'admin' || getRole() === 'superAdmin'">
-        <a ui-sref="home.admin.add" class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+        <a ui-sref="home.admin.add"
+            class="d-flex justify-content-center align-items-center text-decoration-none text-white">
             <i class="fa-sharp fa fa-user-plus" style="font-size: 18px;"></i>
-            <div class="ms-2 fw-bold">Add User</div> 
+            <div class="ms-2 fw-bold">Add User</div>
         </a>
     </div>
     <div ng-show="getToken()">
-        <a ng-click="logoutHandler()" class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+        <a ng-click="logoutHandler()"
+            class="d-flex justify-content-center align-items-center text-decoration-none text-white">
             <i class="fas fa-sign-out-alt" style="font-size: 18px;"></i>
-            <div class="ms-2 fw-bold">Logout</div> 
+            <div class="ms-2 fw-bold">Logout</div>
         </a>
     </div>
     <div ng-show="!getToken()">
-        <a ui-sref="home.login" class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+        <a ui-sref="home.login"
+            class="d-flex justify-content-center align-items-center text-decoration-none text-white">
             <i class="fas fa-user" style="font-size: 18px;"></i>
-            <div class="ms-2 fw-bold">Login</div> 
+            <div class="ms-2 fw-bold">Login</div>
         </a>
     </div>
 </nav>

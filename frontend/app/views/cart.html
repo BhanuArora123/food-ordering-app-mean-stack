@@ -1,0 +1,17 @@
+
+<div class="w-100 h-150p bg-light d-flex justify-content-evenly flex-column align-items-center" ng-init="cart = getCart()">
+    <h3 class="bg-light text-dark d-flex justify-content-center align-items-center w-100">Welcome to cart</h3>
+    <div ng-hide="cart.length" class="bg-light text-dark d-flex justify-content-center align-items-center w-100">Cart is Empty</div>
+    <div ng-show="cart.length" ng-repeat="cartItem in cart" class="text-dark bg-light d-flex justify-content-around align-items-center w-75">
+        <div class="text-dark bg-light">{{cartItem.foodName}}</div>
+        <div class="text-dark bg-light">:</div>
+        <div class="text-dark bg-light">${{cartItem.foodPrice}}</div>
+        <div class="text-dark bg-light">x</div>
+        <div class="text-dark bg-light">{{cartItem.quantity}}</div>
+        <div class="text-dark bg-light">=</div>
+        <div class="text-dark bg-light">${{cartItem.foodPrice * cartItem.quantity}}</div>
+    </div>
+    <div ng-show="cart.length" class="w-100 d-flex justify-content-center align-items-center bg-light">
+        <button class="btn btn-primary" ng-click="placeOrder()">Order Now</button>
+    </div>
+</div>

@@ -64,6 +64,9 @@ body{
 .opacity-low{
   opacity: 0.35;
 }
+.opacity-medium{
+  opacity: 0.5 !important;
+}
 .z-index-popover{
   z-index: 1000;
 }

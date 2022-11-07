@@ -14,7 +14,7 @@ var appModule = angular
     'ngResource',
     'ui.router',
     'ngSanitize',
-    'ngTouch',
+    // 'ngTouch',
     "ui.bootstrap",
     'ngAnimate',
     'ngStorage'
@@ -102,6 +102,32 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, $l
       url: "/add",
       controller: "adminController",
       templateUrl: "views/admin/createUser.html"
+    })
+    // orders
+    .state({
+      name: "home.orders",
+      url: "/orders",
+      controller: "ordersController",
+      templateUrl: "views/orders/index.html",
+      abstract:true,
+      resolve: {
+        outletOrders: function (outletService) {
+          return outletService
+            .getAllOrders()
+            .then(function (data) {
+              return data.orders;
+            })
+            .catch(function (error) {
+              console.log(error);
+            })
+        }
+      }
+    })
+    .state({
+      name: "home.orders.display",
+      url: "/display",
+      controller: "ordersController",
+      templateUrl: "views/orders/display.html"
     })
   // $locationProvider.html5Mode(true);
 

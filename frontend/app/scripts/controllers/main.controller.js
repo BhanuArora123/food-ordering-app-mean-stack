@@ -1,12 +1,13 @@
 
 
 // home controller
-appModule.controller("homeController",function ($scope,$state) {
+appModule.controller("homeController", function ($scope,$rootScope, $state, $uibModal) {
+
     $scope.logoutHandler = function () {
         localStorage.clear();
         $state.go("home.login");
     }
-    
+
     // displaying menus based on navbar 
     $scope.getRole = function () {
         return localStorage.getItem("role");
@@ -14,4 +15,22 @@ appModule.controller("homeController",function ($scope,$state) {
     $scope.getToken = function () {
         return localStorage.getItem("token");
     }
-})
+
+    // open modal for cart 
+    $rootScope.openModal = function (templateUrl,controller,instanceName) {
+        console.log("hello");
+        var modalInstance = $uibModal.open({
+            backdrop:true,
+            controller:controller,
+            scope:$scope,
+            templateUrl:templateUrl,
+            windowClass: 'show bg-transparent',
+            ariaLabelledBy: 'modal-title',
+            ariaDescribedBy: 'modal-body',
+            backdropClass:"opacity-medium"
+        })
+        $scope[instanceName] = modalInstance;
+    }
+
+
+});
