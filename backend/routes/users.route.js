@@ -14,4 +14,6 @@ router.put("/addToCart",passport.authenticate("jwt", { failureMessage: "unauthor
 
 router.put("/removeFromCart",passport.authenticate("jwt", { failureMessage: "unauthorized!",session:false }),userController.removeFromCart);
 
+router.post("/placeOrder",passport.authenticate("jwt",{session:false}),userController.placeOrder);
+
 module.exports = router;

@@ -147,7 +147,11 @@ exports.getAllOrders = function (req, res, next) {
             })
         }
         var outletId = req.user.userId;
-        var status = req.body.status;
+        var status = req.query.status;
+        var limit = req.query.limit;
+        var page = req.query.page;
+
+        var skip = (page - 1)*limit;
 
         outlets.findById(outletId)
             .then(function (outletData) {

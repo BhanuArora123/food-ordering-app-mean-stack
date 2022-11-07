@@ -250,12 +250,12 @@ exports.placeOrder = function (req, res, next) {
             })
             .then(function (userData) {
                 var totalPrice = cartItems.reduce(function (priceTillNow, currentCartItem) {
-                    return priceTillNow + (currentCartItem.quantity * currentCartItem.foodItemId.price)
+                    return priceTillNow + (currentCartItem.quantity * currentCartItem.foodPrice)
                 },0);
                 var orderedItems = cartItems.map(function (cartItem) {
                     return {
                         foodName: cartItem.foodName,
-                        price: cartItem.foodPrice,
+                        foodPrice: cartItem.foodPrice,
                         quantity: cartItem.quantity,
                     };
                 })
