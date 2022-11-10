@@ -1,5 +1,5 @@
 
-appModule.controller("cartController",function ($scope,userService) {
+appModule.controller("cartController",function ($scope,orderService,userService) {
     
     // binding cart data to scope 
 
@@ -9,12 +9,13 @@ appModule.controller("cartController",function ($scope,userService) {
 
     // place order 
     $scope.placeOrder = function () {
-        return userService.placeOrder()
+        return orderService.placeOrder()
         .then(function (data) {
             alert("order created successfully :)");
             return data.orderData;
         })
-        .then(function (orderData) {
+        .then(function () {
+            $scope.$parent.cartModal.close();
             return userService.getUserData();
         })
         .catch(function (error) {

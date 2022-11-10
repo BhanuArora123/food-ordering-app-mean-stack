@@ -50,23 +50,6 @@ appModule
                         console.log(error);
                     })
             },
-            getAllOrders: function (status) {
-                var statusParam = {};
-                if (status) {
-                    statusParam["status"] = status;
-                }
-                return $http
-                    .get("http://localhost:8080/outlet/getAllOrders", {
-                        params: statusParam
-                    })
-                    .then(function (res) {
-                        return res.data;
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                    })
-            }
-            ,
             getServiceData: function () {
                 return {
                     outletData: JSON.parse(localStorage.getItem("outletData")),

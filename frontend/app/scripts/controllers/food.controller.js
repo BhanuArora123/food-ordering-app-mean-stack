@@ -1,6 +1,6 @@
 
 
-appModule.controller("foodController", function ($scope, foodService, outletService, foodItems, userService) {
+appModule.controller("foodController", function ($scope, foodService, outletService, foodItems, userService, allCategories) {
 
     // adding food items 
 
@@ -13,12 +13,14 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
     //     }
     // })()
 
-    
+
     $scope.foodItemsToDisplay = foodItems;
+    $scope.categories = allCategories;
+    $scope.subCategories = [];
     // getting user cart 
     (function () {
         var userData = JSON.parse(userService.getServiceData().userData);
-        $scope.userCart = userData?userData.cart:[];
+        $scope.userCart = userData ? userData.cart : [];
     })()
     // display food item
     $scope.getFoodItems = function () {
@@ -26,10 +28,24 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
         return foodItems;
     }
 
+    $scope.createCategory = function (category) {
+        foodService.createCategory(category)
+            .then(function (data) {
+                return foodService
+                    .getCategories()
+            })
+            .then(function (categories) {
+                $scope.categories = categories;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+    }
+
     $scope.addFoodItems = function (food) {
         // attaching outlet id 
         var outletData = outletService.getServiceData().outletData;
-        var outletName = outletData?outletData.name:undefined;
+        var outletName = outletData ? outletData.name : undefined;
         console.log(outletName);
         if (outletName) {
             food.outletName = outletName;
@@ -44,9 +60,9 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
     }
 
     // add to cart 
-    $scope.addToCart = function (foodName, foodPrice, outletName) {
+    $scope.addToCart = function (foodName, foodPrice, outletName,subCategory,category) {
         userService
-            .addToCart(foodName, foodPrice, outletName)
+            .addToCart(foodName, foodPrice, outletName,category,subCategory)
             .then(function (response) {
                 console.log(response.cartData);
                 $scope.userCart = response.cartData;
@@ -59,12 +75,34 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
             })
     }
 
+    $scope.getSubCategories = function () {
+        return foodService.getSubCategories($scope.food.category)
+        .then(function (data) {
+            $scope.subCategories = data.subCategories.map(function (subCategory) {
+                return subCategory.name;
+            });
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
+    }
+
+    $scope.createSubCategory = function (subCategory,category) {
+        return foodService
+        .createSubCategory(subCategory,category)
+        .then(function (data) {
+            $scope.getSubCategories();
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
+    }
+
     // check if item present in cart 
-    $scope.presentInCart = function (foodName,outletName) {
+    $scope.presentInCart = function (foodName, outletName) {
         return $scope.userCart.find(function (cartItem) {
             return (cartItem.foodName === foodName && cartItem.outletName === outletName);
         })
     }
 
-    
 })

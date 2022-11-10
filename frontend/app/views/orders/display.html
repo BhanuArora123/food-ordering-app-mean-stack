@@ -1,23 +1,15 @@
-<section class="">
-    <h1 class="w-100 d-flex justify-content-center align-items-center">Orders</h1>
-    <div>
+<section class="w-100 d-flex justify-content-around align-items-center flex-column" style="height:{{ getHeight(3) + 100 }}px;">
+    <h1 class="w-100 d-flex justify-content-center flex-wrap align-items-center">Orders</h1>
+    <div class="w-100 d-flex justify-content-around align-items-start h-75">
         <div class="card h-150p" style="width: 18rem;" ng-repeat="order in getAllOutletOrders">
             <img src="images/orders.png" class="card-img-top" alt="food order">
             <div class="card-body">
-                <h5 class="card-title">Order by User - {{order.name}}</h5>
-                <p class="card-text">Order Status - {{order.orders.status}}</p>
+                <!-- <h5 class="card-title">Order by User - {{order.name}}</h5> -->
+                <p class="card-text">Order Status - {{order.status}}</p>
             </div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item" ng-repeat="orderedItem in order.orders.orderedItems | limit : 3">
-                    {{orderedItem.foodName}} x {{orderedItem.quantity}}
-                </li>
-                <li class="list-group-item">
-                    <button class="btn btn-primary">View More</button>
-                </li>
-            </ul>
-            <div class="card-body">
-                <a href="#" class="card-link">View Details</a>
-                <a href="#" class="card-link">Change Status</a>
+            <div class="card-body d-flex justify-content-around align-items-center">
+                <button class="btn btn-primary" ng-click="openModal('views/orders/displayModal.html','orderDetailsController','orderDisplayModal',currentScope)">View Details</button>
+                <button class="btn btn-primary">Change Status</button>
             </div>
         </div>
     </div>

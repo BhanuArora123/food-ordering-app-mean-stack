@@ -1,0 +1,23 @@
+<div class="w-100 h-500p d-flex justify-content-around align-items-center flex-column bg-light">
+    <uib-accordion ng-repeat="order in allOrders" class="w-100 bg-light">
+        <div uib-accordion-group class="mt-1 bg-light text-dark" heading="{{order._id.category}}" is-open="false"
+            is-disabled="status.isFirstDisabled">
+            <uib-accordion class="w-100 h-100 bg-light">
+                <div ng-repeat="subCategorizedOrderItem in order.categorizedItems" uib-accordion-group class="mt-1 w-100 h-50p bg-light"
+                    heading="{{subCategorizedOrderItem._id.subCategory}}" is-open="false"
+                    is-disabled="status.isFirstDisabled">
+                    <div ng-repeat="cartItem in subCategorizedOrderItem.subCategorizedItems"
+                        class="text-dark bg-light d-flex justify-content-around align-items-center w-100 h-40p">
+                        <div class="text-dark bg-light">{{cartItem.foodName}}</div>
+                        <div class="text-dark bg-light">:</div>
+                        <div class="text-dark bg-light">${{cartItem.foodPrice}}</div>
+                        <div class="text-dark bg-light">x</div>
+                        <div class="text-dark bg-light">{{cartItem.quantity}}</div>
+                        <div class="text-dark bg-light">=</div>
+                        <div class="text-dark bg-light">${{cartItem.foodPrice * cartItem.quantity}}</div>
+                    </div>
+                </div>
+            </uib-accordion>
+        </div>
+    </uib-accordion>
+</div>

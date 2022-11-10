@@ -47,6 +47,53 @@ appModule.factory("foodService",function ($http) {
             .catch(function (error) {
                 console.log(error);
             })
+        },
+        getCategories:function () {
+            return $http
+            .get("http://localhost:8080/category/get")
+            .then(function (res) {
+                return res.data;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+        },
+        createCategory:function (category) {
+            return $http.post("http://localhost:8080/category/create",{
+                category:category
+            })
+            .then(function (res) {
+                return res.data;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+        },
+        createSubCategory:function (subCategory,category) {
+            return $http.post("http://localhost:8080/category/sub/create",{
+                subCategoryName:subCategory,
+                category:category
+            })
+            .then(function (res) {
+                return res.data;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+        },
+        getSubCategories : function (category) {
+            return $http
+            .get("http://localhost:8080/category/sub/get",{
+                params:{
+                    category:category
+                }
+            })
+            .then(function (res) {
+                return res.data;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
         }
     }
 })

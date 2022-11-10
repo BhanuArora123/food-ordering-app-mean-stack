@@ -75,6 +75,18 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, $l
               return data.matchedFoodItems;
             });
           return foodItemsData;
+        },
+        allCategories : function (foodService) {
+          return foodService
+          .getCategories()
+          .then(function (data) {
+            return data.categories.map(function (category) {
+              return category.name;
+            });
+          })
+          .catch(function (error) {
+            console.log(error);
+          })
         }
       }
     })
@@ -109,11 +121,15 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, $l
       url: "/orders",
       controller: "ordersController",
       templateUrl: "views/orders/index.html",
-      abstract:true,
+      abstract: true,
       resolve: {
-        outletOrders: function (outletService) {
-          return outletService
-            .getAllOrders()
+        outletOrders: function (orderService, outletService) {
+          var query = {};
+          if (outletService.getServiceData()) {
+            query["outletName"] = outletService.getServiceData().outletData.name
+          }
+          return orderService
+            .getAllOrders(query)
             .then(function (data) {
               return data.orders;
             })

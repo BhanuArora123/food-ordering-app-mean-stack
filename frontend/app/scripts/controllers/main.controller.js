@@ -17,12 +17,12 @@ appModule.controller("homeController", function ($scope,$rootScope, $state, $uib
     }
 
     // open modal for cart 
-    $rootScope.openModal = function (templateUrl,controller,instanceName) {
-        console.log("hello");
+    $rootScope.openModal = function (templateUrl,controller,instanceName,scope) {
+        // console.log("hello");
         var modalInstance = $uibModal.open({
             backdrop:true,
             controller:controller,
-            scope:$scope,
+            scope:scope?scope:$scope,
             templateUrl:templateUrl,
             windowClass: 'show bg-transparent',
             ariaLabelledBy: 'modal-title',

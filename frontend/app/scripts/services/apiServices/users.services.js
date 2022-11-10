@@ -30,7 +30,7 @@ appModule
                     })
                     .then(function (response) {
                         alert(response.data.message);
-                        localStorage.setItem("userData",response.data.userData);
+                        localStorage.setItem("userData",JSON.stringify(response.data.userData));
                         localStorage.setItem("role","user");
                         $state.go("home.dashboard");
                         return response.data;
@@ -53,23 +53,16 @@ appModule
                         alert(error.message);
                     })
             },
-            addToCart:function (foodName,foodPrice,outletName) {
+            addToCart:function (foodName,foodPrice,outletName,category,subCategory) {
                 return $http.put("http://localhost:8080/user/addToCart",{
                     foodItemName:foodName,
                     foodItemPrice:foodPrice,
-                    outletName:outletName
+                    outletName:outletName,
+                    subCategory:subCategory,
+                    category:category
                 })
                 .then(function (response) {
                     return response.data;
-                })
-                .catch(function (error) {
-                    console.log(error);
-                })
-            },
-            placeOrder:function () {
-                return $http.post("http://localhost:8080/user/placeOrder",{})
-                .then(function (res) {
-                    return res.data;
                 })
                 .catch(function (error) {
                     console.log(error);

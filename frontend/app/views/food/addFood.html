@@ -1,48 +1,56 @@
-<div class="d-flex w-100 justify-content-evenly flex-column align-items-center ">
+<div class="d-flex w-100 justify-content-around flex-column align-items-center ">
     <h1 class="w-50 d-flex justify-content-center">
         Add Food Item
     </h1>
-    <form class="w-50 d-flex justify-content-evenly align-items-center flex-column h-75" name="addFoodForm" novalidate>
-        <div class="w-75 d-flex justify-content-evenly align-items-start flex-column">
+    <form class="w-50 d-flex justify-content-around align-items-center flex-column h-75" name="addFoodForm" novalidate>
+        <div class="w-75 d-flex justify-content-around align-items-start flex-column">
             <label>Name*</label>
             <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="text"
                 placeholder="Enter Name" name="name" ng-model="food.name" ng-required="true">
         </div>
-        <div class="w-75 d-flex justify-content-evenly align-items-start flex-column">
+        <div class="w-75 d-flex justify-content-around align-items-start flex-column">
             <label>Description</label>
             <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="text"
                 placeholder="Enter Description" name="desc" ng-model="food.desc" ng-required="true">
         </div>
-        <div class="w-75 d-flex justify-content-evenly align-items-start flex-column">
+        <div class="w-75 d-flex justify-content-around align-items-start flex-column">
             <label>Price(in dollars)</label>
             <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="number"
                 placeholder="Enter Price" name="price" ng-model="food.price" ng-required="true" step="any">
         </div>
-        <div class="w-75 d-flex justify-content-evenly align-items-start flex-column">
+        <div class="w-75 d-flex justify-content-around align-items-start flex-column">
             <label>Select Category</label>
-            <select class="h-50p w-100" placeholder="Select Category" ng-model="food.category">
+            <!-- <select class="h-50p w-100" placeholder="Select Category" ng-model="food.category">
                 <option selected value="Indian">Indian</option>
                 <option value="Chinese">Chinese</option>
                 <option value="Italian">Italian</option>
-            </select>
+            </select> -->
+            <input type="text" ng-model="food.category" uib-typeahead="category for category in categories | filter:$viewValue | limitTo:8" typeahead-no-results="noResults" typeahead-on-select="getSubCategories()" class="form-control bg-theme-light text-light h-50p outline-none rounded border-0 mb-2" ng-required="true">
+            <div ng-show="noResults" class="w-100 h-50p">
+                <button class="btn btn-primary" type="button" ng-click="createCategory(food.category)">Create Category</button>
+            </div>
         </div>
-        <div class="w-75 d-flex justify-content-evenly align-items-start flex-column">
+        <div class="w-75 d-flex justify-content-around align-items-start flex-column">
             <label>Select Sub Category</label>
-            <select class="h-50p w-100" placeholder="Select Sub Category" ng-model="food.subCategory">
+            <!-- <select class="h-50p w-100" placeholder="Select Sub Category" ng-model="food.subCategory">
                 <option selected value="North Indian">North Indian</option>
                 <option value="South Indian">South Indian</option>
                 <option value="Sweets">Sweets</option>
-            </select>
+            </select> -->
+            <input ng-disabled="!food.category" type="text" ng-model="food.subCategory" uib-typeahead="subCategory for subCategory in subCategories | filter:$viewValue | limitTo:8" typeahead-no-results="noSubCategory" class="form-control bg-theme-light text-light mb-2 {{food.category?'':'disabled'}}" ng-required="true">
+            <div ng-show="noSubCategory" class="w-100 h-50p">
+                <button class="btn btn-primary" type="button" ng-click="createSubCategory(food.subCategory,food.category)">Create Sub Category</button>
+            </div>
         </div>
-        <div class="w-75 d-flex justify-content-evenly align-items-start flex-column">
+        <div class="w-75 d-flex justify-content-around align-items-start flex-column">
             <label>Food Image</label>
             <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" valid-file type="file"
                 placeholder="Upload Food Image" name="image" ng-model="food.foodImage" ng-required="true"
                 accept="image/png, image/gif, image/jpeg">
         </div>
         <div class="w-75 mb-2 d-flex justify-content-end align-items-center">
-            <input type="checkbox" ng-model="food.isVeg" name="isVeg" class="ms-2">
-            <label class="ms-2">
+            <input type="checkbox" ng-model="food.isVeg" name="isVeg" class="ml-2">
+            <label class="ml-2">
                 Veg
             </label>
         </div>
@@ -51,7 +59,7 @@
             <button type="button"
                 class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (addFoodForm.name.$invalid || addFoodForm.desc.$invalid || addFoodForm.price.$invalid || addFoodForm.image.$invalid)?'btn-disabled':'' }}"
                 ng-click="addFoodItems(food)">Add Item</button>
-            <!-- <div class="w-65 d-flex justify-content-evenly align-items-start"> -->
+            <!-- <div class="w-65 d-flex justify-content-around align-items-start"> -->
             <!-- <label>Select Outlet</label> -->
             <!-- <select value="User" ng-model="food.outletId">
                     <option selected value="User">User</option>

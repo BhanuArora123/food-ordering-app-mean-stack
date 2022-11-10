@@ -88,7 +88,7 @@ appModule.controller("loginSignupController", function ($scope,$location, userSe
     }
     // get active css class 
     $scope.getActiveCssClass = function (path) {
-        var cssClass = $scope.onActivePath(path)?"fw-bold fs-3 text-decoration-none text-white":"text-secondary";
+        var cssClass = $scope.onActivePath(path)?"fw-bold h3 text-decoration-underline text-white":"text-secondary";
         return cssClass;
     }
 })
