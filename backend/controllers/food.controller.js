@@ -1,4 +1,4 @@
-const foodModel = require("../models/food.model");
+var foodModel = require("../models/food.model");
 
 var throwError = require("../utils/errors");
 
@@ -84,7 +84,7 @@ exports.addOrEditFoodItem = function (req, res, next) {
 exports.displayFoodItem = function (req, res, next) {
     try {
         // search filters 
-        var outletId = req.query.outletId;
+        var outletName = req.query.outletName;
         var minPrice = req.query.minPrice;
         var maxPrice = req.query.maxPrice;
         var minRating = req.query.minRating;
@@ -125,8 +125,8 @@ exports.displayFoodItem = function (req, res, next) {
                 $options: "i"
             }
         }
-        if(outletId){
-            matchQuery["outletId"] = outletId;
+        if(outletName){
+            matchQuery["outlet.name"] = outletName;
         }
         if(matchQuery.$and.length === 0){
             delete matchQuery["$and"];

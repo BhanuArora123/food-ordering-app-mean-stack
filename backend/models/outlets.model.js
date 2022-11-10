@@ -2,7 +2,7 @@ var mongoose = require("mongoose");
 
 var schema = mongoose.Schema;
 
-const outletSchema = new schema({
+var outletSchema = new schema({
     name:{
         type:String,
         required:true

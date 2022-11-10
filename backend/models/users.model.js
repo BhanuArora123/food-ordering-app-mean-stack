@@ -2,7 +2,7 @@ var mongoose = require("mongoose");
 
 var schema = mongoose.Schema;
 
-const userSchema = new schema({
+var userSchema = new schema({
     name:{
         type:String,
         required:true
@@ -48,44 +48,15 @@ const userSchema = new schema({
             outletName:{
                 type:String,
                 required:true
-            }
-        }
-    ],
-    orders:[
-        {
-            orderedItems : [
-                {
-                    foodName:{
-                        type:String,
-                        required:true,
-                    },
-                    foodPrice:{
-                        type:Number,
-                        required:true
-                    },
-                    quantity:{
-                        type:Number,
-                        default:1
-                    }
-                }
-            ],
-            amountPaid:{
-                type:Number,
-                default:0
             },
-            createdAt:{
-                type: Date,
-                required:true
-            },
-            outletName:{
+            category:{
                 type:String,
                 required:true
             },
-            status:{
+            subCategory:{
                 type:String,
-                status:["Preparing","Out For Delivery","Closed"],
-                default:"Preparing"
-            }
+                required:true
+            },
         }
     ]
 });

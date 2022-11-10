@@ -5,7 +5,7 @@ var bcrypt = require("bcryptjs");
 var jwt = require("jsonwebtoken");
 
 var throwError = require("../utils/errors");
-const usersModel = require("../models/users.model");
+var usersModel = require("../models/users.model");
 
 require("dotenv").config("./.env");
 
@@ -124,72 +124,13 @@ exports.getOutletData = function (req, res, next) {
                 });
             })
             .catch(function (error) {
-                let statusCode = error.cause ? error.cause.statusCode : 500;
+                var statusCode = error.cause ? error.cause.statusCode : 500;
                 return res.status(statusCode).json({
                     message: error.message
                 })
             })
 
     } catch (error) {
-        return res.status(500).json({
-            message: error.message
-        })
-    }
-}
-
-exports.getAllOrders = function (req, res, next) {
-    try {
-
-        // authorizing
-        if (req.user.role !== "superAdmin" && req.user.role !== "admin" && req.user.role !== "outlet") {
-            return res.status(401).json({
-                message: "Access Denied!"
-            })
-        }
-        var outletId = req.user.userId;
-        var status = req.query.status;
-        var limit = req.query.limit;
-        var page = req.query.page;
-
-        var skip = (page - 1)*limit;
-
-        outlets.findById(outletId)
-            .then(function (outletData) {
-                if(!outletData){
-                    throwError("outlet doesn't exist",404);
-                }
-                var outletName = outletData.name;
-                var matchQuery = {
-                    "orders.outletName": outletName,
-                };
-                if (status) {
-                    matchQuery["status"] = status;
-                }
-                return usersModel
-                    .aggregate([
-                        {
-                            $unwind: "$orders"
-                        },
-                        {
-                            $match: matchQuery
-                        }
-                    ])
-            })
-            .then(function (matchedOrders) {
-                return res.status(200).json({
-                    message: "orders fetched successfully",
-                    orders: matchedOrders
-                })
-            })
-            .catch(function (error) {
-                let statusCode = error.cause ? error.cause.statusCode : 500;
-                return res.status(statusCode).json({
-                    message: error.message
-                })
-            })
-
-    } catch (error) {
-        console.log(error);
         return res.status(500).json({
             message: error.message
         })

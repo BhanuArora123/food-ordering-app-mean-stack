@@ -1,6 +1,9 @@
 var express = require("express");
 var app = express();
 var mongoose = require("mongoose");
+
+var blueBird = require("bluebird");
+
 var cors = require("cors");
 // using .env
 require("dotenv").config("./.env");
@@ -15,6 +18,9 @@ var adminRouter = require("./routes/admin.route");
 
 var foodRouter = require("./routes/food.route");
 
+var orderRouter = require("./routes/orders.route");
+
+var categoryRouter = require("./routes/category.route");
 // passport configuration
 var applyJwtStrategy = require("./utils/auth.verification").applyJwtStrategy();
 
@@ -44,8 +50,17 @@ app.use("/admin",adminRouter);
 
 app.use("/food",foodRouter);
 
+app.use("/orders",orderRouter);
+
+app.use("/category",categoryRouter);
+
+// mongoose config
+mongoose.Promise = blueBird;
+
 // connecting to database
-mongoose.connect(process.env.DB_URL)
+mongoose.connect(process.env.DB_URL,{
+    useMongoClient:true
+})
 .then(function (){
     console.log("database connected!");
     app.listen(8080);

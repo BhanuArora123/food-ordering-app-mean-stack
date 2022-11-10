@@ -4,7 +4,7 @@ var schema = mongoose.Schema;
 
 var ObjectId = mongoose.Schema.Types.ObjectId;
 
-const foodSchema = new schema({
+var foodSchema = new schema({
     name:{
         type:String,
         required:true

@@ -2,7 +2,7 @@ var mongoose = require("mongoose");
 
 var schema = mongoose.Schema;
 
-const adminSchema = new schema({
+var adminSchema = new schema({
     name:{
         type:String,
         required:true

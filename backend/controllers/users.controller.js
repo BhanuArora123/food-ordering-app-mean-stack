@@ -135,6 +135,8 @@ exports.addToCart = function (req, res, next) {
     try {
         var foodItemName = req.body.foodItemName;
         var foodItemPrice = req.body.foodItemPrice;
+        var category = req.body.category;
+        var subCategory = req.body.subCategory;
         var outletName = req.body.outletName;
         var userId = req.user.userId;
         // if item already in cart , increase quantity, else add it.
@@ -161,6 +163,8 @@ exports.addToCart = function (req, res, next) {
                         foodName:foodItemName,
                         foodPrice:foodItemPrice,
                         outletName:outletName,
+                        category:category,
+                        subCategory:subCategory,
                         quantity: 1
                     })
                 }
@@ -234,55 +238,3 @@ exports.removeFromCart = function (req, res, next) {
     }
 }
 
-exports.placeOrder = function (req, res, next) {
-    try {
-        var userId = req.user.userId;
-        var cartItems;
-
-        users.findById(userId)
-            .then(function (userData) {
-                if (!userData || !userData.cart.length) {
-                    throwError(userData?"no item in cart":"user doesn't exist", userData?400:404);
-                }
-                cartItems = userData.cart;
-                userData.cart = [];
-                return userData.save();
-            })
-            .then(function (userData) {
-                var totalPrice = cartItems.reduce(function (priceTillNow, currentCartItem) {
-                    return priceTillNow + (currentCartItem.quantity * currentCartItem.foodPrice)
-                },0);
-                var orderedItems = cartItems.map(function (cartItem) {
-                    return {
-                        foodName: cartItem.foodName,
-                        foodPrice: cartItem.foodPrice,
-                        quantity: cartItem.quantity,
-                    };
-                })
-                userData.orders.push({
-                    orderedItems:orderedItems,
-                    amountPaid:totalPrice,
-                    outletName:cartItems[0].outletName,
-                    createdAt:new Date()
-                });
-                return userData.save();
-            })
-            .then(function (userData) {
-                return res.status(201).json({
-                    message: "order created successfully",
-                    orderData:userData.orders
-                })
-            })
-            .catch(function (error) {
-                var statusCode = error.cause ? error.cause.statusCode : 500;
-                return res.status(statusCode).json({
-                    message: error.message
-                })
-            })
-
-    } catch (error) {
-        return res.status(500).json({
-            message: error.message
-        })
-    }
-}

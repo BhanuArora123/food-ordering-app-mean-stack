@@ -121,7 +121,7 @@ exports.getAdminData = function (req,res,next) {
             });
         })
         .catch(function (error) {
-            let statusCode = error.cause ? error.cause.statusCode : 500;
+            var statusCode = error.cause ? error.cause.statusCode : 500;
             return res.status(statusCode).json({
                 message:error.message
             })
