@@ -1,4 +1,4 @@
-var admin = require("../models/admin.model");
+var brands = require("../models/brands.model");
 
 var bcrypt = require("bcryptjs");
 
@@ -8,20 +8,22 @@ var throwError = require("../utils/errors");
 
 require("dotenv").config("./.env");
 
-exports.registerAdmin = function (req, res, next) {
+exports.registerBrand = function (req, res, next) {
     try {
-        if (req.user.role !== "superAdmin") {
-            throwError("Access Denied!",401);
-        }
         var name = req.body.name;
         var email = req.body.email;
         var password = req.body.password;
-        admin.findOne({
+        if (req.user.role !== "superAdmin" && req.user.role !== "admin") {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
+        brands.findOne({
             email: email
         })
-            .then(function (adminData) {
-                if (adminData) {
-                    throwError("admin email already exist",403);
+            .then(function (brandData) {
+                if (brandData) {
+                    throwError("brand email already exist", 403);
                 }
                 return bcrypt.genSalt(12);
             })
@@ -29,18 +31,17 @@ exports.registerAdmin = function (req, res, next) {
                 return bcrypt.hash(password, salt);
             })
             .then(function (hashedPassword) {
-                var newAdmin = new admin({
+                var newBrand = new brands({
                     name: name,
                     email: email,
-                    password: hashedPassword,
-                    role: "superAdmin"
+                    password: hashedPassword
                 });
-                return newAdmin.save();
+                return newBrand.save();
             })
-            .then(function (adminData) {
+            .then(function (brandData) {
                 return res.status(201).json({
-                    message: "admin registered successfully",
-                    adminData: adminData
+                    message: "brand registered successfully",
+                    brandData: brandData
                 })
             })
             .catch(function (error) {
@@ -56,27 +57,27 @@ exports.registerAdmin = function (req, res, next) {
     }
 }
 
-exports.loginAdmin = function (req, res, next) {
+exports.loginBrand = function (req, res, next) {
     try {
         var email = req.body.email;
         var password = req.body.password;
-        var adminDetails;
-        admin.findOne({
+        var brandDetails;
+        brands.findOne({
             email: email
         })
-            .then(function (adminData) {
-                if (!adminData) {
-                    throwError("admin doesn't exist",404);
+            .then(function (brandData) {
+                if (!brandData) {
+                    throwError("brand doesn't exist", 404);
                 }
-                adminDetails = adminData;
-                return adminData;
+                brandDetails = brandData;
+                return brandData;
             })
-            .then(function (adminData) {
-                return bcrypt.compare(password, adminData.password);
+            .then(function (brandData) {
+                return bcrypt.compare(password, brandData.password);
             })
             .then(function (result) {
                 if (!result) {
-                    throwError("incorrect password",401);
+                    throwError("unauthorised!", 401);
                 }
                 return jwt.sign({
                     email: email
@@ -86,9 +87,9 @@ exports.loginAdmin = function (req, res, next) {
             })
             .then(function (jwtToken) {
                 return res.status(200).json({
-                    message: "admin logged in successfully",
+                    message: "brand logged in successfully",
                     token: jwtToken,
-                    adminData:adminDetails
+                    brandData: brandDetails
                 });
             })
             .catch(function (error) {
@@ -104,31 +105,31 @@ exports.loginAdmin = function (req, res, next) {
     }
 }
 
-exports.getAdminData = function (req,res,next) {
+exports.getBrandData = function (req, res, next) {
     try {
-        var adminId = req.user.userId;
-        admin.findOne({
-            _id:adminId
+        var brandId = req.user.userId;
+        brands.findOne({
+            _id: brandId
         })
-        .then(function (adminData) {
-            if(!adminData){
-                throwError("admin doesn't exist",404);
-            }
-            return res.status(200).json({
-                message:"success",
-                adminData:adminData
-            });
-        })
-        .catch(function (error) {
-            var statusCode = error.cause ? error.cause.statusCode : 500;
-            return res.status(statusCode).json({
-                message:error.message
+            .then(function (brandData) {
+                if (!brandData) {
+                    throwError("brand doesn't exist", 404);
+                }
+                return res.status(200).json({
+                    message: "success",
+                    brandData: brandData
+                });
             })
-        })
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
 
     } catch (error) {
         return res.status(500).json({
-            message:error.message
+            message: error.message
         })
     }
 }

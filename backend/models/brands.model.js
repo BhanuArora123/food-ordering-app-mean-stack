@@ -2,7 +2,7 @@ var mongoose = require("mongoose");
 
 var schema = mongoose.Schema;
 
-var adminSchema = new schema({
+var brandsSchema = new schema({
     name:{
         type:String,
         required:true
@@ -14,12 +14,9 @@ var adminSchema = new schema({
     password:{
         type:String,
         required:true
-    },
-    role:{
-        type:String,
-        enums:["superAdmin"],
-        default:"superAdmin"
     }
+},{
+    timestamps:true
 });
 
-module.exports = mongoose.model("admin",adminSchema);
+module.exports = mongoose.model("brands",brandsSchema);

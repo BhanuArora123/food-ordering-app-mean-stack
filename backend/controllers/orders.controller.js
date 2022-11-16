@@ -1,27 +1,31 @@
 var orders = require("../models/order.model");
 
-var users = require("../models/users.model");
-
-var outlet = require("../models/order.model");
+var outlets = require("../models/outlets.model");
 
 var throwError = require("../utils/errors");
-var orderUtils= require("../utils/orders.utils");
+var orderUtils = require("../utils/orders.utils");
+
+var ObjectId = require("mongoose").Types.ObjectId;
 
 exports.placeOrder = function (req, res, next) {
     try {
-        var userId = req.user.userId;
+        var outletId = req.user.userId;
+        var customer = req.body.customer;
+        var brand = req.body.brand;
+        var outlet = req.body.outlet;
+
         var cartItems;
 
-        users.findById(userId)
-            .then(function (userData) {
-                if (!userData || !userData.cart.length) {
-                    throwError(userData ? "no item in cart" : "user doesn't exist", userData ? 400 : 404);
+        outlets.findById(outletId)
+            .then(function (outletData) {
+                if (!outletData || !outletData.cart.length) {
+                    throwError(outletData ? "no item in cart" : "outlet doesn't exist", outletData ? 400 : 404);
                 }
-                cartItems = userData.cart;
-                userData.cart = [];
-                return userData.save();
+                cartItems = outletData.cart;
+                outletData.cart = [];
+                return outletData.save();
             })
-            .then(function (userData) {
+            .then(function (outletData) {
                 var totalPrice = cartItems.reduce(function (priceTillNow, currentCartItem) {
                     return priceTillNow + (currentCartItem.quantity * currentCartItem.foodPrice)
                 }, 0);
@@ -30,8 +34,8 @@ exports.placeOrder = function (req, res, next) {
                         foodName: cartItem.foodName,
                         foodPrice: cartItem.foodPrice,
                         quantity: cartItem.quantity,
-                        subCategory:cartItem.subCategory,
-                        category:cartItem.category
+                        subCategory: cartItem.subCategory,
+                        category: cartItem.category
                     };
                 })
                 var newOrder = new orders({
@@ -39,7 +43,9 @@ exports.placeOrder = function (req, res, next) {
                     amountPaid: totalPrice,
                     outletName: cartItems[0].outletName,
                     createdAt: new Date(),
-                    userId: userId
+                    outlet: outlet,
+                    customer: customer,
+                    brand: brand
                 });
                 return newOrder.save();
             })
@@ -66,13 +72,15 @@ exports.placeOrder = function (req, res, next) {
 exports.getAllOrders = function (req, res, next) {
     try {
 
+        var brandId = req.query.brandId;
+
         // authorizing
-        if (req.user.role !== "superAdmin" && req.user.role !== "admin" && req.user.role !== "outlet") {
+        if (req.user.role !== "superAdmin" && req.user.role !== "admin" && req.user.userId !== brandId && req.user.brandId !== brandId) {
             return res.status(401).json({
                 message: "Access Denied!"
             })
         }
-        var outletName = req.query.oultetName;
+        var brandName = req.query.brandName;
         var status = req.query.status;
         var limit = parseInt(req.query.limit);
         var page = parseInt(req.query.page);
@@ -83,11 +91,13 @@ exports.getAllOrders = function (req, res, next) {
         if (status) {
             matchQuery["status"] = status;
         }
-        if (outletName) {
-            matchQuery["outletName"] = outletName;
+        if (brandName) {
+            matchQuery["brand.name"] = brandName;
         }
-        orderUtils
-            .groupBasedOnCategory(matchQuery,skip,limit)
+        orders
+            .find(matchQuery)
+            .skip(skip)
+            .limit(limit)
             .then(function (matchedOrders) {
                 return res.status(200).json({
                     message: "orders fetched successfully",
@@ -103,6 +113,40 @@ exports.getAllOrders = function (req, res, next) {
 
     } catch (error) {
         console.log(error);
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+exports.changeStatus = function (req, res, next) {
+    try {
+        var status = req.body.status;
+        var orderId = req.body.orderId;
+
+        orders
+            .updateOne({
+                _id: ObjectId(orderId)
+            }, {
+                $set:{
+                    status: status
+                }
+            })
+            .then(function (orderData) {
+                return res.status(200).json({
+                    message: "order updated successfully",
+                    orderData: orderData
+                })
+            })
+            .catch(function (error) {
+                console.log(error);
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
+
+    } catch (error) {
         return res.status(500).json({
             message: error.message
         })

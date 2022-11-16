@@ -2,61 +2,42 @@ var foodModel = require("../models/food.model");
 
 var throwError = require("../utils/errors");
 
-exports.addOrEditFoodItem = function (req, res, next) {
+exports.addFoodItem = function (req, res, next) {
     try {
-        // console.log(req.file);
+        var brandId = req.user.userId;
+        
+        console.log(req.body);
         var foodName = req.body.foodName;
         var foodPrice = req.body.foodPrice;
         var foodDesc = req.body.foodDesc;
-        var outletName = req.body.outletName;
+        var brand = req.body.brand;
         var category = req.body.category;
         var subCategory = req.body.subCategory;
-    
-        var foodImage = 'http://localhost:8080/public/' + req.file.filename;
+
+        var foodImage = 'http://localhost:8080/public/' + 'burger2022-11-13T18-16-41.667Z.jpg';
         var isVeg = req.body.isVeg;
-        var existingFoodItemId = req.body.existingFoodItemId;
         // checking the allowed role for creating food item
-        if (req.user.role !== "admin" && req.user.role !== "superAdmin" && req.user.role !== "outlet") {
+        if (req.user.role !== "admin" && req.user.role !== "superAdmin" && req.user.role !== "brand") {
             throwError("Access Denied! you don't have correct privileges to perform this action", 401);
         }
-        // checking if item already exist or if item need to edit by id;
+
+        // checking if item already exist
         foodModel.findOne({
-            $or: [
-                {
-                    name: foodName,
-                    "outlet.name": outletName
-                },
-                {
-                    _id: existingFoodItemId
-                }
-            ]
+            name: foodName,
+            "brand.name": brand.name
         })
             .then(function (existingFoodItem) {
                 if (existingFoodItem) {
-                    if (!existingFoodItemId) {
-                        throwError("food item already exist!", 403);
-                    }
-                    return foodModel.findOneAndUpdate({
-                        _id: existingFoodItemId
-                    },
-                        {
-                            name: foodName ? foodName : existingFoodItem.name,
-                            price: foodPrice ? foodPrice : existingFoodItem.price,
-                            imageUrl: foodImage ? foodImage : existingFoodItem.imageUrl,
-                            foodDesc: foodDesc ? foodDesc : existingFoodItem.foodDesc,
-                            isVeg: (isVeg === undefined) ? existingFoodItem.isVeg : isVeg
-                        });
+                    throwError("food item already exist!", 403);
                 }
                 var foodItemData = new foodModel({
                     name: foodName,
                     price: foodPrice,
                     description: foodDesc,
                     imageUrl: foodImage,
-                    outlet: {
-                        name:outletName
-                    },
-                    category:category,
-                    subCategory:subCategory,
+                    brand: brand,
+                    category: category,
+                    subCategory: subCategory,
                     isVeg: isVeg
                 });
                 return foodItemData.save();
@@ -64,10 +45,11 @@ exports.addOrEditFoodItem = function (req, res, next) {
             .then(function (foodItemData) {
                 return res.status(201).json({
                     foodItemData: foodItemData,
-                    message: "food item edit/saved successfully"
+                    message: "food item saved successfully"
                 })
             })
             .catch(function (error) {
+                console.log(error);
                 var statusCode = error.cause ? error.cause.statusCode : 500;
                 return res.status(statusCode).json({
                     message: error.message
@@ -84,7 +66,7 @@ exports.addOrEditFoodItem = function (req, res, next) {
 exports.displayFoodItem = function (req, res, next) {
     try {
         // search filters 
-        var outletName = req.query.outletName;
+        var brandId = req.query.brandId;
         var minPrice = req.query.minPrice;
         var maxPrice = req.query.maxPrice;
         var minRating = req.query.minRating;
@@ -125,14 +107,15 @@ exports.displayFoodItem = function (req, res, next) {
                 $options: "i"
             }
         }
-        if(outletName){
-            matchQuery["outlet.name"] = outletName;
+        if (brandId) {
+            matchQuery["brand.id"] = brandId;
         }
-        if(matchQuery.$and.length === 0){
+        if (matchQuery.$and.length === 0) {
             delete matchQuery["$and"];
         }
-        console.log(matchQuery);
-        foodModel.find(matchQuery)
+        // display food items based on match query! 
+        foodModel
+            .find(matchQuery)
             .then(function (matchedFoodItems) {
                 return res.status(200).json({
                     matchedFoodItems: matchedFoodItems,
@@ -155,7 +138,7 @@ exports.displayFoodItem = function (req, res, next) {
 exports.deleteFoodItem = function (req, res, next) {
     try {
         var foodItemId = req.query.foodItemId;
-        if (req.user.role !== "admin" && req.user.role !== "superAdmin" && req.user.role !== "outlet") {
+        if (req.user.role !== "admin" && req.user.role !== "superAdmin" && req.user.role !== "brand") {
             throwError("Access Denied! you don't have correct privileges to perform this action", 401);
         }
         foodModel.findByIdAndDelete(foodItemId)

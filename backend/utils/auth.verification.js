@@ -1,8 +1,8 @@
 var passportJwt = require("passport-jwt");
 
 var admin = require("../models/admin.model");
-var users = require("../models/users.model");
 var outlets = require("../models/outlets.model");
+var brands = require("../models/brands.model");
 
 var JwtStrategy = passportJwt.Strategy;
 
@@ -28,34 +28,36 @@ exports.applyJwtStrategy = function () {
                         role: adminData.role
                     });
                 }
-                return outlets.findOne({
+                return brands.findOne({
                     email: email
                 });
+            })
+            .then(function (brandData) {
+                if (isUserFound) {
+                    return;
+                }
+                if (brandData) {
+                    isUserFound = true;
+                    return done(null, {
+                        email: email,
+                        userId: brandData._id,
+                        role: "brand"
+                    });
+                }
+                return outlets.findOne({
+                    email: email
+                })
             })
             .then(function (outletData) {
                 if (isUserFound) {
                     return;
                 }
                 if (outletData) {
-                    isUserFound = true;
                     return done(null, {
                         email: email,
                         userId: outletData._id,
-                        role: "outlet"
-                    });
-                }
-                return users.findOne({
-                    email: email
-                })
-            })
-            .then(function (userData) {
-                if (isUserFound) {
-                    return;
-                }
-                if (userData) {
-                    return done(null, {
-                        email: email,
-                        userId: userData._id,
+                        role:"outlet",
+                        brandId:outletData.brand.id.toString()
                     });
                 }
                 done(null, false);

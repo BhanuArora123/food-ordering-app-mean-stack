@@ -16,7 +16,11 @@ var foodSchema = new schema({
         type:Number,
         required:true
     },
-    outlet:{
+    brand:{
+        id:{
+            type:ObjectId,
+            required:true
+        },
         name:{
             type:String,
             required:true

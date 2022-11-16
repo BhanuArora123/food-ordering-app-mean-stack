@@ -10,9 +10,9 @@ require("dotenv").config("./.env");
 
 var passport = require("passport");
 
-var userRouter = require("./routes/users.route");
-
 var outletRouter = require("./routes/outlets.route");
+
+var brandRouter = require("./routes/brands.route");
 
 var adminRouter = require("./routes/admin.route");
 
@@ -42,9 +42,9 @@ app.use(express.json());
 // parsing form requests
 app.use(express.urlencoded());
 
-app.use("/user",userRouter);
-
 app.use("/outlet",outletRouter);
+
+app.use("/brand",brandRouter);
 
 app.use("/admin",adminRouter);
 

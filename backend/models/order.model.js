@@ -4,10 +4,42 @@ var schema = mongoose.Schema;
 
 var ObjectId = mongoose.Schema.Types.ObjectId;
 
+
 var ordersSchema = new schema({
-    userId:{
-        type:ObjectId,
-        required:true
+    brand:{
+        id:{
+            type:ObjectId,
+            required:true
+        },
+        name:{
+            type:String,
+            required:true
+        }
+    },
+    customer:{
+        name : {
+            type:String,
+            required:true
+        },
+        phoneNumber:{
+            type:String,
+            required:true
+        },
+        paidVia:{
+            type:String,
+            required:true,
+            enums:["Cash","Card"]
+        }
+    },
+    outlet:{
+        id:{
+            type:ObjectId,
+            required:true
+        },
+        name:{
+            type:String,
+            required:true
+        }
     },
     orderedItems : [
         {
@@ -37,18 +69,14 @@ var ordersSchema = new schema({
         type:Number,
         default:0
     },
-    createdAt:{
-        type: Date,
-        required:true
-    },
-    outletName:{
-        type:String,
-        required:true
-    },
     status:{
         type:String,
         status:["Preparing","Out For Delivery","Closed"],
         default:"Preparing"
+    },
+    createdAt:{
+        type: Date,
+        required:true
     }
 });
 

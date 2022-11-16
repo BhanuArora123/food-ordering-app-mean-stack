@@ -10,4 +10,6 @@ router.get("/getAllOrders", passport.authenticate("jwt", { session: false }), or
 
 router.post("/placeOrder",passport.authenticate("jwt",{session:false}),ordersController.placeOrder);
 
+router.put("/changeStatus",passport.authenticate("jwt",{session:false}),ordersController.changeStatus);
+
 module.exports = router;
