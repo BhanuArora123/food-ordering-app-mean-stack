@@ -22,24 +22,31 @@ appModule.factory("foodService",function ($http) {
         addFoodItem : function (data) {
             var foodData = new FormData();
             var isVeg = (data.isVeg === undefined)?false:true; 
-            foodData.append("foodName",data.name);
-            foodData.append("foodPrice",data.price);
-            foodData.append("description",data.desc);
-            foodData.append("outletName",data.outletName);
-            foodData.append("isVeg",isVeg);
-            foodData.append("foodImage",data.foodImage);
-            foodData.append("subCategory",data.subCategory);
-            foodData.append("category",data.category);
+            data.isVeg = isVeg;
+            // foodData.append("foodName",data.name);
+            // foodData.append("foodPrice",data.price);
+            // foodData.append("description",data.desc);
+            // foodData.append("outletName",data.outletName);
+            // foodData.append("isVeg",isVeg);
+            // foodData.append("foodImage",data.foodImage);
+            // foodData.append("subCategory",data.subCategory);
+            // foodData.append("category",data.category);
             return $http({
                 url:"http://localhost:8080/food/addFoodItem",
                 method:"POST",
-                data:foodData,
-                headers:{
-                    "Content-Type":undefined
+                data:{
+                    foodName:data.name,
+                    foodPrice:data.price,
+                    description:data.desc,
+                    outletName:data.outletName,
+                    isVeg:isVeg,
+                    subCategory:data.subCategory,
+                    category:data.category,
+                    brand:data.brand
                 },
-                transformRequest: function(data) {
-                    return data; 
-                }            
+                // transformRequest: function(data) {
+                //     return data; 
+                // }            
             })
             .then(function (response) {
                 return response.data;

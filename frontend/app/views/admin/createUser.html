@@ -1,5 +1,5 @@
 <div class="d-flex w-100 justify-content-around flex-column align-items-center h-500p">
-    <h2>Add Users/Outlets/Admins</h2>
+    <h2>Add Users</h2>
     <form class="w-50 d-flex justify-content-around align-items-center flex-column h-75" name="signupForm" novalidate>
         <div class="w-75 d-flex justify-content-around align-items-start flex-column">
             <label>Name</label>
@@ -17,10 +17,10 @@
             <button type="button" class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (signupForm.email.$invalid || signupForm.password.$invalid || signupForm.name.$invalid)?'btn-disabled':'' }}" ng-click="signupHandler(signup.name,signup.email,signup.password,signup.userRole)">Sign Up</button>
             <div class="w-65 d-flex justify-content-end align-items-center">
                 <label class="me-3">Select Type of User :</label>
-                <select value="User" ng-model="signup.userRole" class="me-3">
-                    <option selected value="User">User</option>
-                    <option value="Admin">Admin</option>
-                    <option value="Outlet">Outlet</option>
+                <select value="User" ng-model="signup.userRole" class="me-3 bg-theme-light text-white">
+                    <option selected value="Brand">Brand</option>
+                    <!-- <option value="Admin">Admin</option>
+                    <option value="Outlet">Outlet</option> -->
                 </select>
             </div>
         </div>

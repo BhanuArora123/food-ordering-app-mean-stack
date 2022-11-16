@@ -1,13 +1,5 @@
 'use strict';
 
-/**
- * @ngdoc overview
- * @name frontendApp
- * @description
- * # frontendApp
- *
- * Main module of the application.
- */
 var appModule = angular
   .module('appModule', [
     'ngCookies',
@@ -29,18 +21,18 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, $l
       templateUrl: "views/main.html",
       abstract: true,
       resolve: {
-        userData: function (adminService, userService, outletService) {
+        userData: function (adminService, outletService, brandService) {
           var role = localStorage.getItem("role");
           if (!role) {
             return;
           }
-          if (role === "outlet") {
-            return outletService
-              .getOutletData()
+          if (role === "brand") {
+            return brandService
+              .getBrandData()
           }
-          else if (role === "user") {
-            return userService
-              .getUserData();
+          else if (role === "outlet") {
+            return outletService
+              .getOutletData();
           }
           else {
             return adminService
@@ -123,13 +115,9 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, $l
       templateUrl: "views/orders/index.html",
       abstract: true,
       resolve: {
-        outletOrders: function (orderService, outletService) {
-          var query = {};
-          if (outletService.getServiceData()) {
-            query["outletName"] = outletService.getServiceData().outletData.name
-          }
+        outletOrders: function (orderService, brandService, outletService) {
           return orderService
-            .getAllOrders(query)
+            .getAllOrders()
             .then(function (data) {
               return data.orders;
             })

@@ -1,15 +1,18 @@
 
 
-appModule.controller("adminController",function ($scope,userService,adminService,outletService) {
+appModule.controller("adminController",function ($scope,outletService,adminService,brandService) {
     // setting value for default value
     $scope.signup = {
-        userRole:"User"
+        userRole:"Brand"
     }
     
-    $scope.signupHandler = function (name,email,password,userRole = "User") {
-        if(userRole === "User"){
-            userService
-            .signup(name,email,password)
+    $scope.signupHandler = function (name,email,password,userRole = "Outlet") {
+        if(userRole === "Outlet"){
+
+            var brandData = brandService.getServiceData().brandData;
+
+            outletService
+            .signup(name,email,password,brandData)
             .then(function (response) {
                 console.log(response);
             })
@@ -17,8 +20,8 @@ appModule.controller("adminController",function ($scope,userService,adminService
                 console.log(error)
             })
         }
-        else if(userRole === "Outlet"){
-            outletService
+        else if(userRole === "Brand"){
+            brandService
             .signup(name,email,password)
             .then(function (response) {
                 console.log(response);

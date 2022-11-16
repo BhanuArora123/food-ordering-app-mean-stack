@@ -1,6 +1,6 @@
 
 
-appModule.controller("foodController", function ($scope, foodService, outletService, foodItems, userService, allCategories) {
+appModule.controller("foodController", function ($scope, foodService, outletService, foodItems, brandService, allCategories,utility) {
 
     // adding food items 
 
@@ -13,15 +13,41 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
     //     }
     // })()
 
-
-    $scope.foodItemsToDisplay = foodItems;
+    $scope.foodItemsToDisplay = utility.categorizeItems(foodItems);
+    console.log($scope.foodItemsToDisplay);
     $scope.categories = allCategories;
     $scope.subCategories = [];
+
     // getting user cart 
     (function () {
-        var userData = JSON.parse(userService.getServiceData().userData);
-        $scope.userCart = userData ? userData.cart : [];
+        var outletData = outletService.getServiceData().outletData;
+        $scope.userCart = outletData ? outletData.cart : [];
     })()
+
+    // display active category
+    $scope.activeCategory = 0;
+    $scope.activeSubcategory = 0;
+
+    $scope.setActiveClass = function (index,type) {
+        console.log(index);
+        if(type === 'category'){
+            $scope.activeCategory = index;
+            $scope.activeSubcategory = 0;
+        }
+        else{
+            $scope.activeSubcategory = index;
+        }
+    }
+
+    $scope.getActiveClass = function (index,type) {
+        if(type === 'category'){
+            return ($scope.activeCategory === index)?'':'opacity-low';
+        }
+        else{
+            return ($scope.activeSubcategory === index)?'':'opacity-low';
+        }
+    }
+
     // display food item
     $scope.getFoodItems = function () {
         $scope.foodItemsToDisplay = foodItems;
@@ -44,16 +70,16 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
 
     $scope.addFoodItems = function (food) {
         // attaching outlet id 
-        var outletData = outletService.getServiceData().outletData;
-        var outletName = outletData ? outletData.name : undefined;
-        console.log(outletName);
-        if (outletName) {
-            food.outletName = outletName;
+        var brandData = brandService.getServiceData().brandData;
+        if (brandData) {
+            food.brand = {
+                id:brandData._id,
+                name:brandData.name
+            }
         }
         foodService
             .addFoodItem(food)
             .then(function (response) {
-                // console.log(response.data);
                 alert("food item added successfully");
                 return response;
             })
@@ -61,14 +87,14 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
 
     // add to cart 
     $scope.addToCart = function (foodName, foodPrice, outletName,subCategory,category) {
-        userService
+        outletService
             .addToCart(foodName, foodPrice, outletName,category,subCategory)
             .then(function (response) {
                 console.log(response.cartData);
                 $scope.userCart = response.cartData;
             })
             .then(function () {
-                return userService.getUserData();
+                return outletService.getOutletData();
             })
             .catch(function (error) {
                 console.log(error);
@@ -76,7 +102,8 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
     }
 
     $scope.getSubCategories = function () {
-        return foodService.getSubCategories($scope.food.category)
+        var category = $scope.food.category;
+        return foodService.getSubCategories(category)
         .then(function (data) {
             $scope.subCategories = data.subCategories.map(function (subCategory) {
                 return subCategory.name;

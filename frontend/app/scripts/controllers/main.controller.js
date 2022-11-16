@@ -17,8 +17,11 @@ appModule.controller("homeController", function ($scope,$rootScope, $state, $uib
     }
 
     // open modal for cart 
-    $rootScope.openModal = function (templateUrl,controller,instanceName,scope) {
+    $rootScope.openModal = function (templateUrl,controller,instanceName,scope,extraData) {
         // console.log("hello");
+        if(scope){
+            scope.extraData = extraData;
+        }
         var modalInstance = $uibModal.open({
             backdrop:true,
             controller:controller,

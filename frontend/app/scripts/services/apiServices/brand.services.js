@@ -1,18 +1,18 @@
-
+'use-strict';
 
 // user service
 appModule
-    .factory("adminService", function ($http, $state) {
+    .factory("brandService", function ($http, $state) {
         return {
-            signup: function (email, password, name, role) {
+            signup: function (name, email, password) {
                 return $http
-                    .post("http://localhost:8080/admin/register", {
+                    .post("http://localhost:8080/brand/register", {
                         email: email,
                         password: password,
-                        name: name,
-                        role: role
+                        name: name
                     })
                     .then(function (response) {
+                        alert(response.data.message);
                         return response.data;
                     })
                     .catch(function (error) {
@@ -22,13 +22,14 @@ appModule
             },
             login: function (email, password) {
                 return $http
-                    .post("http://localhost:8080/admin/login", {
+                    .post("http://localhost:8080/brand/login", {
                         email: email,
                         password: password
                     })
-                    .then((response) => {
-                        localStorage.setItem("adminData",response.data.adminData);
-                        localStorage.setItem("role",response.data.adminData.role);
+                    .then(function (response) {
+                        localStorage.setItem("brandData", JSON.stringify(response.data.brandData));
+                        localStorage.setItem("role", "brand");
+                        alert(response.data.message);
                         $state.go("home.dashboard");
                         return response.data;
                     })
@@ -37,12 +38,12 @@ appModule
                         alert(error.message);
                     })
             },
-            getAdminData: function () {
+            getBrandData: function () {
                 return $http
-                    .get("http://localhost:8080/admin/adminData")
+                    .get("http://localhost:8080/brand/brandData")
                     .then(function (response) {
-                        localStorage.setItem("adminData",response.data.adminData);
-                        localStorage.setItem("role",response.data.adminData.role);
+                        localStorage.setItem("brandData", JSON.stringify(response.data.brandData));
+                        localStorage.setItem("role", "brand");
                         return response.data;
                     })
                     .catch(function (error) {
@@ -51,8 +52,8 @@ appModule
             },
             getServiceData: function () {
                 return {
-                    adminData:JSON.parse(localStorage.getItem("adminData")),
-                    role:localStorage.getItem("role")
+                    brandData: JSON.parse(localStorage.getItem("brandData")),
+                    role: localStorage.getItem("role")
                 }
             }
         }

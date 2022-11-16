@@ -1,37 +1,55 @@
-<div class="w-100 m-3">
+<!-- <div class="w-100 m-3">
     <div class="h-60 d-flex justify-content-start align-items-center w-75 ms-5">
         <input type="search" class="h-100 w-100 outline-none bg-theme-light border-0 p-2 rounded"
             placeholder="Search for Food" ng-model="foodToSearch">
     </div>
-</div>
-<div class="d-flex justify-content-around align-items-start flex-wrap w-100">
-    <div ng-repeat="food in foodItemsToDisplay | filter : foodToSearch" class="card h-150p m-3" style="width: 20rem;">
-        <img src="{{ food.imageUrl }}" class="card-img-top card-image" alt="food.name">
-        <div class="card-body">
-            <h5 class="card-title">{{ food.name }}</h5>
-            <p class="card-text">{{ food.description }}</p>
-            <h6>Price : ${{ food.price }}</h6>
-            <div class="w-50 d-flex justify-content-start">
-                <a class="btn btn-primary w-100" ng-hide="presentInCart(food.name,food.outlet.name)"
-                    ng-click="addToCart(food.name, food.price,food.outlet.name,food.subCategory,food.category)">Add To Cart</a>
-                <!-- inc/dec button -->
-                <div class="input-group w-100" ng-show="presentInCart(food.name,food.outlet.name)">
-                    <span class="input-group-btn">
-                        <button type="button" class="quantity-right-plus btn btn-primary btn-number" data-type="plus"
-                            data-field="" ng-click="removeFromCart(food.name,food.price,food.outlet.name)">
-                            <i class="fas fa-minus text-light bg-primary"></i>
-                        </button>
-                    </span>
-                    <input type="text" value="{{presentInCart(food.name,food.outlet.name).quantity}}" name="quantity" class="form-control input-number"
-                        min="1" max="100" disabled>
-                    <span class="input-group-btn">
-                        <button type="button" class="quantity-left-minus btn btn-primary btn-number" data-type="minus"
-                            data-field="" ng-click="addToCart(food.name,food.price,food.outlet.name,food.subCategory,food.category)">
-                            <i class="fas fa-plus text-light bg-primary"></i>
-                        </button>
-                    </span>
-                </div>
-            </div>
-        </div>
-    </div>
+</div> -->
+<div class="d-flex justify-content-around align-items-start flex-wrap w-100 h-100 bg-light">
+    <uib-tabset class="w-100 category" active="activeCategory" justified="true">
+        <uib-tab ng-repeat="categoryItems in foodItemsToDisplay" heading="{{categoryItems.category}}"
+            select="setActiveClass($index,'category')">
+            <uib-tabset active="activeSubcategory" justified="true">
+                <uib-tab ng-repeat="subCategoryItem in categoryItems.subCategoryItems"
+                    heading="{{subCategoryItem.subCategory}}" select="setActiveClass($index)">
+                    <ul class="w-100 d-flex justify-content-around align-items-center text-dark">
+                        <li class="text-dark border-0 list-group-item">Image</li>
+                        <li class="text-dark border-0 list-group-item">Name</li>
+                        <li class="text-dark border-0 list-group-item">Price</li>
+                        <li class="text-dark border-0 list-group-item">Cart</li>
+                    </ul>
+                    <ul>
+                        <li ng-repeat="food in subCategoryItem.items"
+                            class="d-flex justify-content-around align-items-center list-group-item">
+                            <img ng-src="{{food.imageUrl}}" alt="{{food.name}}" class="w-50p h-50p">
+                            <div class="text-dark">{{food.name}}</div>
+                            <div class="text-dark">{{food.price}}</div>
+                            <!-- add to cart button  -->
+                            <a class="btn btn-primary" ng-hide="presentInCart(food.name,food.outlet.name)"
+                                ng-click="addToCart(food.name, food.price,food.outlet.name,food.subCategory,food.category)">Add
+                                To Cart</a>
+                            <!-- inc/dec button  -->
+                            <div class="input-group w-10" ng-show="presentInCart(food.name,food.outlet.name)">
+                                <span class="input-group-btn">
+                                    <button type="button" class="quantity-right-plus btn btn-primary btn-number"
+                                        data-type="plus" data-field=""
+                                        ng-click="removeFromCart(food.name,food.price,food.outlet.name)">
+                                        <i class="fas fa-minus text-light bg-primary"></i>
+                                    </button>
+                                </span>
+                                <input type="text" value="{{presentInCart(food.name,food.outlet.name).quantity}}"
+                                    name="quantity" class="form-control input-number" min="1" max="100" disabled>
+                                <span class="input-group-btn">
+                                    <button type="button" class="quantity-left-minus btn btn-primary btn-number"
+                                        data-type="minus" data-field=""
+                                        ng-click="addToCart(food.name,food.price,food.outlet.name,food.subCategory,food.category)">
+                                        <i class="fas fa-plus text-light bg-primary"></i>
+                                    </button>
+                                </span>
+                            </div>
+                        </li>
+                    </ul>
+                </uib-tab>
+            </uib-tabset>
+        </uib-tab>
+    </uib-tabset>
 </div>

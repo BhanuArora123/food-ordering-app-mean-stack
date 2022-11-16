@@ -13,6 +13,9 @@ body{
 .h-550p{
   height: 550px;
 }
+.h-600p{
+  height: 600px;
+}
 .fw-bold{
   font-weight: bold;
 }
@@ -34,17 +37,23 @@ body{
 .outline-none{
   outline:none;
 }
+.w-50p{
+  width: 50px;
+}
 .h-40p{
   height: 40px;
 }
 .w-65{
   width: 65%;
 }
+.w-90{
+  width: 90%;
+}
 .w-40{
   width: 40%;
 }
 .w-10{
-  width: 10%;
+  width: 10% !important;
 }
 .w-20{
   width: 20%;
@@ -54,6 +63,9 @@ body{
 }
 .h-60{
   height: 60%;
+}
+.h-90{
+  height: 90%;
 }
 .h-auto{
   height: auto;
@@ -107,4 +119,11 @@ input.ng-invalid.ng-touched{
 
 .accordion-toggle > span {
   color:black;
+}
+
+/* align category tabs */
+.category > ul {
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }

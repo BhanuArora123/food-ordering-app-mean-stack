@@ -18,10 +18,10 @@
                 <button type="button" class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (loginForm.email.$invalid || loginForm.password.$invalid)?'btn-disabled':'' }}" ng-click="loginHandler(login.email,login.password,login.userRole)">Login</button>
                 <div class="w-65 d-flex justify-content-around align-items-start">
                     <label>Select Your Role</label>
-                    <select value="User" ng-model="login.userRole">
-                        <option selected value="User">User</option>
+                    <select class="bg-theme-light text-white" value="User" ng-model="login.userRole">
+                        <option selected value="Outlet">Outlet</option>
                         <option value="Admin">Admin</option>
-                        <option value="Outlet">Outlet</option>
+                        <option value="Brand">Brand</option>
                     </select>
                 </div>
             </div>

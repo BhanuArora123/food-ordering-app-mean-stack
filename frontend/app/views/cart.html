@@ -1,8 +1,10 @@
-
-<div class="w-100 h-150p bg-light d-flex justify-content-around flex-column align-items-center" ng-init="cart = getCart()">
-    <h3 class="bg-light text-dark d-flex justify-content-center align-items-center w-100">Welcome to cart</h3>
-    <div ng-hide="cart.length" class="bg-light text-dark d-flex justify-content-center align-items-center w-100">Cart is Empty</div>
-    <div ng-show="cart.length" ng-repeat="cartItem in cart" class="text-dark bg-light d-flex justify-content-around align-items-center w-75">
+<div class="w-100 bg-light d-flex justify-content-around flex-column align-items-center" ng-init="cart = getCart()"
+    style="height: {{setHeight()}};">
+    <h3 class="bg-light text-dark d-flex justify-content-center align-items-center w-100 m-2">Welcome to cart</h3>
+    <div ng-hide="cart.length" class="bg-light text-dark d-flex justify-content-center align-items-center w-100">Cart is
+        Empty</div>
+    <div ng-show="cart.length" ng-repeat="cartItem in cart"
+        class="text-dark bg-light d-flex justify-content-around align-items-center w-75 h-75">
         <div class="text-dark bg-light">{{cartItem.foodName}}</div>
         <div class="text-dark bg-light">:</div>
         <div class="text-dark bg-light">${{cartItem.foodPrice}}</div>
@@ -11,7 +13,30 @@
         <div class="text-dark bg-light">=</div>
         <div class="text-dark bg-light">${{cartItem.foodPrice * cartItem.quantity}}</div>
     </div>
-    <div ng-show="cart.length" class="w-100 d-flex justify-content-center align-items-center bg-light">
-        <button class="btn btn-primary" ng-click="placeOrder()">Order Now</button>
+    <hr>
+    <div ng-show="cart.length" class="text-dark w-100 h-300p d-flex justify-content-center align-items-center flex-column">
+        <!-- Customer Details form -->
+        <h5 class="w-100 d-flex justify-content-center align-items-start">Customer Details</h5>
+        <form novalidate class="w-100 d-flex justify-content-around align-items-start p-5 bg-light flex-column" name="customerForm">
+            <div class="w-100  d-flex justify-content-around align-items-start flex-column">
+                <label class="text-dark w-50">Name</label>
+                <input class="w-100 text-dark p-2 border border-secondary outline-none bg-light h-40p" type="text" name="name" ng-required="true" placeholder="Name" ng-model="customer.name">
+            </div>
+            <div class="w-100 d-flex justify-content-around align-items-start flex-column">
+                <label class="text-dark w-50">Phone Number</label>
+                <input class="w-100 text-dark p-2 border border-secondary outline-none bg-light h-40p" type="number" placeholder="Phone Number" ng-required="true" ng-model="customer.phoneNumber" name="phoneNumber">
+            </div>
+            <div class="w-100 d-flex justify-content-around align-items-start flex-column">
+                <label class="text-dark w-50">Paid Via</label>
+                <select class="tex text-dark p-2 outline-none bg-light h-40p text-dark w-100" ng-required="true" ng-model="customer.paidVia" name="paidVia">
+                    <option class="text-dark" value="Cash">Cash</option>
+                    <option selected class="text-dark" value="Card">Card</option>
+                </select>
+            </div>
+        </form>
+    </div>
+
+    <div ng-show="cart.length" class="w-100 d-flex justify-content-center align-items-center bg-light m-2 text-dark">
+        <button class="btn btn-primary {{(customerForm.name.$invalid || customerForm.phoneNumber.$invalid || customerForm.paidVia.$invalid)?'btn-disabled':''}}" ng-click="placeOrder()"  ng-disabled="(customerForm.name.$invalid || customerForm.phoneNumber.$invalid || customerForm.paidVia.$invalid)">Order Now</button>
     </div>
 </div>
