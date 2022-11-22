@@ -1,6 +1,9 @@
 
 
-appModule.controller("dashboardController", function ($scope, foodService) {
+appModule.controller("dashboardController", function ($scope, foodService,utility) {
+    
+    $scope.getRole = utility.getRole;
+
     // for displaying food items
 
     $scope.foodItemsToDisplay = [];

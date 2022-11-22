@@ -7,26 +7,19 @@
                 <option class="text-light bg-theme-light" ng-repeat="status in orderStatuses" value="{{status}}">{{status}}</option>
             </select>
         </div>
-        <div class="w-100 d-flex justify-content-around align-items-start h-75">
-            <div class="card bg-theme-light border-light border-1" style="width: 18rem;" ng-repeat="order in getAllOutletOrders">
-                <img src="images/orders.png" class="card-img-top" alt="food order">
-                <div class="card-body">
-                    <!-- <h5 class="card-title">Order by User - {{order.name}}</h5> -->
-                    <p class="card-text">Order Status - {{order.status}}</p>
-                </div>
-                <div class="card-body d-flex justify-content-around align-items-center">
-                    <div class="w-50 h-75 d-flex justify-content-around align-items-center flex-column">
-                        <label class="w-100 text-center">View Details</label>
-                        <button class="btn btn-primary w-90" ng-click="openModal('views/orders/displayModal.html','orderDetailsController','orderDisplayModal',currentScope,{currentIndex : $index})">View Details</button>
+        <div class="h-90 w-100 border-0">
+            <uib-tabset class="w-100 category" active="activeCategory" justified="true" classes="w-50">
+                <uib-tab heading="Dine In" classes="fw-bold border-1 border-dark {{getActiveClass($index,'category')}}" select="getOrders(currentOrderStatus,'Dine In')">
+                    <div ng-include="'views/orders/ordersList.html'" ng-init="getAllOutletOrders" class="mt-2 w-100">
+
                     </div>
-                    <div class="w-50 h-75 d-flex justify-content-around align-items-center flex-column">
-                        <label class="w-100 text-center">Change Status</label>
-                        <select ng-model="order.status" class="btn btn-primary w-90" ng-change="changeOrderStatus(order.status,order._id)">
-                            <option class="text-light bg-theme-light w-100" ng-repeat="status in actualOrderStatuses" value="{{status}}">{{status}}</option>
-                        </select>
+                </uib-tab>
+                <uib-tab heading="Take Away" classes="fw-bold border-1 border-dark {{getActiveClass($index,'category')}}" select="getOrders(currentOrderStatus,'Take Away')">
+                    <div ng-include="'views/orders/ordersList.html'" ng-init="getAllOutletOrders" class="mt-2 w-100">
+
                     </div>
-                </div>
-            </div>
+                </uib-tab>
+            </uib-tabset>
         </div>
     </div>
 </section>

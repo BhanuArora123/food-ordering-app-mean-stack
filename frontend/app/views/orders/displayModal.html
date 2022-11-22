@@ -1,12 +1,12 @@
 <div class="w-100 h-600p d-flex justify-content-center align-items-center flex-column bg-light">
     <uib-tabset class="w-100 h-50 category" active="activeCategory" justified="true">
         <uib-tab ng-repeat="categoryItems in orderedFoodItems" heading="{{categoryItems.category}}"
-            classes="text-primary {{getActiveClass($index,'category')}}"
+            classes="{{getActiveClass($index,'category')}}"
             select="setActiveClass($index,'category')">
             <uib-tabset active="activeSubcategory" justified="true">
                 <uib-tab ng-repeat="subCategoryItem in categoryItems.subCategoryItems"
                     heading="{{subCategoryItem.subCategory}}"
-                    classes="text-primary" select="setActiveClass($index)">
+                    classes="{{getActiveClass($index)}}" select="setActiveClass($index)">
                     <ul class="w-100 d-flex justify-content-around align-items-center">
                         <li class="text-dark text-light border-0 list-group-item">Name</li>
                         <li class="text-dark text-light border-0 list-group-item">Price</li>
@@ -14,10 +14,15 @@
                     </ul>
                     <ul>
                         <li ng-repeat="food in subCategoryItem.items"
-                            class="d-flex justify-content-around align-items-center list-group-item text-dark">
+                            class="d-flex justify-content-around align-items-center list-group-item text-dark" ng-init="foodQuantity=food.quantity;">
+
                             <div class="text-dark">{{food.foodName}}</div>
                             <div class="text-dark">${{food.foodPrice}}</div>
-                            <div class="text-dark">{{food.quantity}}</div>
+                            <!-- displayable item -->
+                            <div ng-hide="isEditClicked" class="text-dark">{{food.quantity}}</div>
+
+                            <!-- editable item  -->
+                            <input ng-show="isEditClicked" type="number" class="text-dark" min="{{foodQuantity}}" ng-model="food.quantity" style="width: 40px;">
                         </li>
                     </ul>
                 </uib-tab>
@@ -52,6 +57,11 @@
         <div class="d-flex justify-content-around align-items-start text-dark">
             <div class="text-dark ml-3">Total Amount :</div>
             <div class="text-dark ml-3">${{selectedOrder.amountPaid}}</div>
+        </div>
+        <div ng-show="getRole() === 'outlet' && selectedOrder.orderType === 'Dine In'" class="d-flex justify-content-center w-100 align-items-start text-dark">
+            <button ng-hide="isEditClicked" class="btn btn-primary" ng-click="makeOrderEditable()">Edit Order</button>
+            <button ng-show="isEditClicked" class="btn btn-primary" ng-click="cancelEdit()">Cancel</button>
+            <button ng-show="isEditClicked" class="btn btn-primary" ng-click="updateOrder(selectedOrder._id,orderedFoodItems)">Update</button>
         </div>
     </div>
 </div>

@@ -1,6 +1,6 @@
 <nav class="w-100 d-flex justify-content-around align-items-center h-60p bg-theme-darker">
     <h4 class="bg-theme-darker m-0" ui-sref="home.dashboard">FoodZ</h4>
-    <div ng-show="getRole() === 'outlet'">
+    <div ng-show="getRole() === 'outlet' || getRole() === 'brand'">
         <a ui-sref="home.food.display" class="d-flex justify-content-center align-items-center text-decoration-none text-white">
             <i class="fas fa-pizza-slice" style="font-size: 18px;"></i>
             <div class="ml-2 fw-bold">Food Search</div>
@@ -37,6 +37,13 @@
                 <div class="ml-2 fw-bold text-dark">Add Food Item</div>
             </a>
         </div>
+    </div>
+    <div ng-show="getRole()">
+        <a ui-sref="home.outlet.display"
+            class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+            <i class="fas fa-file-invoice"></i>
+            <div class="ml-2 fw-bold">Profile</div>
+        </a>
     </div>
     <div ng-show="getRole()">
         <a ui-sref="home.orders.display"

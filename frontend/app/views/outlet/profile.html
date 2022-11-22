@@ -1,0 +1,64 @@
+<section>
+    <!-- outlet details  -->
+    <div class="w-100 d-flex justify-content-around align-items-sm-center flex-column">
+        <div class="w-100 d-flex justify-content-around align-items-start flex-column m-5">
+            <span ng-hide="isEditClicked" class="ml-3 mb-3">Name : {{outletData.name}}</span>
+            <span ng-hide="isEditClicked" class="ml-3 mb-3">Email : {{outletData.email}}</span>
+            <span ng-hide="isEditClicked" class="ml-3 mb-3">Brand : {{outletData.brand.name}}</span>
+
+            <form class="m-3" name="outletEdit" novalidate>
+                <div ng-show="isEditClicked" class="m-3">
+                    <label>Name</label>
+                    <input class="text-dark" type="text" name="name" ng-required="true" ng-model="outletData.name">
+                </div>
+                <div ng-show="isEditClicked" class="m-3">
+                    <label>Email</label>
+                    <input class="text-dark" type="email" name="email" ng-required="true" ng-model="outletData.email">
+                </div>
+                <!-- edit Profile -->
+                <div class="mb-3">
+                    <button ng-hide="isEditClicked" class="btn btn-light text-dark mb-3" ng-click="allowEdit()">
+                        Edit Profile
+                    </button>
+                    <button ng-show="isEditClicked" class="btn btn-light text-dark mb-3" ng-click="disableEdit()">
+                        Cancel
+                    </button>
+                    <button ng-disabled="{{outletEdit.name.$invalid || outletEdit.email.$invalid}}" ng-show="isEditClicked" class="btn btn-light text-dark mb-3 ({{outletEdit.name.$invalid || outletEdit.email.$invalid}}?'btn-disabled':'')" ng-click="updateProfile(outletData)">
+                        Update
+                    </button>
+                </div>
+            </form>
+
+            <!-- add table  -->
+            <div>
+                <button ng-hide="isEditClicked" class="w-100 d-flex justify-content-center btn btn-light text-dark m-3" ng-click="openAddTableModal()">
+                    Add Table
+                </button>
+            </div>
+        </div>
+        <!-- tables  -->
+        <table ng-table="tablesData" class="table table-striped">
+
+            <tr ng-show="tablesData.length" ng-repeat="table in tablesData">
+
+                <td class="text-center" data-title="'TableId'">{{table.tableId}}</td>
+
+                <td class="text-center" data-title="'Status'">{{table.isAssigned?'Assigned':'Vacant'}}</td>
+
+                <td class="text-center" data-title="'Assigned To'">{{table.assignedTo?table.assignedTo:'-'}}</td>
+
+                <td class="text-center" data-title="'Actions'">
+                    <button class="btn btn-primary">Delete</button>
+                    <button class="btn btn-primary">Edit</button>
+                </td>
+
+            </tr>
+
+            <tr ng-hide="tablesData.length">
+                No Table added yet
+            </tr>
+        </table>
+        <!-- <input type="text" placeholder="{{dataName}}" ng-model="outletData.dataName"> -->
+    </div>
+
+</section>

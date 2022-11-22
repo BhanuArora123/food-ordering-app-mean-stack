@@ -1,4 +1,4 @@
-<section class="w-100 h-550p position-relative d-flex justify-content-center align-items-center flex-column">
+<section ng-show="getRole() === 'outlet'" class="w-100 h-550p position-relative d-flex justify-content-center align-items-center flex-column">
     <img src="images/food.webp" alt="pizza"
         class="z-index-settle-down opacity-low w-100 h-100 position-absolute top-0 start-0">
     <div
@@ -10,7 +10,19 @@
             Now</button>
     </div>
 </section>
-<section class="h-550p d-flex justify-content-around flex-column align-items-center" ng-init="onload()">
+<!-- <section class="w-100 h-550p position-relative d-flex justify-content-center align-items-center flex-column">
+    <img src="images/food.webp" alt="pizza"
+        class="z-index-settle-down opacity-low w-100 h-100 position-absolute top-0 start-0">
+    <div
+        class="d-flex justify-content-around align-items-center flex-column w-100 h-50 position-relative z-index-popover bg-transparent">
+        <h1 class="bg-transparent">Faster than fast food, better than fine dining</h1>
+        <h1 class="bg-transparent">Fulfill your comfort food cravings</h1>
+        <button
+            class="z-index-popover bg-theme-secondary position-relative text-white text-decoration-none outline-none border-0 h-50p w-10 rounded fw-bold">Order
+            Now</button>
+    </div>
+</section> -->
+<section ng-show="getRole() === 'outlet'" class="h-550p d-flex justify-content-around flex-column align-items-center" ng-init="onload()">
     <div class="d-flex justify-content-around align-items-center h-25 w-50">
         <div class="h3 fw-bold {{ getActiveClass(0) }}" ng-click="getFoodItems('burger',0)">Burgers</div>
         <div class="h3 fw-bold {{ getActiveClass(1) }}" ng-click="getFoodItems('pizza',1)">Pizza</div>

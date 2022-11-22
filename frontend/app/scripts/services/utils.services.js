@@ -1,7 +1,7 @@
 
 
 appModule
-    .factory("utility", function () {
+    .factory("utility", function ($uibModal) {
         return {
             categorizeItems : function (data) {
                 // categorize by sub category 
@@ -47,6 +47,40 @@ appModule
                 }
 
                 return categorizedItemsArray;
+            },
+            getRole : function () {
+                return localStorage.getItem("role");
+            },
+            decategorizeItems:function (categorizedItems) {
+                var items = [];
+
+                categorizedItems.forEach(function (categoryItems) {
+                    categoryItems.subCategoryItems.forEach(function (subCategoryItems) {
+                        subCategoryItems.items.forEach(function (foodItem) {
+                            items.push(foodItem);
+                        })
+                    })
+                })
+
+                return items;
+            },
+            // open modal for cart 
+            openModal: function (templateUrl,controller,instanceName,scope,extraData,currentScope) {
+                // console.log("hello");
+                if(scope){
+                    scope.extraData = extraData;
+                }
+                var modalInstance = $uibModal.open({
+                    backdrop:true,
+                    controller:controller,
+                    scope:scope?scope:currentScope,
+                    templateUrl:templateUrl,
+                    windowClass: 'show bg-transparent',
+                    ariaLabelledBy: 'modal-title',
+                    ariaDescribedBy: 'modal-body',
+                    backdropClass:"opacity-medium"
+                })
+                currentScope[instanceName] = modalInstance;
             }
         }
     })

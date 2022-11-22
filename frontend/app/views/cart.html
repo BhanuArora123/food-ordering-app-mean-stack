@@ -14,7 +14,7 @@
         <div class="text-dark bg-light">${{cartItem.foodPrice * cartItem.quantity}}</div>
     </div>
     <hr>
-    <div ng-show="cart.length" class="text-dark w-100 h-300p d-flex justify-content-center align-items-center flex-column">
+    <div ng-show="cart.length" class="text-dark w-100 h-400p d-flex justify-content-center align-items-center flex-column">
         <!-- Customer Details form -->
         <h5 class="w-100 d-flex justify-content-center align-items-start">Customer Details</h5>
         <form novalidate class="w-100 d-flex justify-content-around align-items-start p-5 bg-light flex-column" name="customerForm">
@@ -31,6 +31,20 @@
                 <select class="tex text-dark p-2 outline-none bg-light h-40p text-dark w-100" ng-required="true" ng-model="customer.paidVia" name="paidVia">
                     <option class="text-dark" value="Cash">Cash</option>
                     <option selected class="text-dark" value="Card">Card</option>
+                </select>
+            </div>
+            <div class="w-100 d-flex justify-content-around align-items-start flex-column">
+                <label class="text-dark w-50">Order Type</label>
+                <select class="text-dark p-2 outline-none bg-light h-40p text-dark w-100" ng-required="true" ng-model="orderType" name="orderType">
+                    <option class="text-dark" value="Take Away">Take Away</option>
+                    <option selected class="text-dark" value="Dine In">Dine In</option>
+                </select>
+            </div>
+            <div ng-show="orderType === 'Dine In'" class="w-100 d-flex justify-content-around align-items-start flex-column">
+                <label class="text-dark w-50">Select Table</label>
+                <select class="text-dark p-2 outline-none bg-light h-40p text-dark w-100" ng-required="true" ng-model="assignedTable" name="assignedTable">
+                    <option class="text-dark" value="None">None</option>
+                    <option ng-repeat="table in tables" class="text-dark" value="{{table.tableId}}">table - {{table.tableId}}</option>
                 </select>
             </div>
         </form>

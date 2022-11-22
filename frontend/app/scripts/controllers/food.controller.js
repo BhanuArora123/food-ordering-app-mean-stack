@@ -41,10 +41,10 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
 
     $scope.getActiveClass = function (index,type) {
         if(type === 'category'){
-            return ($scope.activeCategory === index)?'':'opacity-low';
+            return ($scope.activeCategory === index)?'text-white bg-primary border-0':'text-dark';
         }
         else{
-            return ($scope.activeSubcategory === index)?'':'opacity-low';
+            return ($scope.activeSubcategory === index)?'text-white bg-primary border-0':'text-dark';
         }
     }
 
@@ -85,10 +85,69 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
             })
     }
 
+    $scope.getFoodItem = function (data) {
+        return foodService
+        .getFoodItems({
+            brandId:data.brandId
+        })
+        .then(function (data) {
+            $scope.foodItemsToDisplay = utility.categorizeItems(data.matchedFoodItems);
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
+    }
+
+    $scope.editFoodItem = function (food) {
+        food.foodItemId = food._id;
+        foodService
+        .editFoodItem(food)
+        .then(function () {
+            $scope.editClicked = false;
+            return $scope.getFoodItem();
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
+    }
+
+    // delete food item 
+    $scope.deleteFoodItem = function (food, parentIndex, grandParentIndex, index) {
+        console.log(food);
+        foodService
+        .deleteFoodItem(food._id)
+        .then(function () {
+            console.log($scope.foodItemsToDisplay,grandParentIndex,parentIndex,index);
+            $scope.foodItemsToDisplay[grandParentIndex].subCategoryItems[parentIndex].items.splice(index,1);
+            // return $scope.getFoodItem({
+            //     brandId:food.brand.id
+            // });
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
+    }
+
     // add to cart 
     $scope.addToCart = function (foodName, foodPrice, outletName,subCategory,category) {
         outletService
             .addToCart(foodName, foodPrice, outletName,category,subCategory)
+            .then(function (response) {
+                console.log(response.cartData);
+                $scope.userCart = response.cartData;
+            })
+            .then(function () {
+                return outletService.getOutletData();
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+    }
+
+    // remove from cart 
+    $scope.removeFromCart = function (foodName) {
+        outletService
+            .removeFromCart(foodName)
             .then(function (response) {
                 console.log(response.cartData);
                 $scope.userCart = response.cartData;
@@ -130,6 +189,20 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
         return $scope.userCart.find(function (cartItem) {
             return (cartItem.foodName === foodName && cartItem.outletName === outletName);
         })
+    }
+
+    // get role 
+    $scope.getRole = function () {
+        return utility.getRole();
+    }
+
+    $scope.setItemsForEditing = function (index) {
+        $scope.editClicked = true;
+        $scope.itemToEdit = index;
+    }
+
+    $scope.unsetItemsForEditing = function () {
+        $scope.editClicked = false;
     }
 
 })

@@ -1,38 +1,37 @@
-<!-- <div class="w-100 m-3">
-    <div class="h-60 d-flex justify-content-start align-items-center w-75 ms-5">
-        <input type="search" class="h-100 w-100 outline-none bg-theme-light border-0 p-2 rounded"
-            placeholder="Search for Food" ng-model="foodToSearch">
-    </div>
-</div> -->
-<div class="d-flex justify-content-around align-items-start flex-wrap w-100 h-100 bg-light">
+<div class="d-flex justify-content-around align-items-start flex-wrap w-100 h-600p bg-light">
     <uib-tabset class="w-100 category" active="activeCategory" justified="true">
         <uib-tab ng-repeat="categoryItems in foodItemsToDisplay" heading="{{categoryItems.category}}"
-            select="setActiveClass($index,'category')">
+            select="setActiveClass($index,'category')" classes="fw-bold border-1 border-dark {{getActiveClass($index,'category')}}" ng-init="grandParentIndex = $index">
             <uib-tabset active="activeSubcategory" justified="true">
                 <uib-tab ng-repeat="subCategoryItem in categoryItems.subCategoryItems"
-                    heading="{{subCategoryItem.subCategory}}" select="setActiveClass($index)">
+                    heading="{{subCategoryItem.subCategory}}" select="setActiveClass($index)" classes="fw-bold border-1 border-dark {{getActiveClass($index)}}" ng-init="parentIndex=$index">
                     <ul class="w-100 d-flex justify-content-around align-items-center text-dark">
-                        <li class="text-dark border-0 list-group-item">Image</li>
-                        <li class="text-dark border-0 list-group-item">Name</li>
-                        <li class="text-dark border-0 list-group-item">Price</li>
-                        <li class="text-dark border-0 list-group-item">Cart</li>
+                        <li class="text-dark border-0 list-group-item fw-bold">Image</li>
+                        <li class="text-dark border-0 list-group-item fw-bold">Name</li>
+                        <li class="text-dark border-0 list-group-item fw-bold">Price</li>
+                        <li class="w-25 text-dark border-0 list-group-item fw-bold">Actions</li>
                     </ul>
                     <ul>
                         <li ng-repeat="food in subCategoryItem.items"
                             class="d-flex justify-content-around align-items-center list-group-item">
                             <img ng-src="{{food.imageUrl}}" alt="{{food.name}}" class="w-50p h-50p">
-                            <div class="text-dark">{{food.name}}</div>
-                            <div class="text-dark">{{food.price}}</div>
+                            <!-- when not editable -->
+                            <div ng-hide="editClicked && itemToEdit === $index" class="text-dark">{{food.name}}</div>
+                            <div ng-hide="editClicked && itemToEdit === $index" class="text-dark">{{food.price}}</div>
+                            <!-- when editable -->
+                            <input class="text-dark" ng-show="editClicked && itemToEdit === $index" name="name" type="text" ng-model="food.name" ng-required="true">
+                            <input class="text-dark" ng-show="editClicked && itemToEdit === $index" name="price" type="number" ng-model="food.price" ng-required="true">
+
                             <!-- add to cart button  -->
-                            <a class="btn btn-primary" ng-hide="presentInCart(food.name,food.outlet.name)"
+                            <a class="btn btn-primary" ng-show="!presentInCart(food.name,food.outlet.name) && getRole() === 'outlet'"
                                 ng-click="addToCart(food.name, food.price,food.outlet.name,food.subCategory,food.category)">Add
                                 To Cart</a>
                             <!-- inc/dec button  -->
-                            <div class="input-group w-10" ng-show="presentInCart(food.name,food.outlet.name)">
+                            <div class="input-group w-10" ng-show="presentInCart(food.name,food.outlet.name) && getRole() === 'outlet'">
                                 <span class="input-group-btn">
                                     <button type="button" class="quantity-right-plus btn btn-primary btn-number"
                                         data-type="plus" data-field=""
-                                        ng-click="removeFromCart(food.name,food.price,food.outlet.name)">
+                                        ng-click="removeFromCart(food.name)">
                                         <i class="fas fa-minus text-light bg-primary"></i>
                                     </button>
                                 </span>
@@ -45,6 +44,27 @@
                                         <i class="fas fa-plus text-light bg-primary"></i>
                                     </button>
                                 </span>
+                            </div>
+                            <!-- edit/delete actions for brand  -->
+                            <div ng-show="getRole() === 'brand'">
+                                <!-- edit -->
+                                <button ng-hide="editClicked && itemToEdit === $index" class="btn btn-primary" ng-click="setItemsForEditing($index)">
+                                    <i class="fas fa-edit ml-2" style="font-size:18px;"></i>
+                                    Edit
+                                </button>
+                                <!-- cancel edit -->
+                                <button ng-show="editClicked && itemToEdit === $index" class="btn btn-primary" ng-click="unsetItemsForEditing()">
+                                    Cancel
+                                </button>
+                                <!-- update -->
+                                <button ng-show="editClicked && itemToEdit === $index" class="btn btn-primary" ng-click="editFoodItem(food)">
+                                    Update
+                                </button>
+                                <!-- delete -->
+                                <button class="btn btn-primary" ng-click="deleteFoodItem(food,parentIndex,grandParentIndex,$index)">
+                                    <i class="fas fa-trash" style="font-size:18px;"></i>
+                                    Delete
+                                </button>
                             </div>
                         </li>
                     </ul>

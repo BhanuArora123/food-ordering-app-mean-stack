@@ -9,7 +9,8 @@ var appModule = angular
     // 'ngTouch',
     "ui.bootstrap",
     'ngAnimate',
-    'ngStorage'
+    'ngStorage',
+    "ngTable"
   ])
 
 appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, $localStorageProvider) {
@@ -132,6 +133,40 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, $l
       url: "/display",
       controller: "ordersController",
       templateUrl: "views/orders/display.html"
+    })
+    .state({
+      name: "home.outlet",
+      url: "",
+      templateUrl: "views/outlet/index.html",
+      abstract:true
+    })
+    .state({
+      name: "home.outlet.display",
+      url: "/profile",
+      controller: "outletController",
+      templateUrl: "views/outlet/profile.html",
+      resolve:{
+        outletData:function (outletService) {
+            return outletService
+              .getOutletData()
+              .then(function (data) {
+                return data.outletData
+              })
+              .catch(function (error) {
+                console.log(error);
+              })
+        },
+        tablesData:function (outletService) {
+            return outletService
+            .getTables(1,9)
+            .then(function (data) {
+              return data.tables;
+            })
+            .catch(function (error) {
+              console.log(error);
+            })
+        }
+      }
     })
   // $locationProvider.html5Mode(true);
 
