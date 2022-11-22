@@ -77,6 +77,14 @@ var ordersSchema = new schema({
     createdAt:{
         type: Date,
         required:true
+    },
+    orderType:{
+        type:String,
+        enums:["Dine In","Take Away"],
+        default:"Dine In"
+    },
+    assignedTable:{
+        type:Number
     }
 });
 

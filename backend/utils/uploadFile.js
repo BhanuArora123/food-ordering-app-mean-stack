@@ -1,39 +1,19 @@
-// var multer = require("multer");
+var path = require("path");
 
-// var path = require("path");
+exports.saveFile = function (cb,file) {
+    try {
+        var fileName = Date.now() + file.name;
+        var filePath = path.join(__dirname,"..","public",fileName);
 
-// exports.getFileUploader = function (destinationFolder, allowedMimetypes) {
-//     try {
-//         // configuring storage of files 
-
-//         var diskStorage = multer.diskStorage({
-//             destination: function (req, file, cb) {
-//                 console.log("hey!");
-//                 var imageDest = path.join(__dirname, "..", destinationFolder);
-//                 cb(null, imageDest);
-//             },
-//             filename: function (req, file, cb) {
-//                 console.log("hey1!");
-//                 var fileName = file.originalname.split(".")[0];
-//                 var fileExtension = file.originalname.split(".")[1];
-//                 var incomingFileName = fileName + (new Date().toISOString().replace(/:/g, "-")) + "." + fileExtension;
-//                 cb(null, incomingFileName);
-//             }
-//         })
-
-//         return multer({
-//             storage: diskStorage,
-//             fileFilter: function (req, file, cb) {
-//                 var isFileAllowed = allowedMimetypes.find(function (fileMimetype) {
-//                     return file.mimetype === fileMimetype;
-//                 })
-//                 if (isFileAllowed) {
-//                     return cb(null, true);
-//                 }
-//                 cb(null, false);
-//             }
-//         });
-//     } catch (error) {
-//         console.log(error);
-//     }
-// }
+        file.mv(filePath,function (err) {
+            if(err){
+                console.log(err);
+                cb(err);
+            }
+            console.log("file uploaded successfully");
+            cb(null,`http://localhost:8080/public/${fileName}`);
+        })
+    } catch (error) {
+        console.log(error);
+    }
+}

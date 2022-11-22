@@ -33,7 +33,7 @@ exports.registerOutlet = function (req, res, next) {
                     name: name,
                     email: email,
                     password: hashedPassword,
-                    brand:brand
+                    brand: brand
                 });
                 return newOutlet.save();
             })
@@ -88,7 +88,7 @@ exports.loginOutlet = function (req, res, next) {
                 return res.status(200).json({
                     message: "outlet logged in successfully",
                     token: jwtToken,
-                    outletData:outletDetails
+                    outletData: outletDetails
                 });
             })
             .catch(function (error) {
@@ -107,9 +107,18 @@ exports.loginOutlet = function (req, res, next) {
 exports.getOutletData = function (req, res, next) {
     try {
         var outletId = req.user.userId;
-        
+
+        var page = req.query.page ? parseInt(req.query.skip) : 0;
+        var limit = req.query.limit ? parseInt(req.query.limit) : 9;
+
+        var skip = (page - 1) * limit;
+
         outlets.findOne({
             _id: outletId
+        }, {
+            tables: {
+                $slice: [skip, limit]
+            }
         })
             .then(function (outletData) {
                 if (!outletData) {
@@ -133,6 +142,150 @@ exports.getOutletData = function (req, res, next) {
     }
 }
 
+exports.getTables = function (req, res, next) {
+    try {
+        var isAssigned = req.query.isAssigned;
+        var page = req.query.page ? parseInt(req.query.skip) : 0;
+        var limit = req.query.limit ? parseInt(req.query.limit) : 9;
+
+        var skip = (page - 1) * limit;
+
+        var outletId = req.user.userId;
+
+
+        outlets.findOne({
+            _id: outletId
+        },
+            {
+                tables: {
+                    $slice: [skip, limit]
+                }
+            })
+            .then(function (outletData) {
+                if (!outletData) {
+                    throwError("outlet doesn't exist", 404);
+                }
+
+                var tables = outletData.tables;
+
+                if(isAssigned !== undefined){
+                    tables = tables.filter(function (table) {
+                        return table.isAssigned.toString() === isAssigned;
+                    })
+                }
+
+                return res.status(200).json({
+                    message: "tables fetched successfully",
+                    tables: tables
+                })
+            })
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+exports.addTable = function (req, res, next) {
+    try {
+        var tableId = req.body.tableId;
+        var assignedOrderId = req.body.assignedOrderId;
+
+        var outletId = req.user.userId;
+
+        outlets.findOne({
+            _id: outletId
+        })
+            .then(function (outletData) {
+                if (!outletData) {
+                    throwError("outlet doesn't exist", 404);
+                }
+                outletData.tables.push({
+                    tableId: tableId,
+                    assignedOrderId: assignedOrderId
+                })
+                console.log(outletData.tables);
+                return outletData.save();
+            })
+            .then(function (outletData) {
+                return res.status(200).json({
+                    message: "table added successfully",
+                    tables: outletData.tables
+                })
+            })
+            .catch(function (error) {
+                console.log(error);
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
+
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+exports.editTable = function (req, res, next) {
+    try {
+        var tableId = req.body.tableId;
+        var isAssigned = req.body.isAssigned;
+        var assignedOrderId = req.body.assignedOrderId;
+        var outletId = req.user.userId;
+
+        outlets.findOne({
+            _id: outletId
+        })
+            .then(function (outletData) {
+                if (!outletData) {
+                    throwError("outlet doesn't exist", 404);
+                }
+                var tableIndex = outletData.tables.findIndex(function (tableData) {
+                    return tableData.tableId === tableId;
+                })
+                if (tableIndex === -1) {
+                    throwError("table doesn't exist", 404);
+                }
+                if (!isAssigned) {
+                    outletData.tables[tableIndex].isAssigned = isAssigned;
+                    delete outletData.tables[tableIndex].assignedOrderId;
+                }
+                else {
+                    outletData.tables[tableIndex].isAssigned = true;
+                    outletData.tables[tableIndex].assignedOrderId = assignedOrderId;
+                }
+                return outletData.save();
+            })
+            .then(function (outletData) {
+                return res.status(200).json({
+                    message: "outlet data saved successfully",
+                    outletData: outletData
+                });
+            })
+            .catch(function (error) {
+                console.log(error);
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
+
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
 exports.addToCart = function (req, res, next) {
     try {
         var foodItemName = req.body.foodItemName;
@@ -145,7 +298,7 @@ exports.addToCart = function (req, res, next) {
         outlets.findById(outletId)
             .then(function (outletData) {
                 if (!outletData) {
-                    throwError("outlet doesn't exist",404);
+                    throwError("outlet doesn't exist", 404);
                 }
                 var userCart = outletData.cart;
 
@@ -159,11 +312,11 @@ exports.addToCart = function (req, res, next) {
                 }
                 else {
                     userCart.push({
-                        foodName:foodItemName,
-                        foodPrice:foodItemPrice,
-                        outletName:outletName,
-                        category:category,
-                        subCategory:subCategory,
+                        foodName: foodItemName,
+                        foodPrice: foodItemPrice,
+                        outletName: outletName,
+                        category: category,
+                        subCategory: subCategory,
                         quantity: 1
                     })
                 }

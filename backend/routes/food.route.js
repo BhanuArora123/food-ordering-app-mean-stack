@@ -5,13 +5,19 @@ var router = express.Router();
 
 var foodController = require("../controllers/food.controller");
 
-// var fileUploader = require("../utils/uploadFile").getFileUploader("public", ["image/jpg", "image/png", "image/jpeg"]);
+var path = require("path");
+
+var fileUpload = require("express-fileupload");
 
 router.get("/getFoodItems", foodController.displayFoodItem);
 router.post("/addFoodItem",
     passport.authenticate("jwt", { failureMessage: false, session: false }),
-    //  fileUploader.single("foodImage"),
+    fileUpload({
+        tempFileDir:path.join(__dirname,"..","public"),
+        useTempFiles : true,
+    }),
     foodController.addFoodItem);
-router.delete("/removeFoodItem", foodController.deleteFoodItem);
+router.put("/editFoodItem",passport.authenticate("jwt",{session:false}),foodController.editFoodItem);
+router.delete("/removeFoodItem",passport.authenticate("jwt",{session:false}),foodController.deleteFoodItem);
 
 module.exports = router;

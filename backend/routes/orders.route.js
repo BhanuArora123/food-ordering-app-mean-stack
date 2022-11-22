@@ -12,4 +12,6 @@ router.post("/placeOrder",passport.authenticate("jwt",{session:false}),ordersCon
 
 router.put("/changeStatus",passport.authenticate("jwt",{session:false}),ordersController.changeStatus);
 
+router.put("/edit",passport.authenticate("jwt",{session:false}),ordersController.editOrder);
+
 module.exports = router;

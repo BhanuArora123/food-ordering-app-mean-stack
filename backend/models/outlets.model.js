@@ -65,7 +65,24 @@ var outletSchema = new schema({
             type:String,
             required:true
         }
-    }
+    },
+    tables:[
+        {
+            tableId:{
+                type:Number,
+                required:true
+            },
+            isAssigned:{
+                type:Boolean,
+                default:false
+            },
+            assignedOrderId:{
+                type:ObjectId
+            }
+        }
+    ]
+},{
+    usePushEach: true
 });
 
 module.exports = mongoose.model("outlet",outletSchema);

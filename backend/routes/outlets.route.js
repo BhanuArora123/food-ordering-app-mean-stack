@@ -14,4 +14,10 @@ router.put("/addToCart",passport.authenticate("jwt", { failureMessage: "unauthor
 
 router.put("/removeFromCart",passport.authenticate("jwt", { failureMessage: "unauthorized!",session:false }),outletController.removeFromCart);
 
+router.get("/table/get",passport.authenticate("jwt",{ failureMessage: "unauthorized!",session:false }),outletController.getTables);
+
+router.post("/table/add",passport.authenticate("jwt",{ failureMessage: "unauthorized!",session:false }),outletController.addTable);
+
+router.put("/table/edit",passport.authenticate("jwt",{ failureMessage: "unauthorized!",session:false }),outletController.editTable);
+
 module.exports = router;

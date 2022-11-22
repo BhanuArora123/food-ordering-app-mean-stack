@@ -13,6 +13,8 @@ exports.placeOrder = function (req, res, next) {
         var customer = req.body.customer;
         var brand = req.body.brand;
         var outlet = req.body.outlet;
+        var orderType = req.body.orderType;
+        var assignedTable = req.body.assignedTable;
 
         var cartItems;
 
@@ -45,8 +47,42 @@ exports.placeOrder = function (req, res, next) {
                     createdAt: new Date(),
                     outlet: outlet,
                     customer: customer,
-                    brand: brand
+                    brand: brand,
+                    orderType: orderType ? orderType : "Dine In",
+                    assignedTable:(assignedTable && orderType === "Dine In")?parseInt(assignedTable):undefined
                 });
+                // update assigned table
+                outlets.updateOne({
+                    _id:ObjectId(outletId)
+                },{
+                    $set:{
+                        tables:{
+                            $map:{
+                                input:"$tables",
+                                as:"table",
+                                in:{
+                                    $mergeObjects:[
+                                        "$$table",
+                                        {
+                                            isAssigned:{
+                                                $cond:[
+                                                    {
+                                                        $eq:["$$table.tableId",parseInt(assignedTable)]
+                                                    },
+                                                    true,
+                                                    false
+                                                ]
+                                            }
+                                        }
+                                    ]
+                                }
+                            }
+                        }
+                    }
+                })
+                .then(function (data) {
+                    console.log(data);
+                })
                 return newOrder.save();
             })
             .then(function (orderData) {
@@ -82,12 +118,16 @@ exports.getAllOrders = function (req, res, next) {
         }
         var brandName = req.query.brandName;
         var status = req.query.status;
+        var orderType = req.query.orderType;
         var limit = parseInt(req.query.limit);
         var page = parseInt(req.query.page);
 
         var skip = (page - 1) * limit;
 
         var matchQuery = {};
+        if (orderType) {
+            matchQuery["orderType"] = orderType;
+        }
         if (status) {
             matchQuery["status"] = status;
         }
@@ -128,7 +168,7 @@ exports.changeStatus = function (req, res, next) {
             .updateOne({
                 _id: ObjectId(orderId)
             }, {
-                $set:{
+                $set: {
                     status: status
                 }
             })
@@ -146,6 +186,45 @@ exports.changeStatus = function (req, res, next) {
                 })
             })
 
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+exports.editOrder = function (req, res, next) {
+    try {
+        var orderId = req.body.orderId;
+
+        var orderedItems = req.body.orderedItems;
+
+        // find order and check if it's dine in type order 
+
+        orders.updateOne({
+            _id: ObjectId(orderId),
+            orderType: "Dine In"
+        }, {
+            $set: {
+                orderedItems: orderedItems
+            }
+        })
+            .then(function (orderData) {
+                if (!orderData) {
+                    throwError("Dine In Order is editable only! or order doesn't exist", 404);
+                }
+                return res.status(200).json({
+                    message: "order updated successfully",
+                    orderData: orderData
+                })
+            })
+            .catch(function (error) {
+                console.log(error);
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
     } catch (error) {
         return res.status(500).json({
             message: error.message
