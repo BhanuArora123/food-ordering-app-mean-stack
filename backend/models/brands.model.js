@@ -14,6 +14,10 @@ var brandsSchema = new schema({
     password:{
         type:String,
         required:true
+    },
+    isDisabled:{
+        type:Boolean,
+        default:false
     }
 },{
     timestamps:true

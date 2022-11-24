@@ -5,13 +5,14 @@ var bcrypt = require("bcryptjs");
 var jwt = require("jsonwebtoken");
 
 var throwError = require("../utils/errors");
+const brandsModel = require("../models/brands.model");
 
 require("dotenv").config("./.env");
 
 exports.registerAdmin = function (req, res, next) {
     try {
         if (req.user.role !== "superAdmin") {
-            throwError("Access Denied!",401);
+            throwError("Access Denied!",403);
         }
         var name = req.body.name;
         var email = req.body.email;
@@ -107,6 +108,11 @@ exports.loginAdmin = function (req, res, next) {
 exports.getAdminData = function (req,res,next) {
     try {
         var adminId = req.user.userId;
+
+        if (req.user.role !== "superAdmin") {
+            throwError("Access Denied!",403);
+        }
+
         admin.findOne({
             _id:adminId
         })
@@ -118,6 +124,53 @@ exports.getAdminData = function (req,res,next) {
                 message:"success",
                 adminData:adminData
             });
+        })
+        .catch(function (error) {
+            var statusCode = error.cause ? error.cause.statusCode : 500;
+            return res.status(statusCode).json({
+                message:error.message
+            })
+        })
+
+    } catch (error) {
+        return res.status(500).json({
+            message:error.message
+        })
+    }
+}
+
+exports.editBrand = function (req,res,next) {
+    try {
+        if (req.user.role !== "superAdmin") {
+            throwError("Access Denied!",403);
+        }
+
+        var brandId = req.body.brandId;
+        var isDisabled = req.body.isDisabled;
+        var name = req.body.name;
+        var email = req.body.email;
+
+        var dataToUpdate = {};
+
+        if(name){
+            dataToUpdate["name"] = name;
+        }
+        if(email){
+            dataToUpdate["email"] = email;
+        }
+        if(isDisabled){
+            dataToUpdate["isDisabled"] = isDisabled;
+        }
+
+        brandsModel.updateOne({
+            _id:brandId
+        },{
+            $set:dataToUpdate
+        })
+        .then(function () {
+            return res.status(200).json({
+                message:"brand data updated successfully"
+            })
         })
         .catch(function (error) {
             var statusCode = error.cause ? error.cause.statusCode : 500;

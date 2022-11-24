@@ -80,7 +80,11 @@ var outletSchema = new schema({
                 type:ObjectId
             }
         }
-    ]
+    ],
+    isDeleted:{
+        type:Boolean,
+        default:false
+    }
 },{
     usePushEach: true
 });

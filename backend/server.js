@@ -58,9 +58,7 @@ app.use("/category",categoryRouter);
 mongoose.Promise = blueBird;
 
 // connecting to database
-mongoose.connect(process.env.DB_URL,{
-    useMongoClient:true
-})
+mongoose.connect(process.env.DB_URL,{})
 .then(function (){
     console.log("database connected!");
     app.listen(8080);

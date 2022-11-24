@@ -49,43 +49,17 @@ exports.placeOrder = function (req, res, next) {
                     customer: customer,
                     brand: brand,
                     orderType: orderType ? orderType : "Dine In",
-                    assignedTable:(assignedTable && orderType === "Dine In")?parseInt(assignedTable):undefined
+                    assignedTable: (assignedTable && orderType === "Dine In") ? parseInt(assignedTable) : undefined
                 });
-                // update assigned table
-                outlets.updateOne({
-                    _id:ObjectId(outletId)
-                },{
-                    $set:{
-                        tables:{
-                            $map:{
-                                input:"$tables",
-                                as:"table",
-                                in:{
-                                    $mergeObjects:[
-                                        "$$table",
-                                        {
-                                            isAssigned:{
-                                                $cond:[
-                                                    {
-                                                        $eq:["$$table.tableId",parseInt(assignedTable)]
-                                                    },
-                                                    true,
-                                                    false
-                                                ]
-                                            }
-                                        }
-                                    ]
-                                }
-                            }
-                        }
-                    }
-                })
-                .then(function (data) {
-                    console.log(data);
-                })
+
                 return newOrder.save();
             })
             .then(function (orderData) {
+                // updating outlet asynchronously 
+                orderUtils.updateTable(outletId, assignedTable, {
+                    isAssigned: true,
+                    assignedOrderId: orderData._id
+                })
                 return res.status(201).json({
                     message: "order created successfully",
                     orderData: orderData
@@ -163,6 +137,8 @@ exports.changeStatus = function (req, res, next) {
     try {
         var status = req.body.status;
         var orderId = req.body.orderId;
+        var outletId = req.user.userId;
+        var currentOrderData;
 
         orders
             .updateOne({
@@ -172,10 +148,30 @@ exports.changeStatus = function (req, res, next) {
                     status: status
                 }
             })
+            .then(function () {
+                return orders.findOne({
+                    _id: ObjectId(orderId)
+                });
+            })
             .then(function (orderData) {
+                currentOrderData = orderData;
+                return outlets.findOne({
+                    _id: outletId
+                })
+            })
+            .then(function (outletData) {
+                if (status === "Closed") {
+                    orderUtils.updateTable(outletId, currentOrderData.assignedTable, {
+                        isAssigned: false,
+                        assignedOrderId: null
+                    })
+                }
+                return outletData.save();
+            })
+            .then(function (outletData) {
                 return res.status(200).json({
                     message: "order updated successfully",
-                    orderData: orderData
+                    orderData: currentOrderData
                 })
             })
             .catch(function (error) {
@@ -195,27 +191,41 @@ exports.changeStatus = function (req, res, next) {
 
 exports.editOrder = function (req, res, next) {
     try {
+        var outletId = req.user.userId;
         var orderId = req.body.orderId;
-
         var orderedItems = req.body.orderedItems;
+        var tableToAssign = req.body.tableToAssign;
 
+        var currentOrderData;
         // find order and check if it's dine in type order 
+        var dataToUpdate = {
+            orderedItems: orderedItems
+        };
+        if (tableToAssign) {
+            dataToUpdate["assignedTable"] = tableToAssign;
+        }
 
-        orders.updateOne({
-            _id: ObjectId(orderId),
-            orderType: "Dine In"
-        }, {
-            $set: {
-                orderedItems: orderedItems
-            }
+        orders.findOne({
+            _id: ObjectId(orderId)
         })
             .then(function (orderData) {
                 if (!orderData) {
                     throwError("Dine In Order is editable only! or order doesn't exist", 404);
                 }
+                currentOrderData = orderData;
+                return orders.updateOne({
+                    _id: ObjectId(orderId),
+                    orderType: "Dine In"
+                }, {
+                    $set: dataToUpdate
+                })
+            })
+            .then(function () {
+                return orderUtils.changeUserTable(tableToAssign,currentOrderData,outletId);
+            })
+            .then(function () {
                 return res.status(200).json({
                     message: "order updated successfully",
-                    orderData: orderData
                 })
             })
             .catch(function (error) {

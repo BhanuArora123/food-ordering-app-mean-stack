@@ -8,6 +8,8 @@ router.post("/register", outletController.registerOutlet);
 
 router.post("/login", outletController.loginOutlet);
 
+router.put("/updatePassword", passport.authenticate("jwt", { failureMessage: "unauthorized!",session:false }),outletController.updatePassword)
+
 router.get("/outletData", passport.authenticate("jwt", { failureMessage: "unauthorized!",session:false }), outletController.getOutletData);
 
 router.put("/addToCart",passport.authenticate("jwt", { failureMessage: "unauthorized!",session:false }), outletController.addToCart);
@@ -18,6 +20,6 @@ router.get("/table/get",passport.authenticate("jwt",{ failureMessage: "unauthori
 
 router.post("/table/add",passport.authenticate("jwt",{ failureMessage: "unauthorized!",session:false }),outletController.addTable);
 
-router.put("/table/edit",passport.authenticate("jwt",{ failureMessage: "unauthorized!",session:false }),outletController.editTable);
+// router.put("/table/edit",passport.authenticate("jwt",{ failureMessage: "unauthorized!",session:false }),outletController.editTable);
 
 module.exports = router;

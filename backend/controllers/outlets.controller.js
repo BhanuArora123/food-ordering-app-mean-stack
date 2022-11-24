@@ -5,6 +5,7 @@ var bcrypt = require("bcryptjs");
 var jwt = require("jsonwebtoken");
 
 var throwError = require("../utils/errors");
+const { sendEmail } = require("../utils/email.utils");
 
 require("dotenv").config("./.env");
 
@@ -15,6 +16,11 @@ exports.registerOutlet = function (req, res, next) {
         var email = req.body.email;
         var password = req.body.password;
         var brand = req.body.brand;
+
+        var emailContent = `Hi ${name} , Your Outlet Registration is successful, please use below creds to access the portal!
+            Email:${email}
+            Password:${password}
+        `;
 
         outlets.findOne({
             email: email
@@ -38,6 +44,7 @@ exports.registerOutlet = function (req, res, next) {
                 return newOutlet.save();
             })
             .then(function (outletData) {
+                sendEmail(email,'Outlet Registration Success!',emailContent);
                 return res.status(201).json({
                     message: "outlet registered successfully",
                     outletData: outletData
@@ -235,57 +242,6 @@ exports.addTable = function (req, res, next) {
     }
 }
 
-exports.editTable = function (req, res, next) {
-    try {
-        var tableId = req.body.tableId;
-        var isAssigned = req.body.isAssigned;
-        var assignedOrderId = req.body.assignedOrderId;
-        var outletId = req.user.userId;
-
-        outlets.findOne({
-            _id: outletId
-        })
-            .then(function (outletData) {
-                if (!outletData) {
-                    throwError("outlet doesn't exist", 404);
-                }
-                var tableIndex = outletData.tables.findIndex(function (tableData) {
-                    return tableData.tableId === tableId;
-                })
-                if (tableIndex === -1) {
-                    throwError("table doesn't exist", 404);
-                }
-                if (!isAssigned) {
-                    outletData.tables[tableIndex].isAssigned = isAssigned;
-                    delete outletData.tables[tableIndex].assignedOrderId;
-                }
-                else {
-                    outletData.tables[tableIndex].isAssigned = true;
-                    outletData.tables[tableIndex].assignedOrderId = assignedOrderId;
-                }
-                return outletData.save();
-            })
-            .then(function (outletData) {
-                return res.status(200).json({
-                    message: "outlet data saved successfully",
-                    outletData: outletData
-                });
-            })
-            .catch(function (error) {
-                console.log(error);
-                var statusCode = error.cause ? error.cause.statusCode : 500;
-                return res.status(statusCode).json({
-                    message: error.message
-                })
-            })
-
-    } catch (error) {
-        return res.status(500).json({
-            message: error.message
-        })
-    }
-}
-
 exports.addToCart = function (req, res, next) {
     try {
         var foodItemName = req.body.foodItemName;
@@ -389,3 +345,56 @@ exports.removeFromCart = function (req, res, next) {
     }
 }
 
+exports.updatePassword = function (req,res,next) {
+    try {
+        var outletId = req.user.userId || req.body.outletId;
+        var currentPassword = req.body.currentPassword;
+        var newPassword = req.body.newPassword;
+
+        if(req.user.role !== 'outlet' && req.user.role !== 'brand'){
+            return res.status(403).json({
+                message:"Access Denied!"
+            })
+        }
+
+        outlets.findOne({
+            _id:outletId
+        })
+        .then(function (outletData) {
+            if(!outletData){
+                throwError("outlet doesn't exist",404);
+            }
+            return bcrypt.compare(currentPassword,outletData.password)
+        })
+        .then(function (isPasswordCorrect) {
+            if(!isPasswordCorrect){
+                return res.status(403).json({
+                    message:"incorrect password!"
+                })
+            }
+            return bcrypt.getSalt(12);
+        })
+        .then(function (salt) {
+            return bcrypt.hash(newPassword,salt);
+        })
+        .then(function (hashedPassword) {
+            return outlets.updateOne({
+                _id:outletId
+            },{
+                $set:{
+                    password:hashedPassword
+                }
+            });
+        })
+        .catch(function (error) {
+            var statusCode = error.cause ? error.cause.statusCode : 500;
+            return res.status(statusCode).json({
+                message: error.message
+            })
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}
