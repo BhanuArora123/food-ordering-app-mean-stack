@@ -68,9 +68,11 @@ exports.createSubCategory = function (req, res, next) {
         var category = req.body.category;
         subCategoryModel
             .findOne({
-                name: subCategoryName
+                name: subCategoryName,
+                parentCategory:category
             })
             .then(function (subCategory) {
+                console.log(subCategory);
                 if (subCategory) {
                     throwError("category already exist", 409);
                 }
@@ -109,7 +111,8 @@ exports.getSubCategories = function (req,res,next) {
         })
         .then(function (subCategories) {
             return res.status(200).json({
-                subCategories:subCategories
+                subCategories:subCategories,
+                message:"subCategories fetched successfully!"
             });
         })
         .catch(function (error) {

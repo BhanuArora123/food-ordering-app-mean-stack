@@ -6,6 +6,7 @@ var jwt = require("jsonwebtoken");
 
 var throwError = require("../utils/errors");
 const { sendEmail } = require("../utils/email.utils");
+const brandsModel = require("../models/brands.model");
 
 require("dotenv").config("./.env");
 
@@ -44,7 +45,7 @@ exports.registerOutlet = function (req, res, next) {
                 return newOutlet.save();
             })
             .then(function (outletData) {
-                sendEmail(email,'Outlet Registration Success!',emailContent);
+                sendEmail(email, 'Outlet Registration Success!', emailContent);
                 return res.status(201).json({
                     message: "outlet registered successfully",
                     outletData: outletData
@@ -76,7 +77,19 @@ exports.loginOutlet = function (req, res, next) {
                     throwError("outlet doesn't exist", 404);
                 }
                 outletDetails = outletData;
-                return outletData;
+                return brandsModel.findOne({
+                    _id: outletData.brand.id,
+                    isDisabled:false
+                }, {
+                    name: 1,
+                    email: 1
+                });
+            })
+            .then(function (brandData) {
+                if(!brandData){
+                    throwError("brand is disabled or it doesn't exist!",404);
+                }
+                return outletDetails;
             })
             .then(function (outletData) {
                 return bcrypt.compare(password, outletData.password);
@@ -175,7 +188,7 @@ exports.getTables = function (req, res, next) {
 
                 var tables = outletData.tables;
 
-                if(isAssigned !== undefined){
+                if (isAssigned !== undefined) {
                     tables = tables.filter(function (table) {
                         return table.isAssigned.toString() === isAssigned;
                     })
@@ -345,53 +358,58 @@ exports.removeFromCart = function (req, res, next) {
     }
 }
 
-exports.updatePassword = function (req,res,next) {
+exports.updatePassword = function (req, res, next) {
     try {
         var outletId = req.user.userId || req.body.outletId;
         var currentPassword = req.body.currentPassword;
         var newPassword = req.body.newPassword;
 
-        if(req.user.role !== 'outlet' && req.user.role !== 'brand'){
+        if (req.user.role !== 'outlet' && req.user.role !== 'brand') {
             return res.status(403).json({
-                message:"Access Denied!"
+                message: "Access Denied!"
             })
         }
 
         outlets.findOne({
-            _id:outletId
+            _id: outletId
         })
-        .then(function (outletData) {
-            if(!outletData){
-                throwError("outlet doesn't exist",404);
-            }
-            return bcrypt.compare(currentPassword,outletData.password)
-        })
-        .then(function (isPasswordCorrect) {
-            if(!isPasswordCorrect){
-                return res.status(403).json({
-                    message:"incorrect password!"
-                })
-            }
-            return bcrypt.getSalt(12);
-        })
-        .then(function (salt) {
-            return bcrypt.hash(newPassword,salt);
-        })
-        .then(function (hashedPassword) {
-            return outlets.updateOne({
-                _id:outletId
-            },{
-                $set:{
-                    password:hashedPassword
+            .then(function (outletData) {
+                if (!outletData) {
+                    throwError("outlet doesn't exist", 404);
                 }
-            });
-        })
-        .catch(function (error) {
-            var statusCode = error.cause ? error.cause.statusCode : 500;
-            return res.status(statusCode).json({
-                message: error.message
+                console.log(currentPassword, outletData.password)
+                return bcrypt.compare(currentPassword, outletData.password)
             })
-        })
+            .then(function (isPasswordCorrect) {
+                console.log("password -", isPasswordCorrect);
+                if (!isPasswordCorrect) {
+                    throwError("incorrect current password", 401);
+                }
+                return bcrypt.genSalt(12);
+            })
+            .then(function (salt) {
+                return bcrypt.hash(newPassword, salt);
+            })
+            .then(function (hashedPassword) {
+                return outlets.updateOne({
+                    _id: outletId
+                }, {
+                    $set: {
+                        password: hashedPassword
+                    }
+                });
+            })
+            .then(function () {
+                return res.status(200).json({
+                    message: "password updated successfully!"
+                })
+            })
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
     } catch (error) {
         return res.status(500).json({
             message: error.message

@@ -36,7 +36,7 @@ exports.applyJwtStrategy = function () {
                 if (isUserFound) {
                     return;
                 }
-                if (brandData) {
+                if (brandData && !(brandData.isDisabled)) {
                     isUserFound = true;
                     return done(null, {
                         email: email,

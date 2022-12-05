@@ -75,11 +75,11 @@ exports.loginBrand = function (req, res, next) {
         var password = req.body.password;
         var brandDetails;
         brands.findOne({
-            email: email
+            email: email,
         })
             .then(function (brandData) {
-                if (!brandData) {
-                    throwError("brand doesn't exist", 404);
+                if (!brandData || brandData.isDisabled) {
+                    throwError(brandData?"brand is disabled by admin":"brand doesn't exist", brandData?400:404);
                 }
                 brandDetails = brandData;
                 return brandData;
@@ -149,16 +149,16 @@ exports.getBrandData = function (req, res, next) {
 exports.editOutlet = function (req, res, next) {
     try {
         var role = req.user.role;
+        var brandId = req.user.userId;
+        var outletId = req.body.outletId;
+        var name = req.body.name;
+        var email = req.body.email;
 
         if (role !== "superAdmin" && role !== "brand") {
             return res.status(401).json({
                 message: "Access Denied!"
             })
         }
-        var outletId = req.user.userId;
-
-        var name = req.user.outlet.name;
-        var email = req.user.outlet.email;
 
         var dataToUpdate = {};
 
@@ -170,7 +170,8 @@ exports.editOutlet = function (req, res, next) {
         }
 
         outletsModel.updateOne({
-            _id: outletId
+            _id: outletId,
+            "brand.id":brandId
         }, {
             $set: dataToUpdate
         })
@@ -207,6 +208,30 @@ exports.editOutlet = function (req, res, next) {
     }
 }
 
+exports.removeOutlet = function (req,res,next) {
+    try {
+        var outletId = req.body.outletId;
+        var brandId = req.user.brandId;
+
+        outletsModel.updateOne({
+            _id:outletId,
+            "brand.id":brandId
+        },{
+            $set:{
+                isDeleted:true
+            }
+        })
+        .then(function (outletData) {
+            if(!outletData){
+                throwError("outlet doesn't exist! or brand is not authorized to delete this outlet",404);
+            }
+            return res.status(200)
+        })
+    } catch (error) {
+        
+    }
+}
+
 exports.getAllOutlets = function (req, res, next) {
     try {
         var brandId = req.user.userId;
@@ -229,6 +254,7 @@ exports.getAllOutlets = function (req, res, next) {
             })
             .then(function (outlets) {
                 return res.status(200).json({
+                    message:"outlets fetched successfully",
                     outlets:outlets
                 })
             })
@@ -263,7 +289,7 @@ exports.updatePassword = function (req,res,next) {
         })
         .then(function (brandData) {
             if(!brandData){
-                throwError("outlet doesn't exist",404);
+                throwError("brand doesn't exist",404);
             }
             return bcrypt.compare(currentPassword,brandData.password)
         })
@@ -273,7 +299,7 @@ exports.updatePassword = function (req,res,next) {
                     message:"incorrect password!"
                 })
             }
-            return bcrypt.getSalt(12);
+            return bcrypt.genSalt(12);
         })
         .then(function (salt) {
             return bcrypt.hash(newPassword,salt);
@@ -286,6 +312,11 @@ exports.updatePassword = function (req,res,next) {
                     password:hashedPassword
                 }
             });
+        })
+        .then(function () {
+            return res.status(200).json({
+                message:"brand password updated successfully"
+            })
         })
         .catch(function (error) {
             var statusCode = error.cause ? error.cause.statusCode : 500;

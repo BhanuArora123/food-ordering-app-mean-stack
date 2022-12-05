@@ -19,6 +19,7 @@ exports.addFoodItem = function (req, res, next) {
         var category = req.body.category;
         var subCategory = req.body.subCategory;
         var isVeg = req.body.isVeg;
+        // var taxes = req.body.taxes;
 
         async.waterfall(utils.convertToArray({
 
@@ -67,7 +68,7 @@ exports.addFoodItem = function (req, res, next) {
                     brand: brand,
                     category: category,
                     subCategory: subCategory,
-                    isVeg: isVeg
+                    isVeg: isVeg,
                 });
                 foodItemData
                 .save()

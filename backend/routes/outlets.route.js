@@ -2,24 +2,76 @@ var router = require("express").Router();
 
 // var passport = require("passport");
 var outletController = require("../controllers/outlets.controller");
+var body = require("express-validator").body;
 var passport = require("passport");
+var validate = require("../middleware/validation.middleware").validate;
 
-router.post("/register", outletController.registerOutlet);
+router.post("/register",
+    [
+        body("name").notEmpty().isString(),
+        body("email").isEmail(),
+        body("password").isLength({
+            min: 6,
+            max: 16
+        })
+    ],
+    validate
+    ,outletController.registerOutlet);
 
-router.post("/login", outletController.loginOutlet);
+router.post("/login",
+    [
+        body("email").isEmail(),
+        body("password").isLength({
+            min: 6,
+            max: 16
+        })
+    ], 
+    validate,
+    outletController.loginOutlet);
 
-router.put("/updatePassword", passport.authenticate("jwt", { failureMessage: "unauthorized!",session:false }),outletController.updatePassword)
+router.put("/updatePassword",
+    passport.authenticate("jwt", { failureMessage: "unauthorized!", session: false }),
+    [
+        body("currentPassword").isLength({
+            min: 6,
+            max: 16
+        }),
+        body("newPassword").isLength({
+            min: 6,
+            max: 16
+        })
+    ], 
+    validate,
+    outletController.updatePassword)
 
-router.get("/outletData", passport.authenticate("jwt", { failureMessage: "unauthorized!",session:false }), outletController.getOutletData);
+router.get("/outletData", passport.authenticate("jwt", { failureMessage: "unauthorized!", session: false }), outletController.getOutletData);
 
-router.put("/addToCart",passport.authenticate("jwt", { failureMessage: "unauthorized!",session:false }), outletController.addToCart);
+router.put("/addToCart", passport.authenticate("jwt", { failureMessage: "unauthorized!", session: false }),
+    [
+        body("foodItemName").notEmpty().isString(),
+        body("foodItemPrice").notEmpty().isNumeric(),
+        body("category").notEmpty().isString(),
+        body("subCategory").notEmpty().isString(),
+        body("outletName").notEmpty().isString()
+    ],
+    validate,
+     outletController.addToCart);
 
-router.put("/removeFromCart",passport.authenticate("jwt", { failureMessage: "unauthorized!",session:false }),outletController.removeFromCart);
+router.put("/removeFromCart", passport.authenticate("jwt", { failureMessage: "unauthorized!", session: false }),
+    [
+        body("foodItemName").notEmpty().isString(),
+    ],
+    validate,
+     outletController.removeFromCart);
 
-router.get("/table/get",passport.authenticate("jwt",{ failureMessage: "unauthorized!",session:false }),outletController.getTables);
+router.get("/table/get", passport.authenticate("jwt", { failureMessage: "unauthorized!", session: false }), outletController.getTables);
 
-router.post("/table/add",passport.authenticate("jwt",{ failureMessage: "unauthorized!",session:false }),outletController.addTable);
-
-// router.put("/table/edit",passport.authenticate("jwt",{ failureMessage: "unauthorized!",session:false }),outletController.editTable);
+router.post("/table/add", passport.authenticate("jwt", { failureMessage: "unauthorized!", session: false }),
+    [
+        body("tableId").notEmpty().isNumeric(),
+        body("assignedOrderId").isString().optional()
+    ],
+    validate
+    , outletController.addTable);
 
 module.exports = router;

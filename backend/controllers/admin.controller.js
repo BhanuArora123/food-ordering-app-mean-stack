@@ -5,14 +5,17 @@ var bcrypt = require("bcryptjs");
 var jwt = require("jsonwebtoken");
 
 var throwError = require("../utils/errors");
-const brandsModel = require("../models/brands.model");
+
+var brandsModel = require("../models/brands.model");
+
+var utils = require("../utils/utils");
 
 require("dotenv").config("./.env");
 
 exports.registerAdmin = function (req, res, next) {
     try {
         if (req.user.role !== "superAdmin") {
-            throwError("Access Denied!",403);
+            throwError("Access Denied!", 403);
         }
         var name = req.body.name;
         var email = req.body.email;
@@ -22,7 +25,7 @@ exports.registerAdmin = function (req, res, next) {
         })
             .then(function (adminData) {
                 if (adminData) {
-                    throwError("admin email already exist",403);
+                    throwError("admin email already exist", 403);
                 }
                 return bcrypt.genSalt(12);
             })
@@ -67,7 +70,7 @@ exports.loginAdmin = function (req, res, next) {
         })
             .then(function (adminData) {
                 if (!adminData) {
-                    throwError("admin doesn't exist",404);
+                    throwError("admin doesn't exist", 404);
                 }
                 adminDetails = adminData;
                 return adminData;
@@ -77,7 +80,7 @@ exports.loginAdmin = function (req, res, next) {
             })
             .then(function (result) {
                 if (!result) {
-                    throwError("incorrect password",401);
+                    throwError("incorrect password", 401);
                 }
                 return jwt.sign({
                     email: email
@@ -89,7 +92,7 @@ exports.loginAdmin = function (req, res, next) {
                 return res.status(200).json({
                     message: "admin logged in successfully",
                     token: jwtToken,
-                    adminData:adminDetails
+                    adminData: adminDetails
                 });
             })
             .catch(function (error) {
@@ -105,44 +108,125 @@ exports.loginAdmin = function (req, res, next) {
     }
 }
 
-exports.getAdminData = function (req,res,next) {
+exports.updatePassword = function (req, res, next) {
     try {
         var adminId = req.user.userId;
+        var currentPassword = req.body.currentPassword;
+        var newPassword = req.body.newPassword;
+        var role = req.user.role;
 
-        if (req.user.role !== "superAdmin") {
-            throwError("Access Denied!",403);
+        if (role !== 'superAdmin') {
+            return res.status(403).json({
+                message: "Access Denied!"
+            })
         }
 
         admin.findOne({
-            _id:adminId
+            _id: adminId
         })
-        .then(function (adminData) {
-            if(!adminData){
-                throwError("admin doesn't exist",404);
-            }
-            return res.status(200).json({
-                message:"success",
-                adminData:adminData
-            });
-        })
-        .catch(function (error) {
-            var statusCode = error.cause ? error.cause.statusCode : 500;
-            return res.status(statusCode).json({
-                message:error.message
+            .then(function (adminData) {
+                if (!adminData) {
+                    throwError("admin doesn't exist", 404);
+                }
+                return utils.updatePassword(currentPassword, newPassword, adminData.password, adminId, role);
             })
-        })
-
+            .then(function () {
+                return res.status(200).json({
+                    message: "admin password updated successfully"
+                })
+            })
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
     } catch (error) {
         return res.status(500).json({
-            message:error.message
+            message: error.message
         })
     }
 }
 
-exports.editBrand = function (req,res,next) {
+exports.getAllBrands = function (req, res, next) {
+    try {
+        var role = req.user.role;
+
+        var limit = req.query.limit;
+
+        var page = req.query.page;
+
+        var skip = (page - 1) * limit;
+
+        if (role !== 'superAdmin') {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
+
+        brandsModel
+            .find()
+            .skip(skip)
+            .limit(limit)
+            .then(function (brands) {
+                return res.status(200).json({
+                    message: "brands fetched successfully",
+                    brands: brands
+                })
+            })
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
+
+    } catch (error) {
+        var statusCode = 500;
+        return res.status(statusCode).json({
+            message: error.message
+        })
+    }
+}
+
+exports.getAdminData = function (req, res, next) {
+    try {
+        var adminId = req.user.userId;
+
+        if (req.user.role !== "superAdmin") {
+            throwError("Access Denied!", 403);
+        }
+
+        admin.findOne({
+            _id: adminId
+        })
+            .then(function (adminData) {
+                if (!adminData) {
+                    throwError("admin doesn't exist", 404);
+                }
+                return res.status(200).json({
+                    message: "success",
+                    adminData: adminData
+                });
+            })
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
+
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+exports.editBrand = function (req, res, next) {
     try {
         if (req.user.role !== "superAdmin") {
-            throwError("Access Denied!",403);
+            throwError("Access Denied!", 403);
         }
 
         var brandId = req.body.brandId;
@@ -152,36 +236,36 @@ exports.editBrand = function (req,res,next) {
 
         var dataToUpdate = {};
 
-        if(name){
+        if (name) {
             dataToUpdate["name"] = name;
         }
-        if(email){
+        if (email) {
             dataToUpdate["email"] = email;
         }
-        if(isDisabled){
+        if (isDisabled !== undefined) {
             dataToUpdate["isDisabled"] = isDisabled;
         }
 
         brandsModel.updateOne({
-            _id:brandId
-        },{
-            $set:dataToUpdate
+            _id: brandId
+        }, {
+            $set: dataToUpdate
         })
-        .then(function () {
-            return res.status(200).json({
-                message:"brand data updated successfully"
+            .then(function () {
+                return res.status(200).json({
+                    message: "brand data updated successfully"
+                })
             })
-        })
-        .catch(function (error) {
-            var statusCode = error.cause ? error.cause.statusCode : 500;
-            return res.status(statusCode).json({
-                message:error.message
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
             })
-        })
 
     } catch (error) {
         return res.status(500).json({
-            message:error.message
+            message: error.message
         })
     }
 }

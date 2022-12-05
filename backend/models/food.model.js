@@ -2,6 +2,8 @@ var mongoose = require("mongoose");
 
 var schema = mongoose.Schema;
 
+var tax = require("../models/taxes.model").schema;
+
 var ObjectId = mongoose.Schema.Types.ObjectId;
 
 var foodSchema = new schema({
@@ -42,7 +44,18 @@ var foodSchema = new schema({
         type:Boolean,
         default:true
     },
-    
+    taxes:[
+        {
+            tax:{
+                type:tax,
+                required:true
+            },
+            percentage:{
+                type:Number,
+                required:true
+            }
+        }
+    ]
 });
 
 module.exports = mongoose.model("food",foodSchema);
