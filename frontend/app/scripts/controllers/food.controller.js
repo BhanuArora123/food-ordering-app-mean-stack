@@ -1,6 +1,6 @@
 
 
-appModule.controller("foodController", function ($scope, foodService, outletService, foodItems, brandService, allCategories,utility) {
+appModule.controller("foodController", function ($scope, foodService, outletService, foodItems, brandService, allCategories, utility, blockUI) {
 
     // adding food items 
 
@@ -14,37 +14,33 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
     // })()
 
     $scope.foodItemsToDisplay = utility.categorizeItems(foodItems);
-    console.log($scope.foodItemsToDisplay);
     $scope.categories = allCategories;
-    $scope.subCategories = [];
 
     // getting user cart 
-    (function () {
-        var outletData = outletService.getServiceData().outletData;
-        $scope.userCart = outletData ? outletData.cart : [];
-    })()
+    var outletData = outletService.getServiceData().outletData;
+    $scope.userCart = outletData ? outletData.cart : [];
 
     // display active category
     $scope.activeCategory = 0;
     $scope.activeSubcategory = 0;
 
-    $scope.setActiveClass = function (index,type) {
+    $scope.setActiveClass = function (index, type) {
         console.log(index);
-        if(type === 'category'){
+        if (type === 'category') {
             $scope.activeCategory = index;
             $scope.activeSubcategory = 0;
         }
-        else{
+        else {
             $scope.activeSubcategory = index;
         }
     }
 
-    $scope.getActiveClass = function (index,type) {
-        if(type === 'category'){
-            return ($scope.activeCategory === index)?'text-white bg-primary border-0':'text-dark';
+    $scope.getActiveClass = function (index, type) {
+        if (type === 'category') {
+            return ($scope.activeCategory === index) ? 'text-white bg-primary border-0' : 'text-dark';
         }
-        else{
-            return ($scope.activeSubcategory === index)?'text-white bg-primary border-0':'text-dark';
+        else {
+            return ($scope.activeSubcategory === index) ? 'text-white bg-primary border-0' : 'text-dark';
         }
     }
 
@@ -54,27 +50,13 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
         return foodItems;
     }
 
-    $scope.createCategory = function (category) {
-        foodService.createCategory(category)
-            .then(function (data) {
-                return foodService
-                    .getCategories()
-            })
-            .then(function (categories) {
-                $scope.categories = categories;
-            })
-            .catch(function (error) {
-                console.log(error);
-            })
-    }
-
     $scope.addFoodItems = function (food) {
         // attaching outlet id 
         var brandData = brandService.getServiceData().brandData;
         if (brandData) {
             food.brand = {
-                id:brandData._id,
-                name:brandData.name
+                id: brandData._id,
+                name: brandData.name
             }
         }
         foodService
@@ -87,51 +69,47 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
 
     $scope.getFoodItem = function (data) {
         return foodService
-        .getFoodItems({
-            brandId:data.brandId
-        })
-        .then(function (data) {
-            $scope.foodItemsToDisplay = utility.categorizeItems(data.matchedFoodItems);
-        })
-        .catch(function (error) {
-            console.log(error);
-        })
+            .getFoodItems({
+                brandId: data.brandId
+            })
+            .then(function (data) {
+                $scope.foodItemsToDisplay = utility.categorizeItems(data.matchedFoodItems);
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
     }
 
     $scope.editFoodItem = function (food) {
         food.foodItemId = food._id;
         foodService
-        .editFoodItem(food)
-        .then(function () {
-            $scope.editClicked = false;
-            return $scope.getFoodItem();
-        })
-        .catch(function (error) {
-            console.log(error);
-        })
+            .editFoodItem(food)
+            .then(function () {
+                $scope.editClicked = false;
+                return $scope.getFoodItem();
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
     }
 
     // delete food item 
     $scope.deleteFoodItem = function (food, parentIndex, grandParentIndex, index) {
         console.log(food);
         foodService
-        .deleteFoodItem(food._id)
-        .then(function () {
-            console.log($scope.foodItemsToDisplay,grandParentIndex,parentIndex,index);
-            $scope.foodItemsToDisplay[grandParentIndex].subCategoryItems[parentIndex].items.splice(index,1);
-            // return $scope.getFoodItem({
-            //     brandId:food.brand.id
-            // });
-        })
-        .catch(function (error) {
-            console.log(error);
-        })
+            .deleteFoodItem(food._id)
+            .then(function () {
+                $scope.foodItemsToDisplay[grandParentIndex].subCategoryItems[parentIndex].items.splice(index, 1);
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
     }
 
     // add to cart 
-    $scope.addToCart = function (foodName, foodPrice, outletName,subCategory,category) {
+    $scope.addToCart = function (foodName, foodPrice, subCategory, category) {
         outletService
-            .addToCart(foodName, foodPrice, outletName,category,subCategory)
+            .addToCart(foodName, foodPrice, outletData.name, category, subCategory)
             .then(function (response) {
                 console.log(response.cartData);
                 $scope.userCart = response.cartData;
@@ -160,28 +138,47 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
             })
     }
 
-    $scope.getSubCategories = function () {
-        var category = $scope.food.category;
-        return foodService.getSubCategories(category)
-        .then(function (data) {
-            $scope.subCategories = data.subCategories.map(function (subCategory) {
-                return subCategory.name;
-            });
-        })
-        .catch(function (error) {
-            console.log(error);
-        })
+    $scope.createCategory = function (category) {
+        $scope.isCategorySelected = true;
+        foodService.createCategory(category)
+            .then(function (data) {
+                return foodService
+                    .getCategories()
+            })
+            .then(function (categories) {
+                $scope.categories = categories.categories;
+                $scope.noResults = false;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
     }
 
-    $scope.createSubCategory = function (subCategory,category) {
+    $scope.getSubCategories = function (category) {
+        $scope.isCategorySelected = true;
+        $scope.food.subCategory = undefined;
+        blockUI.start({
+            message: "Fetching Sub Categories...."
+        });
+        return foodService.getSubCategories(category)
+            .then(function (subCategories) {
+                blockUI.stop();
+                $scope.subCategories = subCategories;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+    }
+
+    $scope.createSubCategory = function (subCategory, category) {
         return foodService
-        .createSubCategory(subCategory,category)
-        .then(function (data) {
-            $scope.getSubCategories();
-        })
-        .catch(function (error) {
-            console.log(error);
-        })
+            .createSubCategory(subCategory, category)
+            .then(function (data) {
+                $scope.noSubCategory = false;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
     }
 
     // check if item present in cart 

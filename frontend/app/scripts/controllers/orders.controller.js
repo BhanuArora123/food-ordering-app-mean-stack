@@ -1,7 +1,7 @@
 
 
 appModule
-    .controller("ordersController", function ($scope, outletOrders, orderService, utility) {
+    .controller("ordersController", function ($scope, outletOrders, orderService, outletService, utility) {
         // current order status
         $scope.currentOrderStatus = "All";
 
@@ -19,7 +19,7 @@ appModule
         }
 
         $scope.getHeight = function (viewPortScale) {
-            return 600 * Math.ceil((outletOrders.length) / viewPortScale);
+            return (500 * Math.ceil(($scope.getAllOutletOrders.length) / viewPortScale)) + 200;
         }
 
         $scope.getOrders = function (status, type) {
@@ -46,6 +46,30 @@ appModule
                     console.log(error);
                 })
         }
+
+        $scope.viewDetails = function (index, assignedTable) {
+            return outletService
+                .getTables(1, 9, undefined)
+                .then(function (data) {
+                    $scope.tablesData = data.tables.filter(function (table) {
+                        console.log(table.tableId, assignedTable);
+                        return table.tableId !== parseInt(assignedTable);
+                    });
+                    utility.openModal(
+                        'views/orders/displayModal.html',
+                        'orderDetailsController',
+                        'orderDisplayModal',
+                        $scope,
+                        {
+                            currentIndex: index
+                        },
+                        $scope
+                    )
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
+        }
     })
 
 appModule.controller("orderDetailsController", function ($scope, utility, orderService) {
@@ -56,10 +80,7 @@ appModule.controller("orderDetailsController", function ($scope, utility, orderS
 
     $scope.orderedFoodItems = utility.categorizeItems(selectedOrder.orderedItems);
 
-    console.log($scope.orderedFoodItems);
-
-    console.log($scope.orderedFoodItems);
-    // display active category
+    $scope.tableToAssign = "None";
     $scope.activeCategory = 0;
     $scope.activeSubcategory = 0;
 
@@ -93,18 +114,20 @@ appModule.controller("orderDetailsController", function ($scope, utility, orderS
     $scope.cancelEdit = function () {
         $scope.isEditClicked = false;
     }
-    $scope.updateOrder = function (orderId,categorizedOrderedItems) {
+    $scope.updateOrder = function (orderId, categorizedOrderedItems, tableToAssign) {
         var orderedItems = utility.decategorizeItems(categorizedOrderedItems);
         $scope.isEditClicked = false;
-        console.log(orderedItems);
         orderService
-        .editOrder(orderId,orderedItems)
-        .then(function (data) {
-            alert(data.message);
-            return data.orderData;
-        })
-        .catch(function (error) {
-            console.log(error);
-        })
+            .editOrder(orderId, orderedItems, tableToAssign)
+            .then(function (data) {
+                alert(data.message);
+                $scope["orderDisplayModal"].close();
+                return $scope.$parent.getOrders($scope.status,$scope.type);
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
     }
+
+    $scope.tables = $scope.$parent.tablesData;
 })

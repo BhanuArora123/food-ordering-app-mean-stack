@@ -95,6 +95,9 @@ body{
 .z-index-settle-down{
   z-index: 10;
 }
+.z-index-nav{
+  z-index: 10000;
+}
 .card-image{
   width: 100%;
   height: 230px;
@@ -130,4 +133,8 @@ input.ng-invalid.ng-touched{
   display: flex;
   justify-content: center;
   align-items: center;
+}
+
+.list-style-none{
+  list-style: none;
 }

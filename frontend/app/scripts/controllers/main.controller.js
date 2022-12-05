@@ -1,19 +1,35 @@
 
 
 // home controller
-appModule.controller("homeController", function ($scope,$rootScope, $state, $uibModal) {
+appModule.controller("homeController", function ($scope,$rootScope, $state, $uibModal,utility) {
+
+    $scope.isNavCollapsed = (screen.width <= 765 );
+    // dismiss alerts 
+    $scope.closeError = function () {
+        $rootScope.error = undefined;
+    }
+
+    $scope.closeSuccess = function () {
+        $rootScope.success = undefined;
+    }
 
     $scope.logoutHandler = function () {
-        localStorage.clear();
-        $state.go("home.login");
+        utility.logout();
     }
 
     // displaying menus based on navbar 
     $scope.getRole = function () {
-        return localStorage.getItem("role");
+        return utility.getRole();
     }
     $scope.getToken = function () {
         return localStorage.getItem("token");
+    }
+    $scope.getProfileState = function () {
+        var role = utility.getRole();
+        if(role === 'superAdmin'){
+            role = 'admin';
+        }
+        return `home.${role}.display`;
     }
 
     // open modal for cart 

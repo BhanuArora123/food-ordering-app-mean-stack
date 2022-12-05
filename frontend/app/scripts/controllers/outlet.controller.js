@@ -1,10 +1,10 @@
 
 
-appModule.controller("outletController",function ($scope,NgTableParams,outletData,tablesData,outletService,utility) {
+appModule.controller("outletController",function ($scope,NgTableParams,outletData,tablesData,outletService,utility,orderService) {
     
     console.log(tablesData);
 
-    this.tablesTable = new NgTableParams({},{
+    $scope.tablesTable = new NgTableParams({},{
         dataset:tablesData
     })
 
@@ -20,11 +20,15 @@ appModule.controller("outletController",function ($scope,NgTableParams,outletDat
         $scope.isEditClicked = false;
     }
 
-    $scope.updateProfile = function (outletData) {
+    $scope.updatePassword = function (currentPassword,newPassword) {
+        if(currentPassword === newPassword){
+            return alert("new password and current password must be different");
+        }
         outletService
-        .editOutlet(outletData)
+        .updatePassword(currentPassword,newPassword)
         .then(function (data) {
-            $scope.outletData = data.outletData;
+            alert(data.message);
+            $scope.isEditClicked = false;
         })
         .catch(function (error) {
             console.log(error);
@@ -38,6 +42,23 @@ appModule.controller("outletController",function ($scope,NgTableParams,outletDat
         })
         .then(function (data) {
             $scope.tablesData = data.tables;
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
+    }
+
+    // open edit modal 
+    $scope.openEditModal = function () {
+        utility.openModal('views/outlet/editTable.html',"outletController","editTable",$scope,{},$scope)
+    }
+
+    // edit table 
+    $scope.editTable = function (dataToUpdate) {
+        orderService
+        .editOrder(dataToUpdate.orderId,dataToUpdate.orderedIItems,dataToUpdate.tableToAssign)
+        .then(function (data) {
+            $scope.tablesData = data.tableData
         })
         .catch(function (error) {
             console.log(error);

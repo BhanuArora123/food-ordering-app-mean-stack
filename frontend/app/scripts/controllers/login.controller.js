@@ -1,14 +1,21 @@
 
 
-appModule.controller("loginSignupController", function ($scope, brandService, adminService, outletService) {
+appModule.controller("loginSignupController", function ($scope, brandService, adminService, outletService,role) {
 
     //default user role in login 
     $scope.login = {
         userRole:"Outlet"
     }
 
+    $scope.signup = {
+        userRole:role.charAt(0).toUpperCase() + role.substring(1)
+    }
+
+    $scope.role = role;
+
     // login handler 
     $scope.loginHandler = function (email, password, userRole = "Outlet") {
+        console.log(userRole);
         if (userRole === "Outlet") {
             outletService
                 .login(email, password)

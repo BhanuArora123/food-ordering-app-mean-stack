@@ -54,6 +54,16 @@
             <div class="text-dark ml-3">Outlet :</div>
             <div class="text-dark ml-3">{{selectedOrder.outlet.name}}</div>
         </div>
+        <div ng-hide="isEditClicked" class="w-100 d-flex justify-content-around align-items-start flex-column text-dark">
+            Assigned Table - Table - {{selectedOrder.assignedTable}}
+        </div>
+        <div ng-show="selectedOrder.orderType === 'Dine In' && isEditClicked" class="w-100 d-flex justify-content-around align-items-start flex-column">
+            <label class="text-dark w-50">Select Table</label>
+            <select class="text-dark p-2 outline-none bg-light h-40p text-dark w-100" ng-required="true" ng-model="selectedOrder.assignedTable" name="tableToAssign">
+                <option class="text-dark" value="None">None</option>
+                <option ng-repeat="table in tables" class="text-dark" value="{{table.tableId}}">table - {{table.tableId}}</option>
+            </select>
+        </div>
         <div class="d-flex justify-content-around align-items-start text-dark">
             <div class="text-dark ml-3">Total Amount :</div>
             <div class="text-dark ml-3">${{selectedOrder.amountPaid}}</div>
@@ -61,7 +71,7 @@
         <div ng-show="getRole() === 'outlet' && selectedOrder.orderType === 'Dine In'" class="d-flex justify-content-center w-100 align-items-start text-dark">
             <button ng-hide="isEditClicked" class="btn btn-primary" ng-click="makeOrderEditable()">Edit Order</button>
             <button ng-show="isEditClicked" class="btn btn-primary" ng-click="cancelEdit()">Cancel</button>
-            <button ng-show="isEditClicked" class="btn btn-primary" ng-click="updateOrder(selectedOrder._id,orderedFoodItems)">Update</button>
+            <button ng-show="isEditClicked" class="btn btn-primary" ng-click="updateOrder(selectedOrder._id,orderedFoodItems,selectedOrder.assignedTable)">Update</button>
         </div>
     </div>
 </div>

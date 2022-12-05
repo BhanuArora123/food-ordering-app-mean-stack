@@ -1,0 +1,103 @@
+<!-- alert -->
+<div class="position-absolute w-100 d-flex justify-content-center z-index-popover">
+    <div ng-show="error" dismiss-on-timeout="5" uib-alert
+        class="alert-danger alert-dismissible position-absolute z-index-max w-256 text-dark" role="error"
+        data-bs-dismiss="error">
+        <div class="w-100 text-dark">
+            {{error}}
+        </div>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close" ng-click="closeError()">
+            <span class="text-dark" aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div ng-show="success" dismiss-on-timeout="5" uib-alert
+        class="alert-success alert-dismissible position-absolute z-index-max w-256 text-dark">
+        <div class="w-100 text-dark">
+            {{success}}
+        </div>
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close" ng-click="closeSuccess()">
+            <span class="text-dark" aria-hidden="true">&times;</span>
+        </button>
+    </div>
+</div>
+
+ <!-- nav bar  -->
+<nav class="navbar navbar-expand-md navbar-light bg-theme-darker w-100" role="navigation">
+    <div class="navbar-brand text-white" ui-sref="home.dashboard">FoodZ</div>
+    <button class="navbar-toggler" type="button" ng-click="isNavCollapsed = !isNavCollapsed" aria-expanded="false"
+        aria-label="Toggle navigation">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <div class="collapse navbar-collapse" uib-collapse="isNavCollapsed">
+        <ul class="navbar-nav ml-auto w-100 d-lg-flex justify-content-lg-around align-items-lg-center">
+            <li class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2" ng-show="getRole() === 'outlet' || getRole() === 'brand'">
+                <a ui-sref="home.food.display"
+                    class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+                    <i class="fas fa-pizza-slice" style="font-size: 18px;"></i>
+                    <div class="ml-2 fw-bold">Food Search</div>
+                </a>
+            </li>
+            <li class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2" ng-show="getRole() === 'outlet'">
+                <a ng-click="openModal('views/cart.html','cartController','cartModal')"
+                    class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+                    <i class="fas fa-cart-plus" style="font-size: 18px;"></i>
+                    <div class="ml-2 fw-bold">Cart</div>
+                </a>
+            </li>
+            <div ng-show="getRole() === 'superAdmin' || getRole() === 'brand'" class="btn-group d-flex justify-content-around align-items-center" uib-dropdown>
+                <i class="fas fa-plus-square mr-2" style="font-size: 18px ;"></i>
+                <a id="single-button" type="button" class="text-decoration-none text-white fw-bold" uib-dropdown-toggle>
+                    Add<span class="caret"></span>
+                </a>
+                <div dropdown-menu uib-dropdown-menu role="menu" aria-labelledby="single-button">
+                    <a ng-show="getRole() === 'superAdmin'" ui-sref="home.add({role:'admin'})" class="dropdown-item d-flex justify-content-start align-items-center">
+                        <i class="fa-sharp fa fa-user-plus text-dark mr-2" style="font-size: 18px;"></i>
+                        <div class="ml-2 fw-bold text-dark">Admin</div>
+                    </a>
+                    <a ng-show="getRole() === 'superAdmin'" ui-sref="home.add({role:'brand'})" class="dropdown-item d-flex justify-content-start align-items-center">
+                        <i class="fa fa-utensils text-dark mr-2" style="font-size: 18px;"></i>
+                        <div class="ml-2 fw-bold text-dark">Brand</div>
+                    </a>
+                    <a ng-show="getRole() === 'brand'" ui-sref="home.add({role:'outlet'})" class="dropdown-item d-flex justify-content-start align-items-center">
+                        <i class="fa-sharp fa fa-user-plus text-dark mr-2" style="font-size: 18px;"></i>
+                        <div class="ml-2 fw-bold text-dark">Outlet</div>
+                    </a>
+                    <div ng-show="getRole() === 'brand'" class="dropdown-divider"></div>
+                    <a ng-show="getRole() === 'brand'" ui-sref="home.food.add" class="dropdown-item d-flex justify-content-start align-items-center">
+                        <i class="fas fa-hamburger text-dark mr-2" style="font-size: 18px;"></i>
+                        <div class="ml-2 fw-bold text-dark">Add Food Item</div>
+                    </a>
+                </div>
+            </div>
+            <li class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2" ng-show="getRole()">
+                <a ui-sref="{{getProfileState()}}"
+                    class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+                    <i class="fas fa-file-invoice"></i>
+                    <div class="ml-2 fw-bold">Profile</div>
+                </a>
+            </li>
+            <li class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2" ng-show="getRole() === 'brand' || getRole() === 'outlet'">
+                <a ui-sref="home.orders.display"
+                    class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+                    <i class="fas fa-file-invoice"></i>
+                    <div class="ml-2 fw-bold">Orders</div>
+                </a>
+            </li>
+            <li class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2" ng-show="getToken()">
+                <a ng-click="logoutHandler()"
+                    class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+                    <i class="fas fa-sign-out-alt" style="font-size: 18px;"></i>
+                    <div class="ml-2 fw-bold">Logout</div>
+                </a>
+            </li>
+            <li class="nav-item list-style-none m-2" ng-show="!getToken()">
+                <a ui-sref="home.login"
+                    class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+                    <i class="fas fa-user" style="font-size: 18px;"></i>
+                    <div class="ml-2 fw-bold">Login</div>
+                </a>
+            </li>
+        </ul>
+    </div>
+</nav>

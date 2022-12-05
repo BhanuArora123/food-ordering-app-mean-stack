@@ -1,6 +1,6 @@
 
 
-appModule.controller("dashboardController", function ($scope, foodService,utility) {
+appModule.controller("dashboardController", function ($scope,$state, foodService,utility) {
     
     $scope.getRole = utility.getRole;
 
@@ -30,5 +30,31 @@ appModule.controller("dashboardController", function ($scope, foodService,utilit
     $scope.onload = function () {
         console.log("hey!");
         $scope.getFoodItems("burger", 0);
+    }
+
+    $scope.getContent = function () {
+        var role = utility.getRole();
+        if(role === 'outlet'){
+            return 'Order Now';
+        }
+        else if(role === 'brand'){
+            return 'Manage Outlets';
+        }
+        else{
+            return 'Manage Brands';
+        }
+    }
+
+    $scope.contentAction = function () {
+        var role = utility.getRole();
+        if(role === 'outlet'){
+            $state.go("home.food.display");
+        }
+        else if(role === 'brand'){
+            $state.go("home.brand.display");
+        }
+        else{
+            $state.go("home.admin.display");
+        }
     }
 })

@@ -11,7 +11,7 @@
     "angular-touch": "^1.4.0",
     "angular-ui-router":"",
     "components-font-awesome": "^4.7.0",
-    "ngstorage":""
+    "angular-block-ui":""
   },
   "devDependencies": {
     "angular-mocks": "^1.4.0"

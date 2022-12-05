@@ -1,6 +1,6 @@
 
 
-appModule.controller("adminController",function ($scope,outletService,adminService,brandService) {
+appModule.controller("adminController",function ($scope,outletService,adminService,brandService,adminData,allBrands,NgTableParams) {
     // setting value for default value
     $scope.signup = {
         userRole:"Brand"
@@ -40,5 +40,77 @@ appModule.controller("adminController",function ($scope,outletService,adminServi
                 console.log(error)
             })
         }
+    }
+
+    // displaying admin profile 
+    $scope.adminData = adminData;
+
+    // all brands
+    $scope.allBrands = allBrands;
+
+    $scope.allBrandsData = new NgTableParams({},{
+        dataset:allBrands
+    })
+
+    // editing password 
+    $scope.allowEdit = function () {
+        $scope.isEditClicked = true;
+    }
+    
+    $scope.disableEdit = function () {
+        $scope.isEditClicked = false;
+    }
+
+    $scope.updatePassword = function (currentPassword,newPassword) {
+        if(currentPassword === newPassword){
+            return alert("new password and current password must be different!");
+        }
+        adminService
+        .updatePassword(currentPassword,newPassword)
+        .then(function (data) {
+            alert(data.message);
+            $scope.isEditClicked = false;
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
+    }
+
+    // updating brand 
+    // editing outlets 
+    $scope.makeEditable = function (index) {
+        $scope.editElementIndex = index;
+    }
+
+    $scope.disableEditing = function () {
+        $scope.editElementIndex = -1;
+    }
+
+    $scope.updateBrand = function (brand) {
+        return adminService
+        .editBrand(brand)
+        .then(function (data) {
+            $scope.editElementIndex = -1;
+            return data.message;
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
+    }
+
+    $scope.toggleBrandAccess = function (brand) {
+        console.log(brand);
+        adminService
+        .editBrand({
+            _id:brand._id,
+            isDisabled:!brand.isDisabled
+        })
+        .then(function () {
+            brand.isDisabled = !(brand.isDisabled);
+            alert(`brand ${brand.isDisabled?"disabled":"enabled"} successfully!`);
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
     }
 })

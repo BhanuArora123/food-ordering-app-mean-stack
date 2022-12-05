@@ -1,7 +1,7 @@
 
 
 appModule
-    .factory("utility", function ($uibModal) {
+    .factory("utility", function ($uibModal,$state) {
         return {
             categorizeItems : function (data) {
                 // categorize by sub category 
@@ -81,6 +81,10 @@ appModule
                     backdropClass:"opacity-medium"
                 })
                 currentScope[instanceName] = modalInstance;
+            },
+            logout: function () {
+                localStorage.clear();
+                $state.go("home.login");
             }
         }
     })

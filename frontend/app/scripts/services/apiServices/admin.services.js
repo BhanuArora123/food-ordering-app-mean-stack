@@ -2,9 +2,11 @@
 
 // user service
 appModule
-    .factory("adminService", function ($http, $state) {
-        return {
-            signup: function (email, password, name, role) {
+    .service("adminService", function ($http, $state,blockUI) {
+            this.signup = function (email, password, name, role) {
+                blockUI.start({
+                    message:"Signup In Progress...."
+                })
                 return $http
                     .post("http://localhost:8080/admin/register", {
                         email: email,
@@ -13,47 +15,102 @@ appModule
                         role: role
                     })
                     .then(function (response) {
+                        blockUI.stop();
                         return response.data;
                     })
                     .catch(function (error) {
                         console.log(error);
-                        alert(error.message);
+                        blockUI.stop();
                     })
-            },
-            login: function (email, password) {
+            };
+            this.login = function (email, password) {
+                blockUI.start({
+                    message:"Login In Progress...."
+                })
                 return $http
                     .post("http://localhost:8080/admin/login", {
                         email: email,
                         password: password
                     })
                     .then((response) => {
-                        localStorage.setItem("adminData",response.data.adminData);
-                        localStorage.setItem("role",response.data.adminData.role);
+                        blockUI.stop();
+                        localStorage.setItem("adminData", response.data.adminData);
+                        localStorage.setItem("role", response.data.adminData.role);
                         $state.go("home.dashboard");
                         return response.data;
                     })
                     .catch(function (error) {
+                        blockUI.stop();
                         console.log(error);
-                        alert(error.message);
                     })
-            },
-            getAdminData: function () {
+            };
+            this.getAdminData = function () {
+                
                 return $http
-                    .get("http://localhost:8080/admin/adminData")
+                .get("http://localhost:8080/admin/adminData")
                     .then(function (response) {
-                        localStorage.setItem("adminData",response.data.adminData);
-                        localStorage.setItem("role",response.data.adminData.role);
+                        localStorage.setItem("adminData", response.data.adminData);
+                        localStorage.setItem("role", response.data.adminData.role);
                         return response.data;
                     })
                     .catch(function (error) {
                         console.log(error);
                     })
-            },
-            getServiceData: function () {
+                };
+                this.updatePassword = function (currentPassword, newPassword) {
+                    blockUI.start({
+                        message:"Updating Password...."
+                    })
+                    return $http
+                    .put("http://localhost:8080/admin/updatePassword", {
+                        currentPassword: currentPassword,
+                        newPassword: newPassword
+                    })
+                    .then(function (res) {
+                        blockUI.stop();
+                        return res.data;
+                    })
+                    .catch(function (error) {
+                        blockUI.stop();
+                        console.log(error);
+                    })
+            };
+            this.getBrands = function () {
+                return $http.get("http://localhost:8080/admin/brand/getAll", {
+                    page: 1,
+                    limit: 9
+                })
+                    .then(function (res) {
+                        return res.data;
+                    })
+                    .catch(function (error) {
+                        console.log(error);
+                    })
+            };
+            this.editBrand = function (brand) {
+                blockUI.start({
+                    message:"Brand Updated Successfully...."
+                })
+                return $http
+                    .put("http://localhost:8080/admin/brand/edit", {
+                        brandId: brand._id,
+                        name: brand.name,
+                        email: brand.email,
+                        isDisabled:brand.isDisabled
+                    })
+                    .then(function (res) {
+                        blockUI.stop();
+                        return res.data;
+                    })
+                    .catch(function (error) {
+                        blockUI.stop();
+                        console.log(error);
+                    })
+            };
+            this.getServiceData = function () {
                 return {
-                    adminData:JSON.parse(localStorage.getItem("adminData")),
-                    role:localStorage.getItem("role")
+                    adminData: JSON.parse(localStorage.getItem("adminData")),
+                    role: localStorage.getItem("role")
                 }
-            }
-        }
+            };
     })

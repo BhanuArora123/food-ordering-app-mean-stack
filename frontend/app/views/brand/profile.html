@@ -1,0 +1,77 @@
+<section>
+    <!-- outlet details  -->
+    <div class="w-100 d-flex justify-content-around align-items-sm-center flex-column">
+        <div class="w-100 d-flex justify-content-around align-items-start flex-column m-5">
+            <span class="ml-3 mb-3">Name : {{brandData.name}}</span>
+            <span class="ml-3 mb-3">Email : {{brandData.email}}</span>
+
+            <form class="m-3" name="outletEdit" novalidate>
+                <div ng-show="isEditClicked" class="m-3">
+                    <label>Current Password</label>
+                    <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="password" name="currentPassword" ng-required="true" ng-model="brandData.currentPassword" ng-required="true">
+                </div>
+                <div ng-show="isEditClicked" class="m-3">
+                    <label>New Password</label>
+                    <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="password" name="newPassword" ng-required="true" ng-model="brandData.newPassword" ng-required="true">
+                </div>
+                <!-- edit Profile -->
+                <div class="mb-3">
+                    <button ng-hide="isEditClicked" class="btn btn-light text-dark mb-3" ng-click="allowEdit()">
+                        Edit Password
+                    </button>
+                    <button ng-show="isEditClicked" class="btn btn-light text-dark mb-3" ng-click="disableEdit()">
+                        Cancel
+                    </button>
+                    <button ng-disabled="{{outletEdit.currentPassword.$invalid || outletEdit.newPassword.$invalid}}" ng-show="isEditClicked" class="btn btn-light text-dark mb-3 {{(outletEdit.currentPassword.$invalid || outletEdit.newPassword.$invalid)?'btn-disabled':''}}" ng-click="updatePassword(brandData.currentPassword,brandData.newPassword)">
+                        Update Password
+                    </button>
+                </div>
+            </form>
+
+            <!-- add outlet -->
+            <div class="w-100 d-flex justify-content-end">
+                <button ng-hide="isEditClicked" class="d-flex justify-content-center btn btn-light text-dark m-3" ng-click="openAddTableModal()">
+                    Add Outlet
+                </button>
+            </div>
+        </div>
+        <!-- tables  -->
+        <table ng-table="allOutlets" class="table table-striped">
+
+            <tr ng-show="allOutlets.length" ng-repeat="outlet in allOutlets">
+
+                <td class="text-center" data-title="'Outlet Name'">
+                    <div ng-hide="$index === editElementIndex" >
+                        {{outlet.name}}
+                    </div>
+                     <!-- editing outlet name  -->
+                    <input ng-show="$index === editElementIndex" class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="text" ng-model="outlet.name" ng-required="true">
+                </td>
+
+                <td class="text-center" data-title="'Email'">
+                    <div ng-hide="$index === editElementIndex" >
+                        {{outlet.email}}
+                    </div>
+                     <!-- editing outlet name  -->
+                     <input ng-show="$index === editElementIndex" class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="email" ng-model="outlet.email" ng-required="true">
+                </td>
+
+                <td class="text-center" data-title="'Brand'">{{brandData.name}}</td>
+
+                <td class="text-center" data-title="'Actions'">
+                    <button ng-hide="$index === editElementIndex" class="btn btn-primary" ng-click="makeEditable($index)">Edit</button>
+                    <button ng-show="$index === editElementIndex" class="btn btn-primary" ng-click="disableEditing()">Cancel</button>
+                    <button ng-show="$index === editElementIndex" class="btn btn-primary" ng-click="updateOutlet(outlet)">Update</button>
+                    <button class="btn btn-primary" ng-click="openEditModal()">Remove</button>
+                </td>
+
+            </tr>
+
+            <tr ng-hide="allOutlets.length">
+                <td>No Outlets added yet</td>
+            </tr>
+        </table>
+        <!-- <input type="text" placeholder="{{dataName}}" ng-model="brandData.dataName"> -->
+    </div>
+
+</section>

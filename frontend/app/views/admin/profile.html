@@ -1,0 +1,76 @@
+<section>
+    <!-- admin details  -->
+    <div class="w-100 d-flex justify-content-around align-items-sm-center flex-column">
+        <div class="w-100 d-flex justify-content-around align-items-start flex-column m-5">
+            <span class="ml-3 mb-3">Name : {{adminData.name}}</span>
+            <span class="ml-3 mb-3">Email : {{adminData.email}}</span>
+
+            <form class="m-3" name="brandEdit" novalidate>
+                <div ng-show="isEditClicked" class="m-3">
+                    <label>Current Password</label>
+                    <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="password" name="currentPassword" ng-required="true" ng-model="adminData.currentPassword" ng-required="true">
+                </div>
+                <div ng-show="isEditClicked" class="m-3">
+                    <label>New Password</label>
+                    <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="password" name="newPassword" ng-required="true" ng-model="adminData.newPassword" ng-required="true">
+                </div>
+                <!-- edit Profile -->
+                <div class="mb-3">
+                    <button ng-hide="isEditClicked" class="btn btn-light text-dark mb-3" ng-click="allowEdit()">
+                        Edit Password
+                    </button>
+                    <button ng-show="isEditClicked" class="btn btn-light text-dark mb-3" ng-click="disableEdit()">
+                        Cancel
+                    </button>
+                    <button ng-disabled="{{brandEdit.currentPassword.$invalid || brandEdit.newPassword.$invalid}}" ng-show="isEditClicked" class="btn btn-light text-dark mb-3 {{(brandEdit.currentPassword.$invalid || brandEdit.newPassword.$invalid)?'btn-disabled':''}}" ng-click="updatePassword(adminData.currentPassword,adminData.newPassword)">
+                        Update Password
+                    </button>
+                </div>
+            </form>
+
+            <!-- add brand -->
+            <div class="w-100 d-flex justify-content-end">
+                <button ng-hide="isEditClicked" class="d-flex justify-content-center btn btn-light text-dark m-3" ng-click="openAddTableModal()">
+                    Add Brand
+                </button>
+            </div>
+        </div>
+        <!-- tables  -->
+        <table ng-table="allBrandsData" class="table table-striped">
+
+            <tr ng-show="allBrands.length" ng-repeat="brand in allBrands">
+
+                <td class="text-center" data-title="'Brand Name'">
+                    <div ng-hide="$index === editElementIndex" >
+                        {{brand.name}}
+                    </div>
+                     <!-- editing brand name  -->
+                    <input ng-show="$index === editElementIndex" class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="text" ng-model="brand.name" ng-required="true">
+                </td>
+
+                <td class="text-center" data-title="'Email'">
+                    <div ng-hide="$index === editElementIndex" >
+                        {{brand.email}}
+                    </div>
+                     <!-- editing brand name  -->
+                     <input ng-show="$index === editElementIndex" class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="email" ng-model="brand.email" ng-required="true">
+                </td>
+
+                <td class="text-center" data-title="'Actions'">
+                    <button ng-hide="$index === editElementIndex" class="btn btn-primary" ng-click="makeEditable($index)">Edit</button>
+                    <button ng-show="$index === editElementIndex" class="btn btn-primary" ng-click="disableEditing()">Cancel</button>
+                    <button ng-show="$index === editElementIndex" class="btn btn-primary" ng-click="updateBrand(brand)">Update</button>
+                    <button ng-show="!brand.isDisabled" class="btn btn-primary" ng-click="toggleBrandAccess(brand)">Disable</button>
+                    <button ng-show="brand.isDisabled" class="btn btn-primary" ng-click="toggleBrandAccess(brand)">Enable</button>
+                </td>
+
+            </tr>
+
+            <tr ng-hide="allBrands.length">
+                <td>No Brands added yet</td>
+            </tr>
+        </table>
+        <!-- <input type="text" placeholder="{{dataName}}" ng-model="adminData.dataName"> -->
+    </div>
+
+</section>
