@@ -262,6 +262,7 @@ exports.addToCart = function (req, res, next) {
         var category = req.body.category;
         var subCategory = req.body.subCategory;
         var outletName = req.body.outletName;
+        var taxes = req.body.taxes;
         var outletId = req.user.userId;
         // if item already in cart , increase quantity, else add it.
         outlets.findById(outletId)
@@ -286,7 +287,8 @@ exports.addToCart = function (req, res, next) {
                         outletName: outletName,
                         category: category,
                         subCategory: subCategory,
-                        quantity: 1
+                        quantity: 1,
+                        taxes:taxes
                     })
                 }
                 outletData.cart = userCart;

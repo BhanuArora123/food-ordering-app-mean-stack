@@ -7,8 +7,8 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 exports.sendEmail = function (emails, subject, content) {
     try {
         var mailConfig = {
-            to: emails, // Change to your recipient
-            from: process.env.EMAIL_USERNAME, // Change to your verified sender
+            to: emails,
+            from: process.env.EMAIL_USERNAME,
             subject: subject,
             text: content
         };

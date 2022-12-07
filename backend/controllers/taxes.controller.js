@@ -4,8 +4,9 @@ var throwError = require("../utils/errors");
 
 exports.addTax = function (req, res, next) {
     try {
-        var taxName = req.body.name;
+        var taxName = req.body.taxName;
         var taxPercentageRange = req.body.percentageRange;
+        console.log(req.body);
 
         var role = req.user.role;
 
@@ -30,6 +31,11 @@ exports.addTax = function (req, res, next) {
                     percentageRange: taxPercentageRange
                 });
                 return newTax.save();
+            })
+            .then(function () {
+                return res.status(201).json({
+                    message:"taxes added successfully"
+                })
             })
             .catch(function (error) {
                 var statusCode = error.cause ? error.cause.statusCode : 500;

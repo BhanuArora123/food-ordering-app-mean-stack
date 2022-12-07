@@ -62,7 +62,8 @@ var ordersSchema = new schema({
             subCategory:{
                 type:String,
                 required:true
-            }
+            },
+            taxes:[]
         }
     ],
     amountPaid:{

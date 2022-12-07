@@ -37,7 +37,8 @@ exports.placeOrder = function (req, res, next) {
                         foodPrice: cartItem.foodPrice,
                         quantity: cartItem.quantity,
                         subCategory: cartItem.subCategory,
-                        category: cartItem.category
+                        category: cartItem.category,
+                        taxes:cartItem.taxes
                     };
                 })
                 var newOrder = new orders({

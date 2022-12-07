@@ -55,7 +55,11 @@ var foodSchema = new schema({
                 required:true
             }
         }
-    ]
+    ],
+    isDeleted:{
+        type:Boolean,
+        default:false
+    }
 });
 
 module.exports = mongoose.model("food",foodSchema);

@@ -10,6 +10,8 @@ var fileUtils = require("../utils/uploadFile");
 
 var utils = require("../utils/utils");
 
+var brandUtils = require("../utils/brands.utils");
+
 exports.addFoodItem = function (req, res, next) {
     try {
         var foodName = req.body.foodName;
@@ -19,7 +21,7 @@ exports.addFoodItem = function (req, res, next) {
         var category = req.body.category;
         var subCategory = req.body.subCategory;
         var isVeg = req.body.isVeg;
-        // var taxes = req.body.taxes;
+        var taxes = JSON.parse(req.body.taxes);
 
         async.waterfall(utils.convertToArray({
 
@@ -39,10 +41,11 @@ exports.addFoodItem = function (req, res, next) {
                 fileUtils.saveFile(cb, req.files.foodImage);
             },
 
-            existingFoodCheck: function (filePath,cb) {
+            existingFoodCheck: function (filePath, cb) {
                 foodModel.findOne({
                     name: foodName,
-                    "brand.name": brand.name
+                    "brand.name": brand.name,
+                    isDeleted:false
                 })
                     .then(function (existingFoodItem) {
                         if (existingFoodItem) {
@@ -52,14 +55,14 @@ exports.addFoodItem = function (req, res, next) {
                                 }
                             }));
                         }
-                        cb(null,filePath);
+                        cb(null, filePath);
                     })
                     .catch(function (err) {
                         cb(err);
                     })
             },
 
-            createFoodItem : function (filePath,cb) {
+            createFoodItem: function (filePath, cb) {
                 var foodItemData = new foodModel({
                     name: foodName,
                     price: foodPrice,
@@ -69,18 +72,19 @@ exports.addFoodItem = function (req, res, next) {
                     category: category,
                     subCategory: subCategory,
                     isVeg: isVeg,
+                    taxes: taxes
                 });
                 foodItemData
-                .save()
-                .then(function (foodItem) {
-                    cb(null,foodItem);
-                })
-                .catch(function (err) {
-                    cb(err);
-                })
+                    .save()
+                    .then(function (foodItem) {
+                        cb(null, foodItem);
+                    })
+                    .catch(function (err) {
+                        cb(err);
+                    })
             }
-        }), function (error,foodItemData) {
-            if(error){
+        }), function (error, foodItemData) {
+            if (error) {
                 console.log(error);
                 var statusCode = error.cause ? error.cause.statusCode : 500;
                 return res.status(statusCode).json({
@@ -112,6 +116,7 @@ exports.displayFoodItem = function (req, res, next) {
 
         var matchQuery = {
             $and: [],
+            isDeleted:false
         };
 
         if (minPrice) {
@@ -181,14 +186,30 @@ exports.editFoodItem = function (req, res, next) {
         var subCategory = req.body.subCategory;
         var foodItemId = req.body.foodItemId;
 
+        var role = req.user.role;
+        var brandId = req.user.userId;
+
+        if (role !== "brand") {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
+
+        var foodData;
+
         foodModel
-            .findById(foodItemId)
+            .findOne({
+                _id:foodItemId,
+                isDeleted:false
+            })
             .then(function (foodItemData) {
+                foodData = foodItemData;
                 if (!foodItemData) {
                     throwError("food item not found", 404);
                 }
                 return foodModel.updateOne({
-                    _id: ObjectId(foodItemId)
+                    _id: ObjectId(foodItemId),
+                    isDeleted:false
                 }, {
                     $set: {
                         name: foodName,
@@ -200,6 +221,12 @@ exports.editFoodItem = function (req, res, next) {
                 })
             })
             .then(function () {
+                brandUtils.changeNotificationForOutlets('Food Items Updated!',
+                    `${foodName} is recently updated by your brand, Please Check the updated Item(s)
+                    changes detected - 
+                    Food Name : ${foodData.name} to ${foodName}
+                    Food Price : ${foodData.price} to ${foodPrice}`
+                    , brandId)
                 return res.status(200).json({
                     message: "food item updated successfully"
                 })
@@ -224,8 +251,13 @@ exports.deleteFoodItem = function (req, res, next) {
         if (req.user.role !== "admin" && req.user.role !== "superAdmin" && req.user.role !== "brand") {
             throwError("Access Denied! you don't have correct privileges to perform this action", 401);
         }
-        foodModel.deleteOne({
-            _id: ObjectId(foodItemId)
+        foodModel.updateOne({
+            _id: ObjectId(foodItemId),
+            isDeleted:false
+        },{
+            $set:{
+                isDeleted:true
+            }
         })
             .then(function () {
                 return res.status(200).json({

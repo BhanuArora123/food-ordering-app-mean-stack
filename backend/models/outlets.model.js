@@ -53,7 +53,8 @@ var outletSchema = new schema({
             subCategory:{
                 type:String,
                 required:true
-            }
+            },
+            taxes:[]
         }
     ],
     brand:{
