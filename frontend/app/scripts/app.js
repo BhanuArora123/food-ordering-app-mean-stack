@@ -11,5 +11,6 @@ var appModule = angular
     'ngAnimate',
     "ngTable",
     "blockUI",
-    "ui.router.state.events"
+    "ui.router.state.events",
+    "oi.select"
   ])

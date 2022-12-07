@@ -1,4 +1,4 @@
-<div class="w-100 bg-light d-flex justify-content-around flex-column align-items-center" ng-init="cart = getCart()"
+<div class="w-100 bg-light d-flex justify-content-around flex-column align-items-center" ng-init="cart = getCart(); currencySymbol = '$'"
     style="height: {{setHeight()}};">
     <h3 class="bg-light text-dark d-flex justify-content-center align-items-center w-100 m-2">Welcome to cart</h3>
     <div ng-hide="cart.length" class="bg-light text-dark d-flex justify-content-center align-items-center w-100">Cart is
@@ -13,10 +13,11 @@
         <div class="text-dark bg-light">=</div>
         <div class="text-dark bg-light">${{cartItem.foodPrice * cartItem.quantity}}</div>
     </div>
+    <div ng-show="cart.length" class="w-75" ng-include="'views/taxes/taxBreakdown.html'" ng-init="items = cart"></div>
     <hr>
     <div ng-show="cart.length" class="text-dark w-100 h-400p d-flex justify-content-center align-items-center flex-column">
         <!-- Customer Details form -->
-        <h5 class="w-100 d-flex justify-content-center align-items-start">Customer Details</h5>
+        <h6 class="w-100 d-flex justify-content-center align-items-start">Customer Details</h6>
         <form novalidate class="w-100 d-flex justify-content-around align-items-start p-5 bg-light flex-column" name="customerForm">
             <div class="w-100  d-flex justify-content-around align-items-start flex-column">
                 <label class="text-dark w-50">Name</label>

@@ -15,8 +15,8 @@ appModule
         this.addTax = function (tax) {
             return $http
                 .post("http://localhost:8080/tax/add", {
-                    name: tax.name,
-                    percentageRange: tax.percentageRange
+                    taxName: tax.name,
+                    percentageRange: tax.range
                 })
                 .then(function (response) {
                     return response.data;

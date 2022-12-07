@@ -2,8 +2,9 @@
 
 // user service
 appModule
-    .service("outletService", function ($http, $state,blockUI) {
-        this.signup = function (name, email, password, brandData) {
+    .service("outletService", function ($http, $state,blockUI,brandService) {
+        this.signup = function (name, email, password) {
+            var brandData = brandService.getServiceData().brandData;
             return $http
                 .post("http://localhost:8080/outlet/register", {
                     email: email,
@@ -73,13 +74,14 @@ appModule
                     console.log(error);
                 })
         }
-        this.addToCart = function (foodName, foodPrice, outletName, category, subCategory) {
+        this.addToCart = function (foodName, foodPrice, outletName, category, subCategory,taxes) {
             return $http.put("http://localhost:8080/outlet/addToCart", {
                 foodItemName: foodName,
                 foodItemPrice: foodPrice,
                 outletName: outletName,
                 subCategory: subCategory,
-                category: category
+                category: category,
+                taxes:taxes
             })
                 .then(function (response) {
                     return response.data;

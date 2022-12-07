@@ -1,5 +1,5 @@
 
-appModule.controller("cartController",function ($scope,orderService,outletService) {
+appModule.controller("cartController",function ($scope,orderService,outletService,utility) {
     
 
     (function () {
@@ -47,9 +47,13 @@ appModule.controller("cartController",function ($scope,orderService,outletServic
         })
     }
 
+    $scope.calculateAmount = function (items) {
+        return utility.calculateAmount(items)
+    }
+
     $scope.setHeight = function () {
         var cart = $scope.getCart();
 
-        return (100*cart.length + 400) + 'px;';
+        return (100*cart.length + 700) + 'px;';
     }
 })

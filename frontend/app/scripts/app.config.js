@@ -82,6 +82,16 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
             .catch(function (error) {
               console.log(error);
             })
+        },
+        availableTaxes: function (taxService) {
+          return taxService
+            .getTaxes()
+            .then(function (data) {
+              return data.taxes;
+            })
+            .catch(function (error) {
+              console.log(error);
+            })
         }
       }
     })

@@ -25,7 +25,7 @@
 
                             <!-- add to cart button  -->
                             <a class="btn btn-primary" ng-show="!presentInCart(food.name,food.outlet.name) && getRole() === 'outlet'"
-                                ng-click="addToCart(food.name, food.price,food.subCategory,food.category)">Add
+                                ng-click="addToCart(food.name, food.price,food.subCategory,food.category,food.taxes)">Add
                                 To Cart</a>
                             <!-- inc/dec button  -->
                             <div class="input-group w-10" ng-show="presentInCart(food.name,food.outlet.name) && getRole() === 'outlet'">
@@ -41,7 +41,7 @@
                                 <span class="input-group-btn">
                                     <button type="button" class="quantity-left-minus btn btn-primary btn-number"
                                         data-type="minus" data-field=""
-                                        ng-click="addToCart(food.name,food.price,food.subCategory,food.category)">
+                                        ng-click="addToCart(food.name,food.price,food.subCategory,food.category,food.taxes)">
                                         <i class="fas fa-plus text-light bg-primary"></i>
                                     </button>
                                 </span>

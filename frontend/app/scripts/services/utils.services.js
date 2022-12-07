@@ -1,15 +1,15 @@
 
 
 appModule
-    .factory("utility", function ($uibModal,$state) {
+    .factory("utility", function ($uibModal, $state) {
         return {
-            categorizeItems : function (data) {
+            categorizeItems: function (data) {
                 // categorize by sub category 
                 var subCategorizedItems = {};
 
                 data.forEach(function (items) {
                     console.log(items.subCategory);
-                    if(!subCategorizedItems[items.subCategory]){
+                    if (!subCategorizedItems[items.subCategory]) {
                         subCategorizedItems[items.subCategory] = [];
                     }
                     subCategorizedItems[items.subCategory].push(items);
@@ -22,36 +22,36 @@ appModule
                     if (Object.hasOwnProperty.call(subCategorizedItems, items)) {
                         var itemSubCategorized = subCategorizedItems[items];
                         var category = itemSubCategorized[0].category;
-                        if(!categorizedItems[category]){
+                        if (!categorizedItems[category]) {
                             categorizedItems[category] = [];
                         }
                         var subCategoryItems = {};
 
                         categorizedItems[category].push({
-                            subCategory:items,
-                            items:subCategorizedItems[items]
+                            subCategory: items,
+                            items: subCategorizedItems[items]
                         });
                     }
                 }
-                
+
                 var categorizedItemsArray = [];
 
                 for (var items in categorizedItems) {
                     if (Object.hasOwnProperty.call(categorizedItems, items)) {
                         var subCategoryItems = categorizedItems[items];
                         categorizedItemsArray.push({
-                            category:items,
-                            subCategoryItems:subCategoryItems
+                            category: items,
+                            subCategoryItems: subCategoryItems
                         });
                     }
                 }
 
                 return categorizedItemsArray;
             },
-            getRole : function () {
+            getRole: function () {
                 return localStorage.getItem("role");
             },
-            decategorizeItems:function (categorizedItems) {
+            decategorizeItems: function (categorizedItems) {
                 var items = [];
 
                 categorizedItems.forEach(function (categoryItems) {
@@ -65,26 +65,46 @@ appModule
                 return items;
             },
             // open modal for cart 
-            openModal: function (templateUrl,controller,instanceName,scope,extraData,currentScope) {
+            openModal: function (templateUrl, controller, instanceName, scope, extraData, currentScope) {
                 // console.log("hello");
-                if(scope){
+                if (scope) {
                     scope.extraData = extraData;
                 }
                 var modalInstance = $uibModal.open({
-                    backdrop:true,
-                    controller:controller,
-                    scope:scope?scope:currentScope,
-                    templateUrl:templateUrl,
+                    backdrop: true,
+                    controller: controller,
+                    scope: scope ? scope : currentScope,
+                    templateUrl: templateUrl,
                     windowClass: 'show bg-transparent',
                     ariaLabelledBy: 'modal-title',
                     ariaDescribedBy: 'modal-body',
-                    backdropClass:"opacity-medium"
+                    backdropClass: "opacity-medium"
                 })
                 currentScope[instanceName] = modalInstance;
             },
             logout: function () {
                 localStorage.clear();
                 $state.go("home.login");
+            },
+            calculateAmount: function (items) {
+                var taxesMap = new Map();
+                var totalFoodAmount = 0;
+                var totalTaxAmount = 0;
+                items.forEach(function (item) {
+                    totalFoodAmount += item.foodPrice;
+                    item.taxes.forEach(function (tax) {
+                        var taxLevied = item.foodPrice * 0.01 * tax.percentage * item.quantity;
+                        console.log(taxLevied);
+                        totalTaxAmount += taxLevied;
+                        taxesMap[tax.tax.name] = (taxesMap[tax.tax.name] ? taxesMap[tax.tax.name] : 0) + (taxLevied);
+                    })
+                })
+                return {
+                    totalPayable: totalFoodAmount + totalTaxAmount,
+                    taxesMap: taxesMap,
+                    totalFoodAmount: totalFoodAmount,
+                    totalTaxAmount: totalTaxAmount
+                }
             }
         }
     })

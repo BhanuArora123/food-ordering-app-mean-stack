@@ -129,5 +129,9 @@ appModule.controller("orderDetailsController", function ($scope, utility, orderS
             })
     }
 
+    $scope.calculateAmount = function (items) {
+        return utility.calculateAmount(items);
+    }
+
     $scope.tables = $scope.$parent.tablesData;
 })

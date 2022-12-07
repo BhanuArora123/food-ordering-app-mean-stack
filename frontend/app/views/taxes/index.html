@@ -1,0 +1,26 @@
+<form class="w-75 d-flex justify-content-around align-items-center flex-column h-75" name="taxForm" novalidate>
+    <h3 class="text-dark w-75 d-flex justify-content-start m-2">Create Tax</h3>
+    <div class="w-75 d-flex justify-content-around align-items-start flex-column m-2">
+        <label class="text-dark">Tax Name*</label>
+        <input class="text-dark border-dark outline-none w-100 h-50p p-2 rounded" type="text" placeholder="Enter Tax"
+            name="taxName" ng-model="tax.name" ng-required="true">
+    </div>
+    <div class="w-75 d-flex justify-content-around align-items-start flex-column m-2">
+        <label class="text-dark">Minimum Tax Percentage </label>
+        <input class="text-dark border-dark outline-none w-100 h-50p p-2 rounded" type="number"
+            placeholder="Minimum Tax Percentage" name="minTaxPercentage" ng-model="tax.range.lowerBound">
+    </div>
+    <div class="w-75 d-flex justify-content-around align-items-start flex-column m-2">
+        <label class="text-dark">Maximum Tax Percentage </label>
+        <input class="text-dark border-dark outline-none w-100 h-50p p-2 rounded" type="number"
+            placeholder="Maximum Tax Percentage" name="maxTaxPercentage" ng-model="tax.range.upperBound">
+    </div>
+    <div class="d-flex w-75 justify-content-between m-2">
+        <button type="button"
+            class="bg-theme-light p-2 h-40p rounded fw-bold {{ (taxForm.taxName.$invalid || taxForm.minTaxPercentage.$invalid || taxForm.maxTaxPercentage.$invalid)?'btn-disabled':'' }}"
+            ng-disabled="taxForm.taxName.$invalid || taxForm.minTaxPercentage.$invalid || taxForm.maxTaxPercentage.$invalid"
+            ng-click="createTax(tax)">
+            Create Tax
+        </button>
+    </div>
+</form>

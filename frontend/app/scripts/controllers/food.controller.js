@@ -1,6 +1,6 @@
 
 
-appModule.controller("foodController", function ($scope, foodService, outletService, foodItems, brandService, allCategories, utility, blockUI) {
+appModule.controller("foodController", function ($scope, foodService, outletService, foodItems, brandService, allCategories, utility, blockUI, availableTaxes) {
 
     // adding food items 
 
@@ -107,9 +107,9 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
     }
 
     // add to cart 
-    $scope.addToCart = function (foodName, foodPrice, subCategory, category) {
+    $scope.addToCart = function (foodName, foodPrice, subCategory, category,taxes) {
         outletService
-            .addToCart(foodName, foodPrice, outletData.name, category, subCategory)
+            .addToCart(foodName, foodPrice, outletData.name, category, subCategory,taxes)
             .then(function (response) {
                 console.log(response.cartData);
                 $scope.userCart = response.cartData;
@@ -202,4 +202,9 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
         $scope.editClicked = false;
     }
 
+    $scope.taxesAvailable = availableTaxes;
+
+    $scope.openTaxModal = function () {
+        utility.openModal('views/taxes/index.html',"taxController","taxModal",$scope,{},$scope);
+    }
 })

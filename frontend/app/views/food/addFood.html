@@ -25,17 +25,45 @@
                 <option value="Chinese">Chinese</option>
                 <option value="Italian">Italian</option>
             </select> -->
-            <input type="text" ng-model="food.category" uib-typeahead="category for category in categories | filter:$viewValue | limitTo:8" placeholder="Select Category" typeahead-no-results="noResults" typeahead-on-select="getSubCategories(food.category)" class="form-control bg-theme-light text-light h-50p outline-none rounded border-0 mb-2" ng-required="true" typeahead-min-length="0">
+            <input type="text" ng-model="food.category"
+                uib-typeahead="category for category in categories | filter:$viewValue | limitTo:8"
+                placeholder="Select Category" typeahead-no-results="noResults"
+                typeahead-on-select="getSubCategories(food.category)"
+                class="form-control bg-theme-light text-light h-50p outline-none rounded border-0 mb-2"
+                ng-required="true" typeahead-min-length="0">
             <div ng-show="noResults" class="w-100 h-50p">
-                <button class="btn btn-primary" type="button" ng-click="createCategory(food.category)">Create Category</button>
+                <button class="btn btn-primary" type="button" ng-click="createCategory(food.category)">Create
+                    Category</button>
             </div>
         </div>
-        <div class="w-75 d-flex justify-content-around align-items-start flex-column" ng-show="isCategorySelected && food.category" >
+        <div class="w-75 d-flex justify-content-around align-items-start flex-column"
+            ng-show="isCategorySelected && food.category">
             <label>Select Sub Category</label>
-            <input ng-disabled="!food.category" type="text" placeholder="Select Sub Category" ng-model="food.subCategory" uib-typeahead="subCategory for subCategory in subCategories | filter:$viewValue | limitTo:8" typeahead-no-results="noSubCategory" class="form-control bg-theme-light text-light h-50p outline-none rounded border-0 mb-2 {{food.category?'':'disabled'}}" ng-required="true" typeahead-min-length="0">
+            <input ng-disabled="!food.category" type="text" placeholder="Select Sub Category"
+                ng-model="food.subCategory"
+                uib-typeahead="subCategory for subCategory in subCategories | filter:$viewValue | limitTo:8"
+                typeahead-no-results="noSubCategory"
+                class="form-control bg-theme-light text-light h-50p outline-none rounded border-0 mb-2 {{food.category?'':'disabled'}}"
+                ng-required="true" typeahead-min-length="0">
             <div ng-show="noSubCategory" class="w-100 h-50p">
-                <button class="btn btn-primary" type="button" ng-click="createSubCategory(food.subCategory,food.category)">Create Sub Category</button>
+                <button class="btn btn-primary" type="button"
+                    ng-click="createSubCategory(food.subCategory,food.category)">Create Sub Category</button>
             </div>
+        </div>
+        <div class="w-75 d-flex justify-content-around align-items-start flex-column">
+            <label>Add Taxes</label>
+            <oi-select oi-options="item.name for item in taxesAvailable" ng-model="food.taxes" multiple
+                placeholder="Select" class="h-50p">
+            </oi-select>
+            <button type="button"
+                class="bg-white text-dark w-25 h-40p rounded fw-bold "
+                ng-click="openTaxModal()">Create Tax</button>
+        </div>
+        <!-- configuring tax percentage  -->
+        <div ng-repeat="tax in food.taxes" class="w-75 d-flex justify-content-around align-items-start flex-column">
+            <label>{{tax.name}} Percentage</label>
+            <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="number"
+                placeholder="Enter {{tax.name}} Percentage" name="tax{{$index}}" ng-model="food.taxes[$index].percentage" min="{{tax.percentageRange.lowerBound}}" max="{{tax.percentageRange.upperBound}}" step="1" ng-required="true" step="any">
         </div>
         <div class="w-75 d-flex justify-content-around align-items-start flex-column">
             <label>Food Image</label>

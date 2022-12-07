@@ -17,7 +17,7 @@ appModule
                     name: outletData.name
                 },
                 orderType: orderType,
-                assignedTable: assignedTable
+                assignedTable: (assignedTable === 'None'?undefined:assignedTable)
             })
                 .then(function (res) {
                     blockUI.stop();

@@ -31,6 +31,15 @@ appModule
             blockUI.start({
                 message: "Adding Food Item..."
             })
+            var taxes = data.taxes.map(function (tax) {
+                return {
+                    tax:{
+                        name:tax.name,
+                        percentageRange:tax.percentageRange
+                    },
+                    percentage:tax.percentage
+                };
+            });
             var foodData = new FormData();
             var isVeg = (data.isVeg === undefined) ? false : true;
             data.isVeg = isVeg;
@@ -42,6 +51,7 @@ appModule
             foodData.append("subCategory", data.subCategory);
             foodData.append("category", data.category);
             foodData.append("brand", JSON.stringify(data.brand));
+            foodData.append("taxes",JSON.stringify(taxes));
             return $http({
                 url: "http://localhost:8080/food/addFoodItem",
                 method: "POST",

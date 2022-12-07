@@ -11,7 +11,8 @@
     "angular-touch": "^1.4.0",
     "angular-ui-router":"",
     "components-font-awesome": "^4.7.0",
-    "angular-block-ui":""
+    "angular-block-ui":"",
+    "oi.selec":""
   },
   "devDependencies": {
     "angular-mocks": "^1.4.0"
