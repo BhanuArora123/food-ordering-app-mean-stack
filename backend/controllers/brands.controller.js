@@ -8,7 +8,8 @@ var foodModel = require("../models/food.model");
 
 var throwError = require("../utils/errors");
 var outletsModel = require("../models/outlets.model");
-const { sendEmail } = require("../utils/email.utils");
+
+var addTaskToQueue = require("../utils/aws/sqs/utils").addTaskToQueue;
 
 require("dotenv").config("./.env");
 
@@ -50,7 +51,13 @@ exports.registerBrand = function (req, res, next) {
             })
             .then(function (brandData) {
                 // send email to brand 
-                sendEmail(email,'Brand Registration Success!',emailContent);
+                addTaskToQueue("SEND_EMAIL",{
+                    MessageBody:{
+                        email:email,
+                        subject:'Brand Registration Success!',
+                        content:emailContent
+                    }
+                });
                 return res.status(201).json({
                     message: "brand registered successfully",
                     brandData: brandData

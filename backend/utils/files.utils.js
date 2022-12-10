@@ -5,6 +5,7 @@ exports.saveFile = function (cb,file) {
         var fileName = Date.now() + file.name;
         var filePath = path.join(__dirname,"..","public",fileName);
 
+        console.log("file->>>>>>",file);
         file.mv(filePath,function (err) {
             if(err){
                 console.log(err);

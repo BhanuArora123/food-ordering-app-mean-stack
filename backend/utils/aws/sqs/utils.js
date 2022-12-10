@@ -1,0 +1,117 @@
+var aws = require("../init").getAwsSdk();
+
+var sqs = new aws.SQS({
+    apiVersion: '2012-11-05',
+    region: process.env.REGION
+});
+
+var consumer = require("sqs-consumer").Consumer;
+
+var async = require("async");
+
+var createTaskQueue = function (queueName, processNextTask) {
+    try {
+        var queueParams = {
+            QueueName: queueName
+        };
+        async.waterfall([
+            function (cb) {
+                sqs.getQueueUrl(queueParams, function (err, data) {
+                    if (err) {
+                        if (err.code === "AWS.SimpleQueueService.NonExistentQueue") {
+                            return cb(null, true);
+                        }
+                        return cb(err);
+                    }
+                    return cb(null, false);
+                })
+            },
+            function (createQueue, cb) {
+                if (!createQueue) {
+                    return cb();
+                }
+                sqs.createQueue(queueParams, function (err, data) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    return cb(null, data);
+                })
+            }
+        ], function (err, result) {
+            if (err) {
+                console.log(err);
+                return processNextTask(err);
+            }
+            console.log(result);
+            return processNextTask();
+        })
+
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+var addTaskToQueue = function (queueName, params) {
+    try {
+        var taskParams = {
+            QueueUrl: `https://sqs.us-east-1.amazonaws.com/${process.env.ACCOUNT_ID}/${queueName}`,
+            MessageBody: JSON.stringify(params.MessageBody)
+        }
+        sqs.sendMessage(taskParams, function (err, data) {
+            if (err) {
+                console.log(params);
+                console.log(err);
+            } else {
+                console.log("message successfully added", data.MessageId);
+            }
+        })
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+var processTask = function (queueName, worker, processNextTask) {
+    try {
+        async.waterfall([
+            function (cb) {
+                var taskConsumer = consumer.create({
+                    queueUrl: `https://sqs.us-east-1.amazonaws.com/${process.env.ACCOUNT_ID}/${queueName}`,
+                    handleMessage: function (data) {
+                        worker(data, cb);
+                    },
+                    visibilityTimeout:30
+                });
+
+                taskConsumer.on('error', function(err) {
+                    console.error(err.message);
+                    return cb(err);
+                });
+
+                taskConsumer.on('processing_error', function(err) {
+                    console.error(err.message);
+                    return cb(err);
+                });
+
+                // starting consumer
+                taskConsumer.start();
+            }
+        ], function (err, result) {
+            if (err) {
+                return processNextTask(err);
+            }
+            else {
+                console.log(result);
+                return processNextTask();
+            }
+        })
+
+    } catch (error) {
+        console.log(error.message);
+    }
+}
+
+module.exports = {
+    processTask: processTask,
+    addTaskToQueue: addTaskToQueue,
+    createTaskQueue: createTaskQueue
+}

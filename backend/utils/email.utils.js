@@ -1,10 +1,10 @@
 
 require("dotenv").config("./env");
 
-const sgMail = require('@sendgrid/mail')
+var sgMail = require('@sendgrid/mail')
 sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
-exports.sendEmail = function (emails, subject, content) {
+exports.sendEmail = function (emails, subject, content,cb) {
     try {
         var mailConfig = {
             to: emails,
@@ -18,11 +18,14 @@ exports.sendEmail = function (emails, subject, content) {
             .then(function (data) {
                 console.log(data);
                 console.log("email sent!");
+                cb(null,data);
             })
             .catch(function (error) {
                 console.log(error);
+                cb(error);
             })
     } catch (error) {
         console.log(error);
+        cb(error);
     }
 }

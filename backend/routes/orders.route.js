@@ -14,8 +14,8 @@ router.get("/getAllOrders", passport.authenticate("jwt", { session: false }), or
 
 router.post("/placeOrder",passport.authenticate("jwt",{session:false}),
 [
-    body("customer.name").notEmpty().isString(),
-    body("customer.phoneNumber").notEmpty().isNumeric(),
+    body("customer.customer.name").notEmpty().isString(),
+    body("customer.customer.phoneNumber").notEmpty().isNumeric(),
     body("customer.paidVia").notEmpty().isString(),
     body("brand.id").notEmpty().isString(),
     body("brand.name").notEmpty().isString(),

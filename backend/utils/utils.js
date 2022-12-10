@@ -1,6 +1,6 @@
 var bcrypt = require("bcryptjs");
 var adminModel = require("../models/admin.model");
-const brandsModel = require("../models/brands.model");
+var brandsModel = require("../models/brands.model");
 
 var outletsModel = require("../models/outlets.model");
 

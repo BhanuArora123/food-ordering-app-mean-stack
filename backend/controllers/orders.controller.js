@@ -5,7 +5,11 @@ var outlets = require("../models/outlets.model");
 var throwError = require("../utils/errors");
 var orderUtils = require("../utils/orders.utils");
 
+var brandUtils = require("../utils/brands.utils");
+
 var ObjectId = require("mongoose").Types.ObjectId;
+
+var customerModel = require("../models/customer.model").model
 
 exports.placeOrder = function (req, res, next) {
     try {
@@ -27,7 +31,22 @@ exports.placeOrder = function (req, res, next) {
                 outletData.cart = [];
                 return outletData.save();
             })
-            .then(function (outletData) {
+            .then(function () {
+                return customerModel.findOne({
+                    phoneNumber:customer.customer.phoneNumber.toString()
+                })
+            })
+            .then(function (customerData) {
+                if(customerData){
+                    if(customerData.name !== customer.customer.name){
+                        throwError("a customer with this name and phone number already exist",409);
+                    }
+                    return customerData;
+                }
+                var newCustomer = new customerModel(customer.customer);
+                return newCustomer.save();
+            })
+            .then(function (customerData) {
                 var totalPrice = cartItems.reduce(function (priceTillNow, currentCartItem) {
                     return priceTillNow + (currentCartItem.quantity * currentCartItem.foodPrice)
                 }, 0);
@@ -47,7 +66,10 @@ exports.placeOrder = function (req, res, next) {
                     outletName: cartItems[0].outletName,
                     createdAt: new Date(),
                     outlet: outlet,
-                    customer: customer,
+                    customer: {
+                        customer:customerData,
+                        paidVia:customer.paidVia
+                    },
                     brand: brand,
                     orderType: orderType ? orderType : "Dine In",
                     assignedTable: (assignedTable && orderType === "Dine In") ? parseInt(assignedTable) : undefined
@@ -57,16 +79,20 @@ exports.placeOrder = function (req, res, next) {
             })
             .then(function (orderData) {
                 // updating outlet asynchronously 
-                orderUtils.updateTable(outletId, assignedTable, {
-                    isAssigned: true,
-                    assignedOrderId: orderData._id
-                })
+                brandUtils.sendOrderCreationEmail(brand.id,outlet.name);
+                if(orderData.orderType === 'Dine In'){
+                    orderUtils.updateTable(outletId, assignedTable, {
+                        isAssigned: true,
+                        assignedOrderId: orderData._id
+                    })
+                }
                 return res.status(201).json({
                     message: "order created successfully",
                     orderData: orderData
                 })
             })
             .catch(function (error) {
+                console.log(error);
                 var statusCode = error.cause ? error.cause.statusCode : 500;
                 return res.status(statusCode).json({
                     message: error.message

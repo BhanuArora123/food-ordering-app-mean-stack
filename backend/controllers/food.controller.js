@@ -6,7 +6,7 @@ var ObjectId = require("mongoose").Types.ObjectId;
 
 var async = require("async");
 
-var fileUtils = require("../utils/uploadFile");
+var s3Utils = require("../utils/aws/s3/utils");
 
 var utils = require("../utils/utils");
 
@@ -38,7 +38,7 @@ exports.addFoodItem = function (req, res, next) {
             },
 
             saveFile: function (cb) {
-                fileUtils.saveFile(cb, req.files.foodImage);
+                s3Utils.uploadFileToS3(req.files.foodImage,cb);
             },
 
             existingFoodCheck: function (filePath, cb) {
@@ -116,7 +116,9 @@ exports.displayFoodItem = function (req, res, next) {
 
         var matchQuery = {
             $and: [],
-            isDeleted:false
+            isDeleted:{
+                $in:[null,false]
+            }
         };
 
         if (minPrice) {

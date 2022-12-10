@@ -16,8 +16,7 @@ router.get("/getFoodItems", foodController.displayFoodItem);
 router.post("/addFoodItem",
     passport.authenticate("jwt", { failureMessage: false, session: false }),
     fileUpload({
-        tempFileDir: path.join(__dirname, "..", "public"),
-        useTempFiles: true,
+        useTempFiles: false,
     }),
     [
         body("foodName").notEmpty().isString(),

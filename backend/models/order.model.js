@@ -4,6 +4,8 @@ var schema = mongoose.Schema;
 
 var ObjectId = mongoose.Schema.Types.ObjectId;
 
+var customerSchema = require("./customer.model").schema;
+
 
 var ordersSchema = new schema({
     brand:{
@@ -17,12 +19,8 @@ var ordersSchema = new schema({
         }
     },
     customer:{
-        name : {
-            type:String,
-            required:true
-        },
-        phoneNumber:{
-            type:String,
+        customer:{
+            type:customerSchema,
             required:true
         },
         paidVia:{

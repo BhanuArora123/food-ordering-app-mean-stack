@@ -70,7 +70,7 @@ exports.groupBasedOnCategory = function (matchQuery,skip,limit) {
     }
 }
 
-const updateTable = function (outletId,tableId,dataToUpdate) {
+var updateTable = function (outletId,tableId,dataToUpdate) {
     try {
         return outletModel
         .updateOne({
@@ -97,7 +97,7 @@ const updateTable = function (outletId,tableId,dataToUpdate) {
     }
 }
 
-const changeUserTable = function (tableToAssign,currentOrderData,outletId) {
+var changeUserTable = function (tableToAssign,currentOrderData,outletId) {
     if(!tableToAssign){
         return;
     }

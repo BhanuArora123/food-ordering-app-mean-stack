@@ -67,3 +67,5 @@ exports.applyJwtStrategy = function () {
             })
     })
 }
+
+// debouncing, images upload to s3, sqs server,mem cache d, redis node package and uses ,cdn , order by sqs , polling in socket ,fallbacks ,projection ,cursor 

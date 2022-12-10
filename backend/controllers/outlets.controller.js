@@ -5,8 +5,8 @@ var bcrypt = require("bcryptjs");
 var jwt = require("jsonwebtoken");
 
 var throwError = require("../utils/errors");
-const { sendEmail } = require("../utils/email.utils");
-const brandsModel = require("../models/brands.model");
+var addTaskToQueue = require("../utils/aws/sqs/utils").addTaskToQueue;
+var brandsModel = require("../models/brands.model");
 
 require("dotenv").config("./.env");
 
@@ -45,7 +45,14 @@ exports.registerOutlet = function (req, res, next) {
                 return newOutlet.save();
             })
             .then(function (outletData) {
-                sendEmail(email, 'Outlet Registration Success!', emailContent);
+                // send email to brand 
+                addTaskToQueue("SEND_EMAIL",{
+                    MessageBody:{
+                        email:email,
+                        subject:'Brand Registration Success!',
+                        content:emailContent
+                    }
+                });
                 return res.status(201).json({
                     message: "outlet registered successfully",
                     outletData: outletData
