@@ -51,5 +51,34 @@
                 </div>
             </div>
         </form>
+        <form ng-show="isCustomerLogin" class="w-75 d-flex justify-content-around align-items-center flex-column h-75" name="customerLogin" novalidate>
+            <div class="w-75 d-flex justify-content-around align-items-start flex-column">
+                <label>Email Address*</label>
+                <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="email" placeholder="Enter Email" name="email" ng-model="login.email" ng-required="true">
+            </div>
+            <div class="w-75 d-flex justify-content-around align-items-start flex-column">
+                <label>Password</label>
+                <input valid-password class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="password" placeholder="Enter Password" name="password" ng-model="login.password" ng-required="true">
+            </div>
+            <div class="d-flex w-75 justify-content-between" >
+                <button type="button" class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (loginForm.email.$invalid || loginForm.password.$invalid)?'btn-disabled':'' }}" ng-click="loginHandler(login.email,login.password,login.userRole)">Login</button>
+                <div class="w-65 d-flex justify-content-around align-items-start">
+                    <label>Select Your Role</label>
+                    <select class="bg-theme-light text-white" value="User" ng-model="login.userRole">
+                        <option selected value="Outlet">Outlet</option>
+                        <option value="Admin">Admin</option>
+                        <option value="Brand">Brand</option>
+                    </select>
+                </div>
+            </div>
+        </form>
+        <!-- <div ng-hide="role" class="w-50 h-25 d-flex justify-content-end align-items-center">
+            <a ng-hide="isCustomerLogin" class="p-2 d-flex justify-content-center align-items-center cursor-pointer" ng-click="isCustomerLogin = true">
+                Login as Customer
+            </a>
+            <a ng-hide="isCustomerLogin" class="p-2 d-flex justify-content-center align-items-center cursor-pointer" ng-click="isCustomerLogin = false">
+                Login as Admin/Brand/Outlet
+            </a>
+        </div>  -->
     </div>
 </div>

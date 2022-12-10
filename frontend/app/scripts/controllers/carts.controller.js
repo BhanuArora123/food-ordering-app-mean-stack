@@ -1,5 +1,5 @@
 
-appModule.controller("cartController",function ($scope,orderService,outletService,utility) {
+appModule.controller("cartController",function ($scope,orderService,outletService,customerService,utility) {
     
 
     (function () {
@@ -55,5 +55,26 @@ appModule.controller("cartController",function ($scope,orderService,outletServic
         var cart = $scope.getCart();
 
         return (100*cart.length + 700) + 'px;';
+    }
+
+    $scope.getCustomerData = function (phoneNumber) {
+        if(phoneNumber.toString().length !== 10){
+            $scope.readOnlyCustomerName = false;
+            return;
+        }
+        customerService
+        .getCustomerByPhone(phoneNumber)
+        .then(function (data) {
+            if(!data.customerData){
+                $scope.readOnlyCustomerName = false;
+                return;
+            }
+            console.log(data.customerData)
+            $scope.customer.name = data.customerData.name;
+            $scope.readOnlyCustomerName = true;
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
     }
 })

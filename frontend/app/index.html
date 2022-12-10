@@ -11,7 +11,7 @@
   <!-- bower:css -->
   <link rel="stylesheet" href="bower_components/components-font-awesome/css/font-awesome.css" />
   <link rel="stylesheet" href="bower_components/angular-block-ui/dist/angular-block-ui.css" />
-  <link rel="stylesheet" href="bower_components/ng-tags-input/ng-tags-input.css" />
+  <link rel="stylesheet" href="bower_components/oi.select/dist/select.min.css" />
   <!-- endbower -->
   <!-- endbuild -->
   <!-- build:css(.tmp) styles/main.css -->
@@ -53,13 +53,16 @@
   <script src="bower_components/angular-touch/angular-touch.js"></script>
   <script src="bower_components/angular-ui-router/release/angular-ui-router.js"></script>
   <script src="bower_components/angular-block-ui/dist/angular-block-ui.js"></script>
-  <script src="bower_components/oi.select/dist/select-tpls.js"></script>
+  <script src="bower_components/angular-mocks/angular-mocks.js"></script>
+  <script src="bower_components/oi.select/dist/select-tpls.min.js"></script>
   <!-- endbower -->
   <!-- endbuild -->
   <!-- build:js({.tmp,app}) scripts/scripts.js -->
   <!-- ng table -->
   <script src="bower_components/angular-ui-router/release/stateEvents.js"></script>
   <script src="https://unpkg.com/ng-table@2.0.2/bundles/ng-table.min.js"></script>
+  <!-- socket io -->
+  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js" integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI" crossorigin="anonymous"></script>
   <script src="scripts/ui-bootstrap-tpls-3.0.6.min.js"></script>
   <script src="scripts/app.js"></script>
   <script src="scripts/app.config.js"></script>
@@ -69,6 +72,7 @@
   <script src="scripts/services/apiServices/food.services.js"></script>
   <script src="scripts/services/apiServices/orders.services.js"></script>
   <script src="scripts/services/apiServices/tax.services.js"></script>
+  <script src="scripts/services/apiServices/customer.services.js"></script>
   <script src="scripts/services/intercepters.services.js"></script>
   <script src="scripts/services/utils.services.js"></script>
   <script src="scripts/controllers/main.controller.js"></script>

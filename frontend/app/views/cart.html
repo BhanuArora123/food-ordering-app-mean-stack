@@ -21,11 +21,11 @@
         <form novalidate class="w-100 d-flex justify-content-around align-items-start p-5 bg-light flex-column" name="customerForm">
             <div class="w-100  d-flex justify-content-around align-items-start flex-column">
                 <label class="text-dark w-50">Name</label>
-                <input class="w-100 text-dark p-2 border border-secondary outline-none bg-light h-40p" type="text" name="name" ng-required="true" placeholder="Name" ng-model="customer.name">
+                <input class="w-100 text-dark p-2 border border-secondary outline-none bg-light h-40p {{readOnlyCustomerName?'disabled':''}}" type="text" name="name" ng-required="true" placeholder="Name" ng-model="customer.name" ng-readonly="readOnlyCustomerName">
             </div>
             <div class="w-100 d-flex justify-content-around align-items-start flex-column">
                 <label class="text-dark w-50">Phone Number</label>
-                <input class="w-100 text-dark p-2 border border-secondary outline-none bg-light h-40p" type="number" placeholder="Phone Number" ng-required="true" ng-model="customer.phoneNumber" name="phoneNumber">
+                <input class="w-100 text-dark p-2 border border-secondary outline-none bg-light h-40p" type="number" placeholder="Phone Number" ng-required="true" ng-change="getCustomerData(customer.phoneNumber)" ng-model="customer.phoneNumber" name="phoneNumber">
             </div>
             <div class="w-100 d-flex justify-content-around align-items-start flex-column">
                 <label class="text-dark w-50">Paid Via</label>

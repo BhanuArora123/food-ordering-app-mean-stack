@@ -171,3 +171,7 @@ oi-select .select-dropdown-optgroup-option{
 oi-select .select-dropdown-optgroup-option.active:not(.disabled){
   background-color: #1d2331;
 }
+
+.cursor-pointer{
+  cursor:pointer !important;
+}

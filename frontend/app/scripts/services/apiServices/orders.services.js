@@ -7,7 +7,13 @@ appModule
                 message: "Placing Order..."
             })
             return $http.post("http://localhost:8080/orders/placeOrder", {
-                customer: customer,
+                customer: {
+                    customer:{
+                        name:customer.name,
+                        phoneNumber:customer.phoneNumber
+                    },
+                    paidVia:customer.paidVia
+                },
                 brand: {
                     id: brandData.id,
                     name: brandData.name

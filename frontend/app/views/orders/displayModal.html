@@ -1,4 +1,4 @@
-<div class="w-100 h-600p d-flex justify-content-center align-items-center flex-column bg-light">
+<div class="w-100 d-flex justify-content-center align-items-center flex-column bg-light">
     <uib-tabset class="w-100 h-50 category" active="activeCategory" justified="true">
         <uib-tab ng-repeat="categoryItems in orderedFoodItems" heading="{{categoryItems.category}}"
             classes="{{getActiveClass($index,'category')}}"
@@ -54,7 +54,7 @@
             <div class="text-dark ml-3">Outlet :</div>
             <div class="text-dark ml-3">{{selectedOrder.outlet.name}}</div>
         </div>
-        <div ng-hide="isEditClicked" class="w-100 d-flex justify-content-around align-items-start flex-column text-dark">
+        <div ng-hide="isEditClicked || selectedOrder.orderType === 'Take Away'" class="d-flex justify-content-around align-items-start flex-column text-dark">
             Assigned Table - Table - {{selectedOrder.assignedTable}}
         </div>
         <div ng-show="selectedOrder.orderType === 'Dine In' && isEditClicked" class="w-100 d-flex justify-content-around align-items-start flex-column">
