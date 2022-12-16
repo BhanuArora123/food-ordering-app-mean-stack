@@ -11,13 +11,17 @@ var outletsModel = require("../models/outlets.model");
 
 var addTaskToQueue = require("../utils/aws/sqs/utils").addTaskToQueue;
 
+var brandUtils = require("../utils/brands.utils");
+
 require("dotenv").config("./.env");
+
+var utils = require("../utils/utils");
 
 exports.registerBrand = function (req, res, next) {
     try {
         var name = req.body.name;
         var email = req.body.email;
-        var password = req.body.password;
+        var password = utils.genRandomPassword() || req.body.password;
 
         var emailContent = `Hi ${name} , Your Brand Registration is successful, please use below creds to access the portal!
             Email:${email}
@@ -45,7 +49,8 @@ exports.registerBrand = function (req, res, next) {
                 var newBrand = new brands({
                     name: name,
                     email: email,
-                    password: hashedPassword
+                    password: hashedPassword,
+                    secretKey:process.env.AUTH_SECRET
                 });
                 return newBrand.save();
             })
@@ -241,9 +246,10 @@ exports.removeOutlet = function (req,res,next) {
 
 exports.getAllOutlets = function (req, res, next) {
     try {
-        var brandId = req.user.userId;
+        var brandId = req.query.brandId || req.user.userId;
+        console.log(brandId);
 
-        if(req.user.role !== 'brand'){
+        if(req.user.role !== 'brand' && req.user.role !== 'superAdmin'){
             return res.status(403).json({
                 message:"Access Denied!"
             })
@@ -257,7 +263,8 @@ exports.getAllOutlets = function (req, res, next) {
                 name: 1,
                 email: 1,
                 tables: 1,
-                _id: 1
+                _id: 1,
+                permissions:1
             })
             .then(function (outlets) {
                 return res.status(200).json({
@@ -334,6 +341,130 @@ exports.updatePassword = function (req,res,next) {
     } catch (error) {
         return res.status(500).json({
             message: error.message
+        })
+    }
+}
+
+// permissions based auth 
+
+exports.getPermissions = function (req, res, next) {
+    try {
+        var userId = req.user.userId;
+        var role = req.user.role;
+
+        var brandId = req.query.brandId;
+        var adminPermissions = req.user.permissions;
+
+        // check if admin has permissions 
+        var isAdminAuthorized = adminPermissions.find(function (permission) {
+            return permission.permissionName === 'Manage Brand';
+        })
+        if (userId.toString() !== brandId.toString() && !isAdminAuthorized && role !== 'superAdmin') {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
+
+        brands.findOne({
+            _id: brandId
+        })
+            .then(function (brandData) {
+                if (!brandData) {
+                    throwError("brand doesn't exist", 404);
+                }
+                return res.status(200).json({
+                    permissions: brandData.permissions
+                })
+            })
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+exports.editPermissions = function (req, res, next) {
+    try {
+        var permissions = req.body.permissions;
+        var brandId = req.body.brandId;
+        var role = req.user.role;
+        var adminPermissions = req.user.permissions;
+
+        // check if admin has permissions 
+        var isAdminAuthorized = adminPermissions.find(function (permission) {
+            return permission.permissionName === 'Manage Brand';
+        })
+        if (role !== 'superAdmin' && !isAdminAuthorized) {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
+        brands.updateOne({
+            _id: brandId
+        }, {
+            $set: {
+                permissions: permissions
+            }
+        })
+            .then(function () {
+                return res.status(200).json({
+                    message: "brand permission updated successfully"
+                })
+            })
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+exports.sendInstructionsToOutlet = function (req,res,next) {
+    try {
+        var title = req.body.title;
+        var content = req.body.content;
+        var brandId = req.user.userId;
+        var role = req.user.role;
+
+        // brand authorization
+        var isBrandAuthorized = req.user.permissions.find(function (permission) {
+            return permission.permissionId === 2;
+        })
+
+        if(!isBrandAuthorized || role !== 'brand'){
+            return res.status(401).json({
+                message:"Access Denied!"
+            })
+        }
+
+        brandUtils
+        .changeNotificationForOutlets(title,content,brandId)
+        .then(function () {
+            return res.status(200).json({
+                message:"outlets Notified successfully!"
+            })
+        })
+        .catch(function (error) {
+            console.log(error);
+            return res.status(500).json({
+                message:error.message
+            })
+        })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message:error.message
         })
     }
 }

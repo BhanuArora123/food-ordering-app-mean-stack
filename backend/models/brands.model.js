@@ -18,6 +18,21 @@ var brandsSchema = new schema({
     isDisabled:{
         type:Boolean,
         default:false
+    },
+    permissions:[
+        {
+            permissionId:{
+                type:Number,
+                required:true
+            },
+            permissionName:{
+                type:String,
+                required:true
+            }
+        }
+    ],
+    secretKey:{
+        type:String
     }
 },{
     timestamps:true

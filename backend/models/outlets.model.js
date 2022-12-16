@@ -18,20 +18,6 @@ var outletSchema = new schema({
         type:String,
         required:true
     },
-    // address : {
-    //     street:{
-    //         type:String,
-    //         required:true
-    //     },
-    //     city:{
-    //         type:String,
-    //         required:true
-    //     },
-    //     pinCode:{
-    //         type:String,
-    //         required:true
-    //     }
-    // },
     cart:[
         {
             foodName:{
@@ -82,12 +68,28 @@ var outletSchema = new schema({
             }
         }
     ],
+    permissions:[
+        {
+            permissionId:{
+                type:Number,
+                required:true
+            },
+            permissionName:{
+                type:String,
+                required:true
+            }
+        }
+    ],
     isDeleted:{
         type:Boolean,
         default:false
+    },
+    secretKey:{
+        type:String
     }
 },{
-    usePushEach: true
+    usePushEach: true,
+    timestamps:true
 });
 
 module.exports = mongoose.model("outlet",outletSchema);

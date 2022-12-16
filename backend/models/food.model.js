@@ -60,6 +60,8 @@ var foodSchema = new schema({
         type:Boolean,
         default:false
     }
+},{
+    timestamps:true
 });
 
 module.exports = mongoose.model("food",foodSchema);

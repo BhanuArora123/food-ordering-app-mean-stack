@@ -41,6 +41,10 @@ var ordersSchema = new schema({
     },
     orderedItems : [
         {
+            foodItemId:{
+                type:ObjectId,
+                required:true
+            },
             foodName:{
                 type:String,
                 required:true,
@@ -68,10 +72,14 @@ var ordersSchema = new schema({
         type:Number,
         default:0
     },
+    taxPaid:{
+        type:Number,
+        default:0
+    },
     status:{
         type:String,
-        status:["Preparing","Out For Delivery","Closed"],
-        default:"Preparing"
+        status:["Pending","Preparing","Out For Delivery","Closed"],
+        default:"Pending"
     },
     createdAt:{
         type: Date,
@@ -85,6 +93,8 @@ var ordersSchema = new schema({
     assignedTable:{
         type:Number
     }
+},{
+    timestamps:true
 });
 
 module.exports = mongoose.model("orders",ordersSchema);

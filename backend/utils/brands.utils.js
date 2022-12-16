@@ -7,7 +7,7 @@ var addTaskToQueue = require("../utils/aws/sqs/utils").addTaskToQueue;
 
 exports.changeNotificationForOutlets = function (title, content, brandId) {
     try {
-        outlet.find({
+        return outlet.find({
             "brand.id": brandId
         })
             .then(function (outlets) {
@@ -15,6 +15,11 @@ exports.changeNotificationForOutlets = function (title, content, brandId) {
                     return outletData.email;
                 })
                 // send email to brand 
+                console.log({
+                    email: outletEmails,
+                    subject: title,
+                    content: content
+                });
                 addTaskToQueue("SEND_EMAIL", {
                     MessageBody: {
                         email: outletEmails,

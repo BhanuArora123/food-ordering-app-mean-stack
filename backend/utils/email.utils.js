@@ -6,6 +6,7 @@ sgMail.setApiKey(process.env.SENDGRID_API_KEY);
 
 exports.sendEmail = function (emails, subject, content,cb) {
     try {
+        console.log(emails, subject, content);
         var mailConfig = {
             to: emails,
             from: process.env.EMAIL_USERNAME,

@@ -191,7 +191,11 @@ exports.editFoodItem = function (req, res, next) {
         var role = req.user.role;
         var brandId = req.user.userId;
 
-        if (role !== "brand") {
+        var isOutletAuthorized = req.user.permissions.find(function (permission) {
+            return permission.permissionName === 'Manage Food Items';
+        })
+
+        if (role !== "brand" && !isOutletAuthorized) {
             return res.status(401).json({
                 message: "Access Denied!"
             })

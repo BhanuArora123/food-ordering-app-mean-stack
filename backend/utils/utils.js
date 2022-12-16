@@ -6,6 +6,8 @@ var outletsModel = require("../models/outlets.model");
 
 var throwError = require("../utils/errors");
 
+var passwordGenerator = require("generate-password");
+
 exports.convertToArray = function (obj) {
     return Object.keys(obj).map(function (keys) {
         return obj[keys];
@@ -41,4 +43,19 @@ exports.updatePassword = function (currentPassword,newPassword,oldPassword,userI
             }
         });
     })
+}
+
+exports.genRandomPassword = function () {
+    try {
+        var password = passwordGenerator.generate({
+            length:10,
+            numbers:true,
+            symbols:true,
+            lowercase:true,
+            uppercase:true
+        });
+        return password;
+    } catch (error) {
+        console.log(error);
+    }
 }

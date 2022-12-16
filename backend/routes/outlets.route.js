@@ -13,10 +13,13 @@ router.post("/register",
         body("password").isLength({
             min: 6,
             max: 16
-        })
+        }).optional(),
+        body("permissions").notEmpty().isArray(),
+        body("permission.*.permissionId").notEmpty().isString(),
+        body("permissions.*.permissionName").notEmpty().isString()
     ],
     validate
-    ,outletController.registerOutlet);
+    , outletController.registerOutlet);
 
 router.post("/login",
     [
@@ -25,7 +28,7 @@ router.post("/login",
             min: 6,
             max: 16
         })
-    ], 
+    ],
     validate,
     outletController.loginOutlet);
 
@@ -40,7 +43,7 @@ router.put("/updatePassword",
             min: 6,
             max: 16
         })
-    ], 
+    ],
     validate,
     outletController.updatePassword)
 
@@ -55,14 +58,14 @@ router.put("/addToCart", passport.authenticate("jwt", { failureMessage: "unautho
         body("outletName").notEmpty().isString()
     ],
     validate,
-     outletController.addToCart);
+    outletController.addToCart);
 
 router.put("/removeFromCart", passport.authenticate("jwt", { failureMessage: "unauthorized!", session: false }),
     [
         body("foodItemName").notEmpty().isString(),
     ],
     validate,
-     outletController.removeFromCart);
+    outletController.removeFromCart);
 
 router.get("/table/get", passport.authenticate("jwt", { failureMessage: "unauthorized!", session: false }), outletController.getTables);
 
@@ -72,6 +75,24 @@ router.post("/table/add", passport.authenticate("jwt", { failureMessage: "unauth
         body("assignedOrderId").isString().optional()
     ],
     validate
-    , outletController.addTable);
+    , outletController.addTable
+);
+
+// permissions
+router.get("/permissions/get",
+    passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),
+    outletController.getPermissions
+)
+
+router.put("/permissions/edit",
+    passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),
+    [
+        body("outletId").notEmpty().isString(),
+        body("permissions").notEmpty().isArray(),
+        body("permission.*.permissionId").notEmpty().isString(),
+        body("permissions.*.permissionName").notEmpty().isString()
+    ],
+    outletController.editPermissions
+)
 
 module.exports = router;

@@ -77,9 +77,10 @@ var processTask = function (queueName, worker, processNextTask) {
                 var taskConsumer = consumer.create({
                     queueUrl: `https://sqs.us-east-1.amazonaws.com/${process.env.ACCOUNT_ID}/${queueName}`,
                     handleMessage: function (data) {
-                        worker(data, cb);
+                        worker(data,cb);
                     },
-                    visibilityTimeout:30
+                    visibilityTimeout:30,
+                    ReceiveMessageWaitTimeSeconds:20
                 });
 
                 taskConsumer.on('error', function(err) {
@@ -87,13 +88,9 @@ var processTask = function (queueName, worker, processNextTask) {
                     return cb(err);
                 });
 
-                taskConsumer.on('processing_error', function(err) {
-                    console.error(err.message);
-                    return cb(err);
-                });
-
                 // starting consumer
                 taskConsumer.start();
+                processNextTask();
             }
         ], function (err, result) {
             if (err) {
@@ -101,7 +98,6 @@ var processTask = function (queueName, worker, processNextTask) {
             }
             else {
                 console.log(result);
-                return processNextTask();
             }
         })
 

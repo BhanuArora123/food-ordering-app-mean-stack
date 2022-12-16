@@ -12,11 +12,15 @@ router
         passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),
         [
             body("name").notEmpty().isString(),
-            body("password").notEmpty().isLength({
+            body("password").optional().isLength({
                 min: 8,
                 max: 16
             }),
-            body("email").notEmpty().isEmail()
+            body("email").notEmpty().isEmail(),
+            body("role").optional().isString(),
+            body("permissions").notEmpty().isArray(),
+            body("permission.*.permissionId").notEmpty().isString(),
+            body("permissions.*.permissionName").notEmpty().isString()
         ],
         validate,
         adminController.registerAdmin);
@@ -30,9 +34,11 @@ router.post("/login",
         body("email").notEmpty().isEmail()
     ]
     , validate
-    ,adminController.loginAdmin);
+    , adminController.loginAdmin);
 
 router.get("/adminData", passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }), adminController.getAdminData);
+
+router.get("/get/all", passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }), adminController.getAllAdmins);
 
 router.put("/updatePassword",
     passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),
@@ -61,6 +67,24 @@ router
             body("brandId").notEmpty().isString()
         ],
         validate,
-        adminController.editBrand)
+        adminController.editBrand
+    )
 
+// permissions 
+
+router.get("/permissions/get",
+    passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),
+    adminController.getPermissions
+)
+
+router.put("/permissions/edit",
+    passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),
+    [
+        body("adminId").notEmpty().isString(),
+        body("permissions").notEmpty().isArray(),
+        body("permission.*.permissionId").notEmpty().isString(),
+        body("permissions.*.permissionName").notEmpty().isString()
+    ],
+    adminController.editPermissions
+)
 module.exports = router;

@@ -10,6 +10,8 @@ var brandsModel = require("../models/brands.model");
 
 var utils = require("../utils/utils");
 
+var addTaskToQueue = require("../utils/aws/sqs/utils").addTaskToQueue;
+
 require("dotenv").config("./.env");
 
 exports.registerAdmin = function (req, res, next) {
@@ -19,7 +21,14 @@ exports.registerAdmin = function (req, res, next) {
         }
         var name = req.body.name;
         var email = req.body.email;
-        var password = req.body.password;
+        var password = utils.genRandomPassword() || req.body.password;
+        var permissions = req.body.permissions;
+        var role = req.body.role;
+
+        var emailContent = `Hi ${name} , Your Brand Registration is successful, please use below creds to access the portal!
+            Email:${email}
+            Password:${password}
+        `;
         admin.findOne({
             email: email
         })
@@ -37,11 +46,21 @@ exports.registerAdmin = function (req, res, next) {
                     name: name,
                     email: email,
                     password: hashedPassword,
-                    role: "superAdmin"
+                    role: role,
+                    permissions: permissions,
+                    secretKey:process.env.AUTH_SECRET
                 });
                 return newAdmin.save();
             })
             .then(function (adminData) {
+                // send email to brand 
+                addTaskToQueue("SEND_EMAIL",{
+                    MessageBody:{
+                        email:email,
+                        subject:'Admin Registration Success!',
+                        content:emailContent
+                    }
+                });
                 return res.status(201).json({
                     message: "admin registered successfully",
                     adminData: adminData
@@ -158,7 +177,11 @@ exports.getAllBrands = function (req, res, next) {
 
         var skip = (page - 1) * limit;
 
-        if (role !== 'superAdmin') {
+        var isAdminAuthorized = req.user.permissions.find(function (permission) {
+            return permission.permissionName === 'Manage Brand'
+        })
+
+        if (!isAdminAuthorized || (role !== 'superAdmin' && role !== 'admin')) {
             return res.status(401).json({
                 message: "Access Denied!"
             })
@@ -193,7 +216,7 @@ exports.getAdminData = function (req, res, next) {
     try {
         var adminId = req.user.userId;
 
-        if (req.user.role !== "superAdmin") {
+        if (req.user.role !== "superAdmin" && req.user.role !== 'admin') {
             throwError("Access Denied!", 403);
         }
 
@@ -263,6 +286,135 @@ exports.editBrand = function (req, res, next) {
                 })
             })
 
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+// permissions based auth 
+
+exports.getPermissions = function (req, res, next) {
+    try {
+        var userId = req.user.userId;
+        var role = req.user.role;
+
+        var adminId = req.query.adminId;
+
+        var adminPermissions = req.user.permissions;
+
+        var isAdminAuthorized = adminPermissions.find(function (permission) {
+            return permission.permissionName === 'Manage Admin'
+        })
+
+        if (userId.toString() !== adminId.toString() && !isAdminAuthorized && role !== 'superAdmin') {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
+
+        admin.findOne({
+            _id: userId
+        })
+            .then(function (adminData) {
+                if (!adminData) {
+                    throwError("admin doesn't exist", 404);
+                }
+                return res.status(200).json({
+                    permissions: adminData.permissions
+                })
+            })
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
+
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+exports.editPermissions = function (req, res, next) {
+    try {
+        var permissions = req.body.permissions;
+        var adminId = req.body.adminId;
+        var adminPermissions = req.user.permissions;
+
+        // check if admin has permissions 
+        var isAdminAuthorized = adminPermissions.find(function (permission) {
+            return permission.permissionName === 'Manage Admin';
+        })
+        if (!isAdminAuthorized) {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
+        admin.updateOne({
+            _id: adminId
+        }, {
+            $set: {
+                permissions: permissions
+            }
+        })
+            .then(function (data) {
+                console.log(data);
+                return res.status(200).json({
+                    message: "admin permission updated successfully"
+                })
+            })
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+exports.getAllAdmins = function (req, res, next) {
+    try {
+        var adminId = req.user.userId;
+        var role = req.user.role;
+        var adminPermissions = req.user.permissions;
+        var isAdminAuthorized = adminPermissions.find(function (permission) {
+            return permission.permissionName === 'Manage Admin';
+        })
+
+        if (!isAdminAuthorized) {
+            return res.status(401).json({
+                message: "Access Denied!"
+            });
+        }
+        var rolesToFetch = (role === "superAdmin") ? [] : ["superAdmin"];
+        admin.find({
+            _id: {
+                $ne: adminId
+            },
+            role: {
+                $nin: rolesToFetch
+            }
+        })
+            .then(function (admins) {
+                return res.status(200).json({
+                    message: "admins fetched successfully",
+                    admins: admins
+                });
+            })
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
     } catch (error) {
         return res.status(500).json({
             message: error.message

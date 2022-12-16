@@ -5,7 +5,7 @@ var outlets = require("../models/outlets.model");
 var throwError = require("../utils/errors");
 var orderUtils = require("../utils/orders.utils");
 
-var brandUtils = require("../utils/brands.utils");
+const sqsUtils = require("../utils/aws/sqs/utils");
 
 var ObjectId = require("mongoose").Types.ObjectId;
 
@@ -19,19 +19,16 @@ exports.placeOrder = function (req, res, next) {
         var outlet = req.body.outlet;
         var orderType = req.body.orderType;
         var assignedTable = req.body.assignedTable;
+        var cartItems = req.body.cart;
 
-        var cartItems;
+        var brandId;
 
         outlets.findById(outletId)
             .then(function (outletData) {
                 if (!outletData || !outletData.cart.length) {
                     throwError(outletData ? "no item in cart" : "outlet doesn't exist", outletData ? 400 : 404);
                 }
-                cartItems = outletData.cart;
-                outletData.cart = [];
-                return outletData.save();
-            })
-            .then(function () {
+                brandId = outletData.brand.id;
                 return customerModel.findOne({
                     phoneNumber:customer.customer.phoneNumber.toString()
                 })
@@ -43,6 +40,9 @@ exports.placeOrder = function (req, res, next) {
                     }
                     return customerData;
                 }
+                customer.customer.outletId = outletId;
+                customer.customer.brandId = brandId;
+                console.log(customer.customer);
                 var newCustomer = new customerModel(customer.customer);
                 return newCustomer.save();
             })
@@ -57,7 +57,8 @@ exports.placeOrder = function (req, res, next) {
                         quantity: cartItem.quantity,
                         subCategory: cartItem.subCategory,
                         category: cartItem.category,
-                        taxes:cartItem.taxes
+                        taxes:cartItem.taxes,
+                        foodItemId:cartItem.foodItemId
                     };
                 })
                 var newOrder = new orders({
@@ -72,22 +73,21 @@ exports.placeOrder = function (req, res, next) {
                     },
                     brand: brand,
                     orderType: orderType ? orderType : "Dine In",
-                    assignedTable: (assignedTable && orderType === "Dine In") ? parseInt(assignedTable) : undefined
                 });
-
                 return newOrder.save();
             })
             .then(function (orderData) {
-                // updating outlet asynchronously 
-                brandUtils.sendOrderCreationEmail(brand.id,outlet.name);
-                if(orderData.orderType === 'Dine In'){
-                    orderUtils.updateTable(outletId, assignedTable, {
-                        isAssigned: true,
-                        assignedOrderId: orderData._id
-                    })
-                }
+                sqsUtils.addTaskToQueue("ORDER_CREATION",{
+                    MessageBody: {
+                        brandId:brand.id,
+                        outletName:outlet.name,
+                        orderId:orderData._id,
+                        assignedTable:parseInt(assignedTable),
+                        outletId:outlet.id
+                    }
+                });
                 return res.status(201).json({
-                    message: "order created successfully",
+                    message: "Creating Order, Order Status - Pending",
                     orderData: orderData
                 })
             })
@@ -117,24 +117,28 @@ exports.getAllOrders = function (req, res, next) {
                 message: "Access Denied!"
             })
         }
-        var brandName = req.query.brandName;
         var status = req.query.status;
         var orderType = req.query.orderType;
         var limit = parseInt(req.query.limit);
         var page = parseInt(req.query.page);
+        var outletId = req.query.outletId;
 
         var skip = (page - 1) * limit;
 
-        var matchQuery = {};
+        var matchQuery = {
+            "brand.id":brandId
+        };
+        console.log("order type - ",orderType);
         if (orderType) {
             matchQuery["orderType"] = orderType;
         }
         if (status) {
             matchQuery["status"] = status;
         }
-        if (brandName) {
-            matchQuery["brand.name"] = brandName;
+        if(outletId){
+            matchQuery["outlet.id"] = outletId;
         }
+        console.log(matchQuery);
         orders
             .find(matchQuery)
             .skip(skip)

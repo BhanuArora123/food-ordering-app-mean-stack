@@ -17,9 +17,26 @@ var adminSchema = new schema({
     },
     role:{
         type:String,
-        enums:["superAdmin"],
+        enums:["superAdmin","admin"],
         default:"superAdmin"
+    },
+    permissions:[
+        {
+            permissionId:{
+                type:Number,
+                required:true
+            },
+            permissionName:{
+                type:String,
+                required:true
+            }
+        }
+    ],
+    secretKey:{
+        type:String
     }
+},{
+    timestamps:true
 });
 
 module.exports = mongoose.model("admin",adminSchema);

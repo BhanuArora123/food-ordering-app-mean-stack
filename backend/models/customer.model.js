@@ -2,6 +2,8 @@ var mongoose = require("mongoose");
 
 var schema = mongoose.Schema;
 
+var ObjectId = mongoose.Schema.Types.ObjectId;
+
 var customerSchema = new schema({
     name:{
         type:String,
@@ -10,7 +12,18 @@ var customerSchema = new schema({
     phoneNumber:{
         type:String,
         required:true
+    },
+    brandId:{
+        type:ObjectId,
+        required:true
+    },
+    outletId:{
+        type:ObjectId,
+        required:true
     }
+},
+{
+    timestamps:true
 });
 
 module.exports = {

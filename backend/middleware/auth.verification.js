@@ -25,7 +25,8 @@ exports.applyJwtStrategy = function () {
                     return done(null, {
                         email: email,
                         userId: adminData._id,
-                        role: adminData.role
+                        role: adminData.role,
+                        permissions:adminData.permissions
                     });
                 }
                 return brands.findOne({
@@ -41,7 +42,8 @@ exports.applyJwtStrategy = function () {
                     return done(null, {
                         email: email,
                         userId: brandData._id,
-                        role: "brand"
+                        role: "brand",
+                        permissions:brandData.permissions
                     });
                 }
                 return outlets.findOne({
@@ -57,7 +59,8 @@ exports.applyJwtStrategy = function () {
                         email: email,
                         userId: outletData._id,
                         role:"outlet",
-                        brandId:outletData.brand.id.toString()
+                        brandId:outletData.brand.id.toString(),
+                        permissions:outletData.permissions
                     });
                 }
                 done(null, false);

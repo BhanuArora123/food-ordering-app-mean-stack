@@ -8,6 +8,8 @@ var throwError = require("../utils/errors");
 var addTaskToQueue = require("../utils/aws/sqs/utils").addTaskToQueue;
 var brandsModel = require("../models/brands.model");
 
+var utils = require("../utils/utils");
+
 require("dotenv").config("./.env");
 
 exports.registerOutlet = function (req, res, next) {
@@ -15,7 +17,7 @@ exports.registerOutlet = function (req, res, next) {
 
         var name = req.body.name;
         var email = req.body.email;
-        var password = req.body.password;
+        var password = utils.genRandomPassword() || req.body.password;
         var brand = req.body.brand;
 
         var emailContent = `Hi ${name} , Your Outlet Registration is successful, please use below creds to access the portal!
@@ -40,7 +42,8 @@ exports.registerOutlet = function (req, res, next) {
                     name: name,
                     email: email,
                     password: hashedPassword,
-                    brand: brand
+                    brand: brand,
+                    secretKey:process.env.AUTH_SECRET
                 });
                 return newOutlet.save();
             })
@@ -49,7 +52,7 @@ exports.registerOutlet = function (req, res, next) {
                 addTaskToQueue("SEND_EMAIL",{
                     MessageBody:{
                         email:email,
-                        subject:'Brand Registration Success!',
+                        subject:'Outlet Registration Success!',
                         content:emailContent
                     }
                 });
@@ -145,7 +148,12 @@ exports.getOutletData = function (req, res, next) {
         }, {
             tables: {
                 $slice: [skip, limit]
-            }
+            },
+            permissions:1,
+            brand:1,
+            name:1,
+            email:1,
+            cart:1
         })
             .then(function (outletData) {
                 if (!outletData) {
@@ -411,6 +419,82 @@ exports.updatePassword = function (req, res, next) {
             .then(function () {
                 return res.status(200).json({
                     message: "password updated successfully!"
+                })
+            })
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+// permissions based auth 
+
+exports.getPermissions = function (req, res, next) {
+    try {
+        var userId = req.user.userId;
+        var role = req.user.role;
+
+        var outletId = req.query.outletId;
+
+        outlets.findOne({
+            _id: outletId
+        })
+            .then(function (outletData) {
+                if (!outletData) {
+                    throwError("outlet doesn't exist", 404);
+                }
+                else if(outletId.toString !== userId.toString() && outletData.brand.id.toString() !== userId.toString() && role !== 'superAdmin'){
+                    throwError("Access Denied!",401);
+                }
+                return res.status(200).json({
+                    permissions: outletData.permissions
+                })
+            })
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
+
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+exports.editPermissions = function (req, res, next) {
+    try {
+        var permissions = req.body.permissions;
+        var outletId = req.body.outletId;
+        var role = req.user.role;
+        var userId = req.user.userId;
+
+        outlets.findOne({
+            _id: outletId
+        })
+            .then(function (outletData) {
+                if(!outletData){
+                    throwError("outlet doesn't exist",404);
+                }
+                if(outletData.brand.id.toString() !== userId.toString() && role !== "superAdmin"){
+                    throwError("Access Denied!",401);
+                }
+                outletData.permissions = permissions;
+                return outletData.save();
+            })
+            .then(function (outletData) {
+                return res.status(200).json({
+                    message: "outlet permissions updated successfully",
+                    outletData:outletData
                 })
             })
             .catch(function (error) {

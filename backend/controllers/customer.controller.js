@@ -30,3 +30,37 @@ exports.getCustomerData = function (req, res, next) {
         })
     }
 }
+
+exports.getAllCustomers = function (req,res,next) {
+    try {
+        var brandId = req.user.userId;
+        var role = req.user.role;
+
+        var isBrandAuthorized = req.user.permissions.find(function (permission) {
+            return permission.permissionName === 'Manage Customers';
+        })
+
+        if(!isBrandAuthorized && role !== 'superAdmin'){
+            return res.status(401).json({
+                message:"Access Denied!"
+            })
+        }
+        customerModel.find({
+            brandId:brandId
+        })
+        .then(function (allCustomers) {
+            return res.status(200).json({
+                customers:allCustomers
+            })
+        })
+        .catch(function (error) {
+            return res.status(500).json({
+                message: error.message
+            })
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}

@@ -8,7 +8,7 @@ var http = require("http");
 
 var cors = require("cors");
 
-var socketUtils = require("./utils/socket.utils");
+var socketUtils = require("./utils/socket/socket.utils");
 // using .env
 require("dotenv").config("./.env");
 
@@ -29,6 +29,8 @@ var orderRouter = require("./routes/orders.route");
 var categoryRouter = require("./routes/category.route");
 
 var taxRouter = require("./routes/tax.route");
+
+var reportRouter = require("./routes/reports.route");
 
 var customerRouter = require("./routes/customer.route");
 // passport configuration
@@ -68,6 +70,8 @@ app.use("/tax", taxRouter);
 
 app.use("/customer",customerRouter);
 
+app.use("/reports",reportRouter);
+
 // mongoose config
 mongoose.Promise = blueBird;
 
@@ -76,12 +80,11 @@ mongoose
     .connect(process.env.DB_URL, {})
     .then(function () {
         console.log("database connected!");
-        app.listen(8080);
+        var server = app.listen(8080);
         console.log("server running on port 8080...");
-        var server = http.createServer(app);
-        return socketUtils.connectSocket(server);
-    })
-    .then(function () {
+        // io connection 
+        socketUtils.connectSocket(server);
+        // sqs init 
         initSqs();
     })
     .catch(function (error) {
