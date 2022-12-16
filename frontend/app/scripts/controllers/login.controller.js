@@ -1,6 +1,6 @@
 
 
-appModule.controller("loginSignupController", function ($scope, brandService, adminService, outletService,role) {
+appModule.controller("loginSignupController", function ($scope, brandService, adminService, outletService,role,utility) {
 
     //default user role in login 
     $scope.login = {
@@ -8,11 +8,17 @@ appModule.controller("loginSignupController", function ($scope, brandService, ad
     }
 
     $scope.signup = {
-        userRole:role.charAt(0).toUpperCase() + role.substring(1)
+        userRole:role?role.charAt(0).toUpperCase() + role.substring(1):"superAdmin"
     }
 
     $scope.role = role;
 
+    $scope.roles = ["superAdmin","admin"];
+
+    $scope.getUserPermissions = function (role) {
+        console.log(utility.getPermissions(role));
+        return utility.getPermissions(role);
+    };
     // login handler 
     $scope.loginHandler = function (email, password, userRole = "Outlet") {
         console.log(userRole);
@@ -50,10 +56,11 @@ appModule.controller("loginSignupController", function ($scope, brandService, ad
 
     // signup handler 
 
-    $scope.signupHandler = function (name,email,password,userRole = "Outlet") {
+    $scope.signupHandler = function (name,email,userRole = "Outlet") {
+        var permissions = $scope.signup.permissions;
         if(userRole === "Outlet"){
             outletService
-            .signup(name,email,password)
+            .signup(name,email,permissions)
             .then(function (response) {
                 console.log(response);
             })
@@ -63,7 +70,7 @@ appModule.controller("loginSignupController", function ($scope, brandService, ad
         }
         else if(userRole === "Brand"){
             brandService
-            .signup(name,email,password)
+            .signup(name,email,permissions)
             .then(function (response) {
                 console.log(response);
             })
@@ -73,7 +80,7 @@ appModule.controller("loginSignupController", function ($scope, brandService, ad
         }
         else{
             adminService
-            .signup(name,email,password,"admin")
+            .signup(name,email,$scope.signup.role,permissions)
             .then(function (response) {
                 console.log(response);
             })

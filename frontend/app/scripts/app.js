@@ -12,5 +12,6 @@ var appModule = angular
     "ngTable",
     "blockUI",
     "ui.router.state.events",
-    "oi.select"
+    "oi.select",
+    "chart.js"
   ])

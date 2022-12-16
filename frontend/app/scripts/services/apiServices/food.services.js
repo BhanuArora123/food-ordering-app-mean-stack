@@ -52,6 +52,7 @@ appModule
             foodData.append("category", data.category);
             foodData.append("brand", JSON.stringify(data.brand));
             foodData.append("taxes",JSON.stringify(taxes));
+            console.log("fooddata - ",foodData);
             return $http({
                 url: "http://localhost:8080/food/addFoodItem",
                 method: "POST",

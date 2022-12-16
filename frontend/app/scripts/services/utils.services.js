@@ -51,6 +51,56 @@ appModule
             getRole: function () {
                 return localStorage.getItem("role");
             },
+            getPermissions : function (role) {
+                if(role === 'Admin'){
+                    return [
+                        {
+                            permissionId:1,
+                            permissionName:'Manage Admin'
+                        },
+                        {
+                            permissionId:2,
+                            permissionName:'Manage Brand'
+                        },
+                        {
+                            permissionId:3,
+                            permissionName:'Manage Analytics'
+                        }
+                    ];
+                }
+                else if(role === 'Brand'){
+                    return [
+                        {
+                            permissionId:1,
+                            permissionName:'Manage Customers'
+                        },
+                        {
+                            permissionId:2,
+                            permissionName:'Send Outlet Instructions'
+                        },
+                        {
+                            permissionId:3,
+                            permissionName:'View Analytics'
+                        }
+                    ]
+                }
+                else{
+                    return [
+                        {
+                            permissionId:1,
+                            permissionName:'Manage Food Items'
+                        },
+                        {
+                            permissionId:2,
+                            permissionName:'Allow Take Away Orders'
+                        },
+                        {
+                            permissionId:3,
+                            permissionName:'View Analytics'
+                        }
+                    ]
+                }
+            },
             decategorizeItems: function (categorizedItems) {
                 var items = [];
 
@@ -91,7 +141,7 @@ appModule
                 var totalFoodAmount = 0;
                 var totalTaxAmount = 0;
                 items.forEach(function (item) {
-                    totalFoodAmount += item.foodPrice;
+                    totalFoodAmount += (item.foodPrice*item.quantity);
                     item.taxes.forEach(function (tax) {
                         var taxLevied = item.foodPrice * 0.01 * tax.percentage * item.quantity;
                         console.log(taxLevied);
@@ -99,11 +149,27 @@ appModule
                         taxesMap[tax.tax.name] = (taxesMap[tax.tax.name] ? taxesMap[tax.tax.name] : 0) + (taxLevied);
                     })
                 })
+                console.log({
+                    totalPayable: totalFoodAmount + totalTaxAmount,
+                    taxesMap: taxesMap,
+                    totalFoodAmount: totalFoodAmount,
+                    totalTaxAmount: totalTaxAmount
+                });
                 return {
                     totalPayable: totalFoodAmount + totalTaxAmount,
                     taxesMap: taxesMap,
                     totalFoodAmount: totalFoodAmount,
                     totalTaxAmount: totalTaxAmount
+                }
+            },
+            debounce: function (delay,cb) {
+                var timeout;
+                return function () {
+                    var argumentsList = arguments;
+                    clearTimeout(timeout);
+                    setTimeout(function () {
+                        cb(argumentsList);
+                    },delay);
                 }
             }
         }

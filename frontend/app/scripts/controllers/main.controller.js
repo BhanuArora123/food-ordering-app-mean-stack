@@ -1,7 +1,7 @@
 
 
 // home controller
-appModule.controller("homeController", function ($scope,$rootScope, $state, $uibModal,utility) {
+appModule.controller("homeController", function ($scope,$rootScope, adminService,outletService,brandService , $uibModal,utility,permission) {
 
     $scope.isNavCollapsed = (screen.width <= 765 );
     // dismiss alerts 
@@ -26,7 +26,7 @@ appModule.controller("homeController", function ($scope,$rootScope, $state, $uib
     }
     $scope.getProfileState = function () {
         var role = utility.getRole();
-        if(role === 'superAdmin'){
+        if(role !== 'brand' && role !== 'outlet'){
             role = 'admin';
         }
         return `home.${role}.display`;
@@ -51,5 +51,13 @@ appModule.controller("homeController", function ($scope,$rootScope, $state, $uib
         $scope[instanceName] = modalInstance;
     }
 
-
+    $scope.isAuthorized = function (requiredPermissionId,allowedRoles) {
+        var userData = (adminService.getServiceData().adminData || brandService.getServiceData().brandData || outletService.getServiceData().outletData);
+        if(!userData){
+            return false;
+        }
+        var userPermissions = userData.permissions;
+        var role = localStorage.getItem("role");
+        return permission.isAuthorized(userPermissions,requiredPermissionId,allowedRoles,role);
+    }
 });

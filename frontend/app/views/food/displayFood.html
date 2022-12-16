@@ -24,30 +24,30 @@
                             <input class="text-dark" ng-show="editClicked && itemToEdit === $index" name="price" type="number" ng-model="food.price" ng-required="true">
 
                             <!-- add to cart button  -->
-                            <a class="btn btn-primary" ng-show="!presentInCart(food.name,food.outlet.name) && getRole() === 'outlet'"
-                                ng-click="addToCart(food.name, food.price,food.subCategory,food.category,food.taxes)">Add
+                            <a class="btn btn-primary" ng-show="!presentInCart(food._id) && getRole() === 'outlet'"
+                                ng-click="addToCart(food.name, food.price,food.subCategory,food.category,food.taxes,food._id)">Add
                                 To Cart</a>
                             <!-- inc/dec button  -->
-                            <div class="input-group w-10" ng-show="presentInCart(food.name,food.outlet.name) && getRole() === 'outlet'">
+                            <div class="input-group w-10" ng-show="presentInCart(food._id) && getRole() === 'outlet'">
                                 <span class="input-group-btn">
                                     <button type="button" class="quantity-right-plus btn btn-primary btn-number"
                                         data-type="plus" data-field=""
-                                        ng-click="removeFromCart(food.name)">
+                                        ng-click="removeFromCart(food._id)">
                                         <i class="fas fa-minus text-light bg-primary"></i>
                                     </button>
                                 </span>
-                                <input type="text" value="{{presentInCart(food.name,food.outlet.name).quantity}}"
-                                    name="quantity" class="form-control input-number" min="1" max="100" disabled>
+                                <input type="text" value="{{presentInCart(food._id).quantity}}"
+                                    name="quantity" class="form-control input-number" min="1" max="100" readonly>
                                 <span class="input-group-btn">
                                     <button type="button" class="quantity-left-minus btn btn-primary btn-number"
                                         data-type="minus" data-field=""
-                                        ng-click="addToCart(food.name,food.price,food.subCategory,food.category,food.taxes)">
+                                        ng-click="addToCart(food.name,food.price,food.subCategory,food.category,food.taxes,food._id)">
                                         <i class="fas fa-plus text-light bg-primary"></i>
                                     </button>
                                 </span>
                             </div>
                             <!-- edit/delete actions for brand  -->
-                            <div ng-show="getRole() === 'brand'">
+                            <div ng-show="getRole() === 'brand' || isAuthorized(1,['outlet'])">
                                 <!-- edit -->
                                 <button ng-hide="editClicked && itemToEdit === $index" class="btn btn-primary" ng-click="setItemsForEditing($index)">
                                     <i class="fas fa-edit ml-2" style="font-size:18px;"></i>

@@ -12,7 +12,10 @@
     "angular-ui-router":"",
     "components-font-awesome": "^4.7.0",
     "angular-block-ui":"",
-    "oi.select":""
+    "oi.select":"",
+    "angular-chart.js":"",
+    "chart.js":"",
+    "socket.io-client": ""
   },
   "devDependencies": {
     "angular-mocks": "^1.4.0"

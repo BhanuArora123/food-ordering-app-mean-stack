@@ -1,24 +1,13 @@
 
 
-appModule.controller("foodController", function ($scope, foodService, outletService, foodItems, brandService, allCategories, utility, blockUI, availableTaxes) {
-
-    // adding food items 
-
-    // (function () {
-    //     var currentPath = $location.path();
-    //     var role = outletService.outletData.role || adminService.adminData.role;
-    //     if((currentPath === '/food/add' || currentPath === '/food/edit') &&  role !== "admin" && role !== "superAdmin" && role !== "outlet"){
-    //         alert("access denied! you are being redirect to food display page");
-    //         $state.go("home.food.display");
-    //     }
-    // })()
+appModule.controller("foodController", function ($scope, foodService, outletService, foodItems, brandService, allCategories, utility, blockUI, availableTaxes, permission) {
 
     $scope.foodItemsToDisplay = utility.categorizeItems(foodItems);
     $scope.categories = allCategories;
 
     // getting user cart 
     var outletData = outletService.getServiceData().outletData;
-    $scope.userCart = outletData ? outletData.cart : [];
+    $scope.userCart = outletService.getCart();
 
     // display active category
     $scope.activeCategory = 0;
@@ -107,35 +96,22 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
     }
 
     // add to cart 
-    $scope.addToCart = function (foodName, foodPrice, subCategory, category,taxes) {
-        outletService
-            .addToCart(foodName, foodPrice, outletData.name, category, subCategory,taxes)
-            .then(function (response) {
-                console.log(response.cartData);
-                $scope.userCart = response.cartData;
-            })
-            .then(function () {
-                return outletService.getOutletData();
-            })
-            .catch(function (error) {
-                console.log(error);
-            })
+    $scope.addToCart = function (foodName, foodPrice, subCategory, category, taxes, foodItemId) {
+        $scope.userCart = outletService
+            .addToCart(foodItemId, {
+                foodName: foodName,
+                foodPrice: foodPrice,
+                outletName: outletData.name,
+                category: category,
+                subCategory: subCategory,
+                taxes: taxes
+            });
     }
 
     // remove from cart 
-    $scope.removeFromCart = function (foodName) {
-        outletService
-            .removeFromCart(foodName)
-            .then(function (response) {
-                console.log(response.cartData);
-                $scope.userCart = response.cartData;
-            })
-            .then(function () {
-                return outletService.getOutletData();
-            })
-            .catch(function (error) {
-                console.log(error);
-            })
+    $scope.removeFromCart = function (foodItemId) {
+        $scope.userCart = outletService
+            .removeFromCart(foodItemId)
     }
 
     $scope.createCategory = function (category) {
@@ -182,10 +158,8 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
     }
 
     // check if item present in cart 
-    $scope.presentInCart = function (foodName, outletName) {
-        return $scope.userCart.find(function (cartItem) {
-            return (cartItem.foodName === foodName && cartItem.outletName === outletName);
-        })
+    $scope.presentInCart = function (foodItemId) {
+        return $scope.userCart[foodItemId];
     }
 
     // get role 
@@ -205,6 +179,15 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
     $scope.taxesAvailable = availableTaxes;
 
     $scope.openTaxModal = function () {
-        utility.openModal('views/taxes/index.html',"taxController","taxModal",$scope,{},$scope);
+        utility.openModal('views/taxes/index.html', "taxController", "taxModal", $scope, {}, $scope);
+    }
+
+    $scope.isAuthorized = function (requiredPermissionId, allowedRoles) {
+        if (!outletData) {
+            return false;
+        }
+        var userPermissions = outletData.permissions;
+        var role = localStorage.getItem("role");
+        return permission.isAuthorized(userPermissions, requiredPermissionId, allowedRoles, role);
     }
 })

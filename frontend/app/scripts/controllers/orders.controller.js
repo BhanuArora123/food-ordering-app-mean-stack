@@ -1,7 +1,7 @@
 
 
 appModule
-    .controller("ordersController", function ($scope, outletOrders, orderService, outletService, utility) {
+    .controller("ordersController", function ($scope, outletOrders, orderService, outletService, utility,socketService) {
         // current order status
         $scope.currentOrderStatus = "All";
 
@@ -12,6 +12,20 @@ appModule
         $scope.getAllOutletOrders = outletOrders;
 
         $scope.currentScope = $scope;
+
+        // socket listeners 
+        socketService.recieveEvent("orderCreation",function (data) {
+            console.log(data,$scope.getAllOutletOrders);
+            var orderId = data.orderId;
+            $scope.getAllOutletOrders = $scope.getAllOutletOrders.map(function (order) {
+                if(order._id === orderId){
+                    order.status = "Preparing";
+                    return order;
+                }
+                return order;
+            })
+            $scope.$apply();
+        })
 
         // get role 
         $scope.getRole = function () {

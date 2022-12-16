@@ -26,7 +26,7 @@ appModule
             return false;
           }
 
-          var passwordValidator = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#\$%\^&\*])(?=.{6,16})/;
+          var passwordValidator = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[<>\:-\[\]\}\{!@#\$%\^&\*])(?=.{6,16})/;
 
           var isPasswordValid = passwordValidator.test(modelValue);
 

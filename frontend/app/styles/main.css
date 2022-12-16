@@ -175,3 +175,9 @@ oi-select .select-dropdown-optgroup-option.active:not(.disabled){
 .cursor-pointer{
   cursor:pointer !important;
 }
+oi-select:not(.multiple) .select-search-list-item_selection:not(:active){
+  color: white !important;
+}
+.maxSoldItems .ng-table-header span{
+  color: black;
+}

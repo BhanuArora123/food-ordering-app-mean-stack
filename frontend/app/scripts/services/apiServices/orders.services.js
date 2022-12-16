@@ -2,15 +2,18 @@
 
 appModule
     .service("orderService", function ($http, brandService, outletService, blockUI) {
-        this.placeOrder = function (customer, outletData, brandData, orderType, assignedTable) {
+        this.placeOrder = function (customer, outletData, brandData, orderType, assignedTable,cart) {
             blockUI.start({
                 message: "Placing Order..."
             })
             return $http.post("http://localhost:8080/orders/placeOrder", {
+                cart:cart,
                 customer: {
                     customer:{
                         name:customer.name,
-                        phoneNumber:customer.phoneNumber
+                        phoneNumber:customer.phoneNumber,
+                        outletId:outletData._id,
+                        brandId:brandData.id
                     },
                     paidVia:customer.paidVia
                 },
@@ -27,10 +30,12 @@ appModule
             })
                 .then(function (res) {
                     blockUI.stop();
+                    localStorage.setItem("cart",JSON.stringify(new Map()));
                     return res.data;
                 })
                 .catch(function (error) {
                     blockUI.stop();
+                    localStorage.setItem("cart",JSON.stringify(new Map()));
                     console.log(error);
                 })
         };
@@ -41,6 +46,10 @@ appModule
             var brand;
             var brandData = brandService.getServiceData().brandData;
             var outletData = outletService.getServiceData().outletData;
+            var queryParam = {
+                page: 1,
+                limit: 9
+            };
             if (brandData) {
                 brand = {
                     id: brandData.id,
@@ -49,11 +58,8 @@ appModule
             }
             if (outletData) {
                 brand = outletData.brand;
+                queryParam["outletId"] = outletData._id;
             }
-            var queryParam = {
-                page: 1,
-                limit: 9
-            };
             if (status) {
                 queryParam["status"] = status;
             }

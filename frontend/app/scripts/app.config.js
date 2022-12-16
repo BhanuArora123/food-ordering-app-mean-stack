@@ -26,6 +26,13 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
             return adminService
               .getAdminData()
           }
+        },
+        profilePath: function (utility) {
+          var role = utility.getRole();
+          if (role !== 'brand' && role !== 'outlet') {
+            role = 'admin';
+          }
+          return `home.${role}.display`;
         }
       },
       views: {
@@ -43,7 +50,18 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
       name: "home.dashboard",
       url: "/",
       controller: "dashboardController",
-      templateUrl: "views/home/dashboard.html"
+      templateUrl: "views/home/dashboard.html",
+      resolve:{
+        connectToOutlet : function (socketService,outletService) {
+          var outletData = outletService.getServiceData().outletData;
+          if (outletData) {
+            console.log(outletData._id);
+            socketService.emitEvent("connectOutlet", {
+              brandId: outletData.brand.id
+            })
+          }
+        }
+      }
     })
     .state({
       name: "home.login",
@@ -156,8 +174,16 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
       templateUrl: "views/orders/display.html",
       resolve: {
         outletOrders: function (orderService, brandService, outletService) {
+          var brandData = brandService.getServiceData().brandData;
+          var outletData = outletService.getServiceData().outletData;
+          console.log(brandData, outletData);
+          var brandId = brandData ? brandData._id : outletData.brand.id;
+          var outletId = outletData ? outletData._id : undefined;
           return orderService
-            .getAllOrders()
+            .getAllOrders({
+              brandId: brandId,
+              outletId: outletId
+            })
             .then(function (data) {
               return data.orders;
             })
@@ -231,6 +257,16 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
             .catch(function (error) {
               console.log(error);
             })
+        },
+        allCustomers: function (customerService) {
+          return customerService
+            .getAllCustomers()
+            .then(function (data) {
+              return data.customers;
+            })
+            .catch(function (error) {
+              console.log(error);
+            })
         }
       }
     })
@@ -245,22 +281,54 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
         }
       }
     })
+    .state({
+      name: "home.reports",
+      url: "/reports/display",
+      controller: "reportsController",
+      templateUrl: "views/reports/display.html"
+    })
+    .state({
+      name: "home.customer",
+      url: "/customer/display",
+      // controller:"customerController",
+      templateUrl: "views/customer/display.html"
+    })
+    .state({
+      name: "home.sendInstructions",
+      url: "/send/instructions",
+      // controller:"emailController",
+      templateUrl: "views/email/send.html"
+    })
 
   // default route 
   $urlRouterProvider.otherwise("/");
   // adding interceptor
   $httpProvider.interceptors.push('intercepterService');
 })
-  .run(function ($location, $timeout, $rootScope) {
+  .run(function ($location, $timeout, $rootScope, socketService, outletService) {
     // route safety 
 
+    var token = localStorage.getItem("token");
     $rootScope.$on("$stateChangeStart", function (event) {
-      var token = localStorage.getItem("token");
+      console.log(event);
       if (!token) {
         $timeout(function () {
           $location.url("login");
         })
       }
     })
+
+    if (!token) {
+      return;
+    }
+
+    socketService.connect();
+    var outletData = outletService.getServiceData().outletData;
+    if (outletData) {
+      console.log(outletData._id);
+      socketService.emitEvent("connectOutlet", {
+        brandId: outletData.brand.id
+      })
+    }
 
   })

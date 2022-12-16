@@ -1,0 +1,31 @@
+<section>
+    <h3 class="w-100 d-flex justify-content-center align-items-center">Reports</h3>
+    <table ng-table="availableReports" class="table table-striped">
+
+        <tr ng-repeat="report in availableReports" ng-show="availableReports.length && isRoleAllowed(report,getRole())">
+            <td class="text-center" data-title="'Report No.'">
+                <div>
+                    {{$index + 1}}.
+                </div>
+            </td>
+            <td class="text-center" data-title="'Report Name'">
+                <div>
+                    {{report.name}}
+                </div>
+            </td>
+
+            <td class="text-center" data-title="'Report Desc'">
+                {{report.desc}}
+            </td>
+
+            <td class="text-center" data-title="'Actions'">
+                <button class="btn btn-primary" ng-click="viewReport($index)">View Report</button>
+            </td>
+
+        </tr>
+
+        <tr ng-hide="availableReports.length">
+            <td>No Reports added yet</td>
+        </tr>
+    </table>
+</section>

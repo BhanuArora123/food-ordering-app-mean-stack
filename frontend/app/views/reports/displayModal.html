@@ -1,0 +1,133 @@
+<section class="w-100 p-3" ng-init="getBrands()">
+    <!-- date pickers -->
+    <div class="row">
+        <div class="col-md-6">
+            <label>Start Date :</label>
+            <p class="input-group">
+                <input type="text" class="form-control" uib-datepicker-popup ng-model="startDate"
+                    is-open="popup1.opened" datepicker-options="dateOptions" ng-required="true" close-text="Close"
+                    alt-input-formats="altInputFormats" />
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-secondary" ng-click="openStartDate()">
+                        <i class="fa-svg-icon">
+                            <svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M192 1664h288v-288h-288v288zm352 0h320v-288h-320v288zm-352-352h288v-320h-288v320zm352 0h320v-320h-320v320zm-352-384h288v-288h-288v288zm736 736h320v-288h-320v288zm-384-736h320v-288h-320v288zm768 736h288v-288h-288v288zm-384-352h320v-320h-320v320zm-352-864v-288q0-13-9.5-22.5t-22.5-9.5h-64q-13 0-22.5 9.5t-9.5 22.5v288q0 13 9.5 22.5t22.5 9.5h64q13 0 22.5-9.5t9.5-22.5zm736 864h288v-320h-288v320zm-384-384h320v-288h-320v288zm384 0h288v-288h-288v288zm32-480v-288q0-13-9.5-22.5t-22.5-9.5h-64q-13 0-22.5 9.5t-9.5 22.5v288q0 13 9.5 22.5t22.5 9.5h64q13 0 22.5-9.5t9.5-22.5zm384-64v1280q0 52-38 90t-90 38h-1408q-52 0-90-38t-38-90v-1280q0-52 38-90t90-38h128v-96q0-66 47-113t113-47h64q66 0 113 47t47 113v96h384v-96q0-66 47-113t113-47h64q66 0 113 47t47 113v96h128q52 0 90 38t38 90z" />
+                            </svg>
+                        </i>
+                    </button>
+                </span>
+            </p>
+        </div>
+        <div class="col-md-6">
+            <label>End Date :</label>
+            <p class="input-group">
+                <input type="text" class="form-control" uib-datepicker-popup ng-model="endDate" is-open="popup2.opened"
+                    datepicker-options="dateOptions" ng-required="true" close-text="Close" />
+                <span class="input-group-btn">
+                    <button type="button" class="btn btn-secondary" ng-click="openEndDate()">
+                        <i class="fa-svg-icon">
+                            <svg width="1792" height="1792" viewBox="0 0 1792 1792" xmlns="http://www.w3.org/2000/svg">
+                                <path
+                                    d="M192 1664h288v-288h-288v288zm352 0h320v-288h-320v288zm-352-352h288v-320h-288v320zm352 0h320v-320h-320v320zm-352-384h288v-288h-288v288zm736 736h320v-288h-320v288zm-384-736h320v-288h-320v288zm768 736h288v-288h-288v288zm-384-352h320v-320h-320v320zm-352-864v-288q0-13-9.5-22.5t-22.5-9.5h-64q-13 0-22.5 9.5t-9.5 22.5v288q0 13 9.5 22.5t22.5 9.5h64q13 0 22.5-9.5t9.5-22.5zm736 864h288v-320h-288v320zm-384-384h320v-288h-320v288zm384 0h288v-288h-288v288zm32-480v-288q0-13-9.5-22.5t-22.5-9.5h-64q-13 0-22.5 9.5t-9.5 22.5v288q0 13 9.5 22.5t22.5 9.5h64q13 0 22.5-9.5t9.5-22.5zm384-64v1280q0 52-38 90t-90 38h-1408q-52 0-90-38t-38-90v-1280q0-52 38-90t90-38h128v-96q0-66 47-113t113-47h64q66 0 113 47t47 113v96h384v-96q0-66 47-113t113-47h64q66 0 113 47t47 113v96h128q52 0 90 38t38 90z" />
+                            </svg>
+                        </i>
+                    </button>
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <!-- report 1 - get brand/outlet item sold count  -->
+    <div ng-show="selectedReport.id === 1" class="w-100 d-flex justify-content-around align-items-center flex-column">
+        <div class="w-100 mb-3">
+            <oi-select oi-options="food.name for food in availableFoods" ng-model="reportData.selectedFoodItems"
+                multiple placeholder="Select Food" class="no-oi-style" ng-disabled="!reportData.selectedBrand"
+                ng-change="updateFoodList(reportData.selectedFoodItems)">
+            </oi-select>
+        </div>
+        <div class="w-100 d-flex justify-content-around align-items-center mb-3">
+            <div class="w-40">
+                <oi-select oi-options="outlet.name for outlet in availableOutlets" ng-model="reportData.selectedOutlet"
+                    placeholder="Select Outlet" class="h-50p" ng-disabled="!reportData.selectedBrand">
+                </oi-select>
+            </div>
+            <div class="w-40">
+                <oi-select oi-options="brand.name for brand in availableBrands" ng-model="reportData.selectedBrand"
+                    placeholder="Select Brand" class="h-50p" ng-change="onBrandSelect(reportData.selectedBrand)">
+                </oi-select>
+            </div>
+        </div>
+        <div class="w-100 d-flex justify-content-around align-items-center mb-3">
+            <button class="btn btn-primary" ng-click="soldItemCountReport(reportData)">Generate Report</button>
+        </div>
+        <div class="w-100 d-flex justify-content-around align-items-center mb-3">
+            <canvas id="line" class="chart chart-line" chart-data="chartData" chart-labels="chartLabels"
+                chart-series="chartSeries">
+            </canvas>
+        </div>
+    </div>
+    <!-- report 2 - get brand total revenue  -->
+    <div ng-show="selectedReport.id === 2" class="w-100 d-flex justify-content-around align-items-center flex-column">
+        <div class="w-100 mb-3">
+            <oi-select oi-options="brand.name for brand in availableBrands" ng-model="reportData.selectedBrands"
+                placeholder="Select Brand" class="h-50p" multiple>
+            </oi-select>
+        </div>
+        <div class="w-100 d-flex justify-content-around align-items-center mb-3">
+            <button class="btn btn-primary" ng-click="brandRevenueReport(reportData)">Generate Report</button>
+        </div>
+        <div class="w-100 d-flex justify-content-around align-items-center mb-3">
+            <canvas id="bar" class="chart chart-bar" chart-data="chartData" chart-labels="chartLabels"
+                chart-series="chartSeries">
+            </canvas>
+        </div>
+    </div>
+    <!-- report 3 - get brand max sold items  -->
+    <div ng-show="selectedReport.id === 3" class="w-100 d-flex justify-content-around align-items-center flex-column">
+        <div class="w-100 mb-3">
+            <oi-select oi-options="brand.name for brand in availableBrands" ng-model="reportData.brandSelected"
+                placeholder="Select Brand" class="h-50p">
+            </oi-select>
+        </div>
+        <div class="w-100 d-flex justify-content-around align-items-center mb-3">
+            <button class="btn btn-primary" ng-click="getMaxSoldItems(reportData)">Generate Report</button>
+        </div>
+        <div class="w-100 d-flex justify-content-around align-items-center mb-3">
+            <table ng-table="maxSoldItems" class="table table-striped w-100 maxSoldItems">
+
+                <tr ng-show="maxSoldItems.length" ng-repeat="item in maxSoldItems">
+    
+                    <td class="text-center text-dark" data-title="'Food Name'">
+                        <div class="text-dark">
+                            {{item.foodName}}
+                        </div>
+                    </td>
+
+                    <td class="text-center text-dark" data-title="'Food Price'">
+                        <div class="text-dark">
+                            {{item.foodPrice | currency : '$'}}
+                        </div>
+                    </td>
+    
+                    <td class="text-center text-dark w-25" data-title="'Total Food Items'">
+                        <div class="text-dark">
+                            {{item.totalItems}}
+                        </div>
+                    </td>
+    
+                    <td class="w-50 text-center text-dark" data-title="'Total Revenue'">
+                        <div class="text-dark">
+                            {{item.totalRevenue | currency : '$'}}
+                        </div>
+                    </td>
+    
+                </tr>
+    
+                <tr class="text-dark" ng-hide="maxSoldItems.length">
+                    <td class="text-dark">No Items Sold Yet</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</section>

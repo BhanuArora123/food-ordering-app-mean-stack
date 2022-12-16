@@ -35,7 +35,7 @@
                 </button>
             </div>
         </div>
-        <!-- tables  -->
+        <!-- tables - outlets Management  -->
         <table ng-table="allOutlets" class="table table-striped">
 
             <tr ng-show="allOutlets.length" ng-repeat="outlet in allOutlets">
@@ -58,6 +58,15 @@
 
                 <td class="text-center" data-title="'Brand'">{{brandData.name}}</td>
 
+                <td class="w-50" data-title="'Permissions'">
+                    <oi-select
+                        placeholder="Select Permission"
+                        oi-options="permission.permissionName for permission in getPermissions('Outlet') track by permission.permissionId"
+                        ng-model="outlet.permissions" ng-change="updatePermissions(outlet._id,outlet.permissions)" multiple ng-required="true" >
+
+                    </oi-select>
+                </td>
+
                 <td class="text-center" data-title="'Actions'">
                     <button ng-hide="$index === editElementIndex" class="btn btn-primary" ng-click="makeEditable($index)">Edit</button>
                     <button ng-show="$index === editElementIndex" class="btn btn-primary" ng-click="disableEditing()">Cancel</button>
@@ -72,6 +81,51 @@
             </tr>
         </table>
         <!-- <input type="text" placeholder="{{dataName}}" ng-model="brandData.dataName"> -->
+        <table ng-show="isAuthorized(1,['brand'])" ng-table="allCustomers" class="table table-striped">
+
+            <tr ng-show="allCustomers.length" ng-repeat="customer in allCustomers">
+
+                <td class="text-center" data-title="'Customer Name'">
+                    <div>
+                        {{customer.name}}
+                    </div>
+                </td>
+
+                <td class="text-center" data-title="'Customer PhoneNumber'">
+                    <div>
+                        {{customer.phoneNumber}}
+                    </div>
+                </td>
+
+                <td class="text-center" data-title="'Brand'">{{brandData.name}}</td>
+
+            <tr ng-hide="allCustomers.length">
+                <td>No Customer ordered from your outlets yet</td>
+            </tr>
+        </table>
+
+        <!-- send instructions to outlets  -->
+        <form ng-show="isAuthorized(2,['brand'])" class="w-75 d-flex justify-content-around align-items-center flex-column h-75"
+            name="instructionsForm" novalidate>
+            <h1>Send Instructions To Outlets</h1>
+            <div class="w-75 d-flex justify-content-around align-items-start flex-column m-3">
+                <label>Title</label>
+                <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="text"
+                    placeholder="Enter Title" name="title" ng-model="instruction.title" ng-required="true">
+            </div>
+            <div class="w-75 d-flex justify-content-around align-items-start flex-column m-3">
+                <label>Content</label>
+                <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded"
+                    type="text" placeholder="Enter Instruction Content" name="content" ng-model="instruction.content"
+                    ng-required="true">
+            </div>
+            <div class="d-flex w-75 justify-content-between">
+                <button type="button"
+                    class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (instructionsForm.title.$invalid || instructionsForm.content.$invalid)?'disabled':'' }}"
+                    ng-click="sendInstruction(instruction.title,instruction.content)" ng-disabled="instructionsForm.title.$invalid || instructionsForm.content.$invalid">Send Instructions</button>
+            </div>
+        </form>
+
     </div>
 
 </section>

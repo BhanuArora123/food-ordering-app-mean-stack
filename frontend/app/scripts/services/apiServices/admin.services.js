@@ -1,18 +1,19 @@
-
+// https://www.youtube.com/watch?v=UH7wkvcf0ys
+//https://www.youtube.com/watch?v=8aGhZQkoFbQ
 
 // user service
 appModule
     .service("adminService", function ($http, $state,blockUI) {
-            this.signup = function (email, password, name, role) {
+            this.signup = function ( name,email, role,permissions) {
                 blockUI.start({
                     message:"Signup In Progress...."
                 })
                 return $http
                     .post("http://localhost:8080/admin/register", {
                         email: email,
-                        password: password,
                         name: name,
-                        role: role
+                        role: role,
+                        permissions:permissions
                     })
                     .then(function (response) {
                         blockUI.stop();
@@ -34,7 +35,7 @@ appModule
                     })
                     .then((response) => {
                         blockUI.stop();
-                        localStorage.setItem("adminData", response.data.adminData);
+                        localStorage.setItem("adminData", JSON.stringify(response.data.adminData));
                         localStorage.setItem("role", response.data.adminData.role);
                         $state.go("home.dashboard");
                         return response.data;
@@ -49,7 +50,7 @@ appModule
                 return $http
                 .get("http://localhost:8080/admin/adminData")
                     .then(function (response) {
-                        localStorage.setItem("adminData", response.data.adminData);
+                        localStorage.setItem("adminData", JSON.stringify(response.data.adminData));
                         localStorage.setItem("role", response.data.adminData.role);
                         return response.data;
                     })
@@ -106,6 +107,39 @@ appModule
                         blockUI.stop();
                         console.log(error);
                     })
+            };
+            this.getAllAdmins = function () {
+                return $http
+                .get("http://localhost:8080/admin/get/all")
+                .then(function (response) {
+                    return response.data;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
+            };
+            this.getPermissions = function () {
+                return $http
+                .get("http://localhost:8080/admin/permissions/get")
+                .then(function (response) {
+                    return response.data;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
+            };
+            this.editPermissions = function (data) {
+                return $http
+                .put("http://localhost:8080/admin/permissions/edit",{
+                    adminId:data.adminId,
+                    permissions:(data.permissions?data.permissions:[])
+                })
+                .then(function (response) {
+                    return response.data;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
             };
             this.getServiceData = function () {
                 return {
