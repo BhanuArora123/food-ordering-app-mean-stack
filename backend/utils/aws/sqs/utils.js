@@ -72,37 +72,27 @@ var addTaskToQueue = function (queueName, params) {
 
 var processTask = function (queueName, worker, processNextTask) {
     try {
-        async.waterfall([
-            function (cb) {
-                var taskConsumer = consumer.create({
-                    queueUrl: `https://sqs.us-east-1.amazonaws.com/${process.env.ACCOUNT_ID}/${queueName}`,
-                    handleMessage: function (data) {
-                        worker(data,cb);
-                    },
-                    visibilityTimeout:30,
-                    ReceiveMessageWaitTimeSeconds:20
-                });
 
-                taskConsumer.on('error', function(err) {
-                    console.error(err.message);
-                    return cb(err);
-                });
+        var taskConsumer = consumer.create({
+            queueUrl: `https://sqs.us-east-1.amazonaws.com/${process.env.ACCOUNT_ID}/${queueName}`,
+            handleMessage: function (data) {
+                worker(data);
+            },
+            visibilityTimeout:30,
+            ReceiveMessageWaitTimeSeconds:20
+        });
 
-                // starting consumer
-                taskConsumer.start();
-                processNextTask();
-            }
-        ], function (err, result) {
-            if (err) {
-                return processNextTask(err);
-            }
-            else {
-                console.log(result);
-            }
-        })
+        taskConsumer.on('error', function(err) {
+            console.error(err);
+        });
+
+        // starting consumer
+        taskConsumer.start();
+        processNextTask();
 
     } catch (error) {
         console.log(error.message);
+        processNextTask(error);
     }
 }
 

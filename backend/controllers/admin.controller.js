@@ -12,6 +12,8 @@ var utils = require("../utils/utils");
 
 var addTaskToQueue = require("../utils/aws/sqs/utils").addTaskToQueue;
 
+var redisUtils = require("../utils/redis/redis.utils");
+
 require("dotenv").config("./.env");
 
 exports.registerAdmin = function (req, res, next) {
@@ -48,17 +50,17 @@ exports.registerAdmin = function (req, res, next) {
                     password: hashedPassword,
                     role: role,
                     permissions: permissions,
-                    secretKey:process.env.AUTH_SECRET
+                    secretKey: process.env.AUTH_SECRET
                 });
                 return newAdmin.save();
             })
             .then(function (adminData) {
                 // send email to brand 
-                addTaskToQueue("SEND_EMAIL",{
-                    MessageBody:{
-                        email:email,
-                        subject:'Admin Registration Success!',
-                        content:emailContent
+                addTaskToQueue("SEND_EMAIL", {
+                    MessageBody: {
+                        email: email,
+                        subject: 'Admin Registration Success!',
+                        content: emailContent
                     }
                 });
                 return res.status(201).json({
@@ -171,9 +173,11 @@ exports.getAllBrands = function (req, res, next) {
     try {
         var role = req.user.role;
 
-        var limit = req.query.limit;
+        var search = req.query.search;
 
-        var page = req.query.page;
+        var limit = parseInt(req.query.limit);
+
+        var page = parseInt(req.query.page);
 
         var skip = (page - 1) * limit;
 
@@ -186,15 +190,34 @@ exports.getAllBrands = function (req, res, next) {
                 message: "Access Denied!"
             })
         }
+        // search filter 
+        var matchQuery = {};
 
+        if(search){
+            matchQuery["name"] = {
+                $regex:search,
+                $options:"i"
+            }
+        }
+
+        var totalBrands;
         brandsModel
-            .find()
-            .skip(skip)
-            .limit(limit)
+            .countDocuments(matchQuery)
+            .then(function (availableBrands) {
+                totalBrands = availableBrands;
+                return brandsModel
+                    .find(matchQuery)
+                    .skip(skip)
+                    .limit(limit)
+                    .sort({
+                        name: 1
+                    })
+            })
             .then(function (brands) {
                 return res.status(200).json({
                     message: "brands fetched successfully",
-                    brands: brands
+                    brands: brands,
+                    totalBrands: totalBrands
                 })
             })
             .catch(function (error) {
@@ -220,12 +243,23 @@ exports.getAdminData = function (req, res, next) {
             throwError("Access Denied!", 403);
         }
 
-        admin.findOne({
-            _id: adminId
-        })
+        redisUtils
+            .getValue(`admin-${adminId}`)
+            .then(function (data) {
+                if (!data) {
+                    return admin.findOne({
+                        _id: adminId
+                    })
+                }
+                req.isRedisResponse = true;
+                return JSON.parse(data);
+            })
             .then(function (adminData) {
                 if (!adminData) {
                     throwError("admin doesn't exist", 404);
+                }
+                if (!req.isRedisResponse) {
+                    redisUtils.setValue(`admin-${adminData._id}`, JSON.stringify(adminData._doc));
                 }
                 return res.status(200).json({
                     message: "success",
@@ -384,6 +418,11 @@ exports.getAllAdmins = function (req, res, next) {
     try {
         var adminId = req.user.userId;
         var role = req.user.role;
+        var page = parseInt(req.query.page);
+        var limit = parseInt(req.query.limit);
+        var skip = (page - 1) * limit;
+        var totalAdmins;
+
         var adminPermissions = req.user.permissions;
         var isAdminAuthorized = adminPermissions.find(function (permission) {
             return permission.permissionName === 'Manage Admin';
@@ -395,7 +434,7 @@ exports.getAllAdmins = function (req, res, next) {
             });
         }
         var rolesToFetch = (role === "superAdmin") ? [] : ["superAdmin"];
-        admin.find({
+        admin.countDocuments({
             _id: {
                 $ne: adminId
             },
@@ -403,10 +442,25 @@ exports.getAllAdmins = function (req, res, next) {
                 $nin: rolesToFetch
             }
         })
+            .then(function (availableAdmins) {
+                totalAdmins = availableAdmins;
+                return admin.find({
+                    _id: {
+                        $ne: adminId
+                    },
+                    role: {
+                        $nin: rolesToFetch
+                    }
+                })
+                    .skip(skip)
+                    .limit(limit)
+            })
+
             .then(function (admins) {
                 return res.status(200).json({
                     message: "admins fetched successfully",
-                    admins: admins
+                    admins: admins,
+                    totalAdmins: totalAdmins
                 });
             })
             .catch(function (error) {

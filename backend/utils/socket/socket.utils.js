@@ -27,6 +27,10 @@ exports.connectSocket = function (app) {
             console.log(data.brandId);
         })
 
+        socket.on("customerJoined",function (customerId) {
+            socket.join(customerId);
+        })
+
     })
     socketConnection.on("error",function (error) {
         console.log(error);

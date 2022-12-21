@@ -3,6 +3,7 @@ var passportJwt = require("passport-jwt");
 var admin = require("../models/admin.model");
 var outlets = require("../models/outlets.model");
 var brands = require("../models/brands.model");
+var customerModel = require("../models/customer.model").model;
 
 var JwtStrategy = passportJwt.Strategy;
 
@@ -15,6 +16,7 @@ exports.applyJwtStrategy = function () {
     };
     return new JwtStrategy(options, function (jwtPayload, done) {
         var email = jwtPayload.email;
+        var phoneNumber = jwtPayload.phoneNumber;
         var isUserFound = false;
         admin.findOne({
             email: email
@@ -55,6 +57,7 @@ exports.applyJwtStrategy = function () {
                     return;
                 }
                 if (outletData) {
+                    isUserFound = true;
                     return done(null, {
                         email: email,
                         userId: outletData._id,
@@ -62,6 +65,21 @@ exports.applyJwtStrategy = function () {
                         brandId:outletData.brand.id.toString(),
                         permissions:outletData.permissions
                     });
+                }
+                return customerModel.findOne({
+                    phoneNumber:phoneNumber
+                })
+            })
+            .then(function (customerData) {
+                if(isUserFound){
+                    return ;
+                }
+                console.log(customerData);
+                if(customerData){
+                    return done(null,{
+                        phoneNumber:phoneNumber,
+                        userId:customerData._id
+                    })
                 }
                 done(null, false);
             })

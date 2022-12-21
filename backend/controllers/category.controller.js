@@ -2,6 +2,9 @@ var subCategoryModel = require("../models/subCategory.model");
 
 var categoryModel = require("../models/category.model");
 var throwError = require("../utils/errors");
+var foodModel = require("../models/food.model");
+
+var ObjectId = require("mongoose").Types.ObjectId;
 
 exports.createCategory = function (req, res, next) {
     try {
@@ -126,3 +129,55 @@ exports.getSubCategories = function (req,res,next) {
         })
     }
 }
+
+exports.getCategoriesForBrand = function (req,res,next) {
+    try {
+        var brandId = req.query.brandId || req.user.userId;
+        
+        foodModel.aggregate([
+            {
+                $match:{
+                    "brand.id":ObjectId(brandId),
+                    isDeleted:{
+                        $in:[null,false]
+                    }
+                }
+            },
+            {
+                $group:{
+                    _id:{
+                        category:"$category",
+                        subCategory:"$subCategory"
+                    }
+                }
+            },
+            {
+                $group:{
+                    _id:"$_id.category",
+                    category:{
+                        $first:"$_id.category"
+                    },
+                    subCategories:{
+                        $push:"$_id.subCategory"
+                    }
+                }
+            }
+        ])
+        .then(function (categories) {
+            return res.status(200).json({
+                message:"available categories fetched successfully!",
+                categories:categories
+            });
+        })
+        .catch(function (error) {
+            console.log(error);
+            return res.status(500).json({
+                message:error.message
+            })
+        })
+    } catch (error) {
+        return res.status(500).json({
+            message:error.message
+        })
+    }
+} 

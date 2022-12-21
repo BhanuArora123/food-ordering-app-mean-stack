@@ -2,6 +2,8 @@ var express = require("express");
 var app = express();
 var mongoose = require("mongoose");
 
+var redisUtils = require("./utils/redis/redis.utils");
+
 var blueBird = require("bluebird");
 
 var http = require("http");
@@ -33,6 +35,7 @@ var taxRouter = require("./routes/tax.route");
 var reportRouter = require("./routes/reports.route");
 
 var customerRouter = require("./routes/customer.route");
+
 // passport configuration
 var applyJwtStrategy = require("./middleware/auth.verification").applyJwtStrategy();
 

@@ -38,14 +38,14 @@ exports.addFoodItem = function (req, res, next) {
             },
 
             saveFile: function (cb) {
-                s3Utils.uploadFileToS3(req.files.foodImage,cb);
+                s3Utils.uploadFileToS3(req.files.foodImage, cb);
             },
 
             existingFoodCheck: function (filePath, cb) {
                 foodModel.findOne({
                     name: foodName,
                     "brand.name": brand.name,
-                    isDeleted:false
+                    isDeleted: false
                 })
                     .then(function (existingFoodItem) {
                         if (existingFoodItem) {
@@ -113,11 +113,17 @@ exports.displayFoodItem = function (req, res, next) {
         var minRating = req.query.minRating;
         var isVeg = req.query.isVeg;
         var foodName = req.query.foodName;
+        var subCategory = req.query.subCategory;
+        var category = req.query.category;
+        var page = parseInt(req.query.page);
+        var limit = parseInt(req.query.limit);
+        var skip = (page - 1) * limit;
+        var totalFoodItems;
 
         var matchQuery = {
             $and: [],
-            isDeleted:{
-                $in:[null,false]
+            isDeleted: {
+                $in: [null, false]
             }
         };
 
@@ -151,6 +157,12 @@ exports.displayFoodItem = function (req, res, next) {
                 $options: "i"
             }
         }
+        if (subCategory) {
+            matchQuery["subCategory"] = subCategory;
+        }
+        if (category) {
+            matchQuery["category"] = category;
+        }
         if (brandId) {
             matchQuery["brand.id"] = brandId;
         }
@@ -159,11 +171,19 @@ exports.displayFoodItem = function (req, res, next) {
         }
         // display food items based on match query! 
         foodModel
-            .find(matchQuery)
+            .countDocuments(matchQuery)
+            .then(function (totalItems) {
+                totalFoodItems = totalItems;
+                return foodModel
+                    .find(matchQuery)
+                    .skip(skip)
+                    .limit(limit)
+            })
             .then(function (matchedFoodItems) {
                 return res.status(200).json({
                     matchedFoodItems: matchedFoodItems,
-                    message: "success!"
+                    message: "success!",
+                    totalFoodItems:totalFoodItems
                 })
             })
             .catch(function (error) {
@@ -205,8 +225,8 @@ exports.editFoodItem = function (req, res, next) {
 
         foodModel
             .findOne({
-                _id:foodItemId,
-                isDeleted:false
+                _id: foodItemId,
+                isDeleted: false
             })
             .then(function (foodItemData) {
                 foodData = foodItemData;
@@ -215,7 +235,7 @@ exports.editFoodItem = function (req, res, next) {
                 }
                 return foodModel.updateOne({
                     _id: ObjectId(foodItemId),
-                    isDeleted:false
+                    isDeleted: false
                 }, {
                     $set: {
                         name: foodName,
@@ -259,10 +279,10 @@ exports.deleteFoodItem = function (req, res, next) {
         }
         foodModel.updateOne({
             _id: ObjectId(foodItemId),
-            isDeleted:false
-        },{
-            $set:{
-                isDeleted:true
+            isDeleted: false
+        }, {
+            $set: {
+                isDeleted: true
             }
         })
             .then(function () {
@@ -282,3 +302,5 @@ exports.deleteFoodItem = function (req, res, next) {
         })
     }
 }
+// var ObjectId = require("mongoose").Types.ObjectId;
+// console.log([ObjectId("63711a74e11197253c3dff7f"),ObjectId("63a01a8fa467e68022aca2ca"),ObjectId("63a01a8fa467e68022aca2cb"),ObjectId("63a01a8fa467e68022aca2cc"),ObjectId("63a01a8fa467e68022aca2cd")].at(3));

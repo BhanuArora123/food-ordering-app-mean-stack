@@ -78,8 +78,8 @@ var ordersSchema = new schema({
     },
     status:{
         type:String,
-        status:["Pending","Preparing","Out For Delivery","Closed"],
-        default:"Pending"
+        enums:["Preparing","Out For Delivery","Closed"],
+        default:"Preparing"
     },
     createdAt:{
         type: Date,

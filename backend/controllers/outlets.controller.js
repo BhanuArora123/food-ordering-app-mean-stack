@@ -8,6 +8,8 @@ var throwError = require("../utils/errors");
 var addTaskToQueue = require("../utils/aws/sqs/utils").addTaskToQueue;
 var brandsModel = require("../models/brands.model");
 
+var redisUtils = require("../utils/redis/redis.utils");
+
 var utils = require("../utils/utils");
 
 require("dotenv").config("./.env");
@@ -43,17 +45,17 @@ exports.registerOutlet = function (req, res, next) {
                     email: email,
                     password: hashedPassword,
                     brand: brand,
-                    secretKey:process.env.AUTH_SECRET
+                    secretKey: process.env.AUTH_SECRET
                 });
                 return newOutlet.save();
             })
             .then(function (outletData) {
                 // send email to brand 
-                addTaskToQueue("SEND_EMAIL",{
-                    MessageBody:{
-                        email:email,
-                        subject:'Outlet Registration Success!',
-                        content:emailContent
+                addTaskToQueue("SEND_EMAIL", {
+                    MessageBody: {
+                        email: email,
+                        subject: 'Outlet Registration Success!',
+                        content: emailContent
                     }
                 });
                 return res.status(201).json({
@@ -89,15 +91,15 @@ exports.loginOutlet = function (req, res, next) {
                 outletDetails = outletData;
                 return brandsModel.findOne({
                     _id: outletData.brand.id,
-                    isDisabled:false
+                    isDisabled: false
                 }, {
                     name: 1,
                     email: 1
                 });
             })
             .then(function (brandData) {
-                if(!brandData){
-                    throwError("brand is disabled or it doesn't exist!",404);
+                if (!brandData) {
+                    throwError("brand is disabled or it doesn't exist!", 404);
                 }
                 return outletDetails;
             })
@@ -143,21 +145,32 @@ exports.getOutletData = function (req, res, next) {
 
         var skip = (page - 1) * limit;
 
-        outlets.findOne({
-            _id: outletId
-        }, {
-            tables: {
-                $slice: [skip, limit]
-            },
-            permissions:1,
-            brand:1,
-            name:1,
-            email:1,
-            cart:1
-        })
+        redisUtils
+            .getValue(`outlet-${outletId}`)
+            .then(function (outletData) {
+                if (!outletData) {
+                    return outlets.findOne({
+                        _id: outletId
+                    }, {
+                        tables: {
+                            $slice: [skip, limit]
+                        },
+                        permissions: 1,
+                        brand: 1,
+                        name: 1,
+                        email: 1,
+                        cart: 1
+                    })
+                }
+                req.isRedisResponse = true;
+                return JSON.parse(outletData);
+            })
             .then(function (outletData) {
                 if (!outletData) {
                     throwError("outlet doesn't exist", 404);
+                }
+                if(!req.isRedisResponse){
+                    redisUtils.setValue(`outlet-${outletId}`,JSON.stringify(outletData._doc)); 
                 }
                 return res.status(200).json({
                     message: "outlet data fetched successfully",
@@ -184,17 +197,24 @@ exports.getTables = function (req, res, next) {
         var limit = req.query.limit ? parseInt(req.query.limit) : 9;
 
         var skip = (page - 1) * limit;
+        var totalTables;
 
-        var outletId = req.user.userId;
+        var outletId = req.query.outletId || req.user.userId;
 
-
-        outlets.findOne({
-            _id: outletId
-        },
-            {
-                tables: {
-                    $slice: [skip, limit]
-                }
+        outlets
+            .findOne({
+                _id: outletId
+            })
+            .then(function (outletData) {
+                totalTables = outletData.tables.length;
+                return outlets.findOne({
+                    _id: outletId
+                },
+                    {
+                        tables: {
+                            $slice: [skip, limit]
+                        }
+                    })
             })
             .then(function (outletData) {
                 if (!outletData) {
@@ -211,7 +231,8 @@ exports.getTables = function (req, res, next) {
 
                 return res.status(200).json({
                     message: "tables fetched successfully",
-                    tables: tables
+                    tables: tables,
+                    totalTables: totalTables
                 })
             })
             .catch(function (error) {
@@ -303,7 +324,7 @@ exports.addToCart = function (req, res, next) {
                         category: category,
                         subCategory: subCategory,
                         quantity: 1,
-                        taxes:taxes
+                        taxes: taxes
                     })
                 }
                 outletData.cart = userCart;
@@ -450,8 +471,8 @@ exports.getPermissions = function (req, res, next) {
                 if (!outletData) {
                     throwError("outlet doesn't exist", 404);
                 }
-                else if(outletId.toString !== userId.toString() && outletData.brand.id.toString() !== userId.toString() && role !== 'superAdmin'){
-                    throwError("Access Denied!",401);
+                else if (outletId.toString !== userId.toString() && outletData.brand.id.toString() !== userId.toString() && role !== 'superAdmin') {
+                    throwError("Access Denied!", 401);
                 }
                 return res.status(200).json({
                     permissions: outletData.permissions
@@ -482,11 +503,11 @@ exports.editPermissions = function (req, res, next) {
             _id: outletId
         })
             .then(function (outletData) {
-                if(!outletData){
-                    throwError("outlet doesn't exist",404);
+                if (!outletData) {
+                    throwError("outlet doesn't exist", 404);
                 }
-                if(outletData.brand.id.toString() !== userId.toString() && role !== "superAdmin"){
-                    throwError("Access Denied!",401);
+                if (outletData.brand.id.toString() !== userId.toString() && role !== "superAdmin") {
+                    throwError("Access Denied!", 401);
                 }
                 outletData.permissions = permissions;
                 return outletData.save();
@@ -494,7 +515,7 @@ exports.editPermissions = function (req, res, next) {
             .then(function (outletData) {
                 return res.status(200).json({
                     message: "outlet permissions updated successfully",
-                    outletData:outletData
+                    outletData: outletData
                 })
             })
             .catch(function (error) {

@@ -4,10 +4,13 @@ var ObjectId = require("mongoose").Types.ObjectId;
 
 var moment = require("moment");
 
+var utils = require("../utils/utils");
+
 exports.getAllItemsSoldCountHourly = function (req, res, next) {
     try {
-        var startDate = req.query.startDate;
-        var endDate = req.query.endDate;
+        var startDate = utils.setTimeInDate(req.query.startDate,"UTC","Asia/Calcutta",0);
+        var endDate = utils.setTimeInDate(req.query.endDate,"UTC","Asia/Calcutta",24);
+        var timezone = req.query.timezone;
         var selectedItems = JSON.parse(req.query.selectedFoodItems).map(function (item) {
             return ObjectId(item);
         });
@@ -19,8 +22,8 @@ exports.getAllItemsSoldCountHourly = function (req, res, next) {
                 $in: selectedItems
             },
             createdAt: {
-                $gte: moment(startDate).toDate(),
-                $lte: moment(endDate).toDate()
+                $gte: startDate,
+                $lte: endDate
             },
             "brand.id": ObjectId(brandId)
         }
@@ -37,7 +40,10 @@ exports.getAllItemsSoldCountHourly = function (req, res, next) {
             {
                 $addFields: {
                     startHour: {
-                        $hour: "$createdAt"
+                        $hour: {
+                            date:"$createdAt",
+                            timezone:timezone
+                        }
                     }
                 }
             },
@@ -140,10 +146,17 @@ exports.getBrandRevenue = function (req, res, next) {
 exports.getMaxSoldItem = function (req, res, next) {
     try {
         var brandId = req.query.brandId;
+        var timezone = req.query.timezone;
+        var startHour = req.query.startHour;
         // var outletId = req.query.outletId;
         var startDate = req.query.startDate;
         var endDate = req.query.endDate;
         var requiredSoldItemCount = req.query.requiredSoldItemCount?req.query.requiredSoldItemCount:3;
+
+        var optionalMatchQuery = {};
+        if(startHour){
+            optionalMatchQuery["startHour"] = parseInt(startHour);
+        }
 
         orders
             .aggregate([
@@ -161,13 +174,19 @@ exports.getMaxSoldItem = function (req, res, next) {
                         path:"$orderedItems"
                     }
                 },
-                // {
-                //     $addFields: {
-                //         startHour: {
-                //             $hour: "$createdAt"
-                //         }
-                //     }
-                // },
+                {
+                    $addFields: {
+                        startHour: {
+                            $hour: {
+                                date:"$createdAt",
+                                timezone:timezone
+                            }
+                        }
+                    }
+                },
+                {
+                    $match:optionalMatchQuery
+                },
                 {
                     $group: {
                         _id: {

@@ -6,6 +6,7 @@ var throwError = require("../utils/errors");
 var orderUtils = require("../utils/orders.utils");
 
 const sqsUtils = require("../utils/aws/sqs/utils");
+const getSocketInstance = require("../utils/socket/socket.utils").getSocketInstance;
 
 var ObjectId = require("mongoose").Types.ObjectId;
 
@@ -21,74 +22,26 @@ exports.placeOrder = function (req, res, next) {
         var assignedTable = req.body.assignedTable;
         var cartItems = req.body.cart;
 
-        var brandId;
-
-        outlets.findById(outletId)
+        outlets
+            .findOne({
+                _id:outlet.id
+            })
             .then(function (outletData) {
-                if (!outletData || !outletData.cart.length) {
-                    throwError(outletData ? "no item in cart" : "outlet doesn't exist", outletData ? 400 : 404);
+                if (!outletData) {
+                    throwError("outlet doesn't exist",404);
                 }
-                brandId = outletData.brand.id;
-                return customerModel.findOne({
-                    phoneNumber:customer.customer.phoneNumber.toString()
-                })
-            })
-            .then(function (customerData) {
-                if(customerData){
-                    if(customerData.name !== customer.customer.name){
-                        throwError("a customer with this name and phone number already exist",409);
-                    }
-                    return customerData;
-                }
-                customer.customer.outletId = outletId;
-                customer.customer.brandId = brandId;
-                console.log(customer.customer);
-                var newCustomer = new customerModel(customer.customer);
-                return newCustomer.save();
-            })
-            .then(function (customerData) {
-                var totalPrice = cartItems.reduce(function (priceTillNow, currentCartItem) {
-                    return priceTillNow + (currentCartItem.quantity * currentCartItem.foodPrice)
-                }, 0);
-                var orderedItems = cartItems.map(function (cartItem) {
-                    return {
-                        foodName: cartItem.foodName,
-                        foodPrice: cartItem.foodPrice,
-                        quantity: cartItem.quantity,
-                        subCategory: cartItem.subCategory,
-                        category: cartItem.category,
-                        taxes:cartItem.taxes,
-                        foodItemId:cartItem.foodItemId
-                    };
-                })
-                var newOrder = new orders({
-                    orderedItems: orderedItems,
-                    amountPaid: totalPrice,
-                    outletName: cartItems[0].outletName,
-                    createdAt: new Date(),
-                    outlet: outlet,
-                    customer: {
-                        customer:customerData,
-                        paidVia:customer.paidVia
-                    },
-                    brand: brand,
-                    orderType: orderType ? orderType : "Dine In",
-                });
-                return newOrder.save();
-            })
-            .then(function (orderData) {
                 sqsUtils.addTaskToQueue("ORDER_CREATION",{
                     MessageBody: {
-                        brandId:brand.id,
-                        outletName:outlet.name,
-                        orderId:orderData._id,
-                        assignedTable:parseInt(assignedTable),
-                        outletId:outlet.id
+                        outlet:outlet,
+                        brand:brand,
+                        customer:customer,
+                        cartItems:cartItems,
+                        assignedTable:assignedTable?parseInt(assignedTable):undefined,
+                        orderType:orderType
                     }
                 });
                 return res.status(201).json({
-                    message: "Creating Order, Order Status - Pending",
-                    orderData: orderData
+                    message: "Creating Order, Order Status - Pending"
                 })
             })
             .catch(function (error) {
@@ -110,9 +63,10 @@ exports.getAllOrders = function (req, res, next) {
     try {
 
         var brandId = req.query.brandId;
+        var customerId = req.query.customerId;
 
         // authorizing
-        if (req.user.role !== "superAdmin" && req.user.role !== "admin" && req.user.userId !== brandId && req.user.brandId !== brandId) {
+        if (req.user.role !== "superAdmin" && req.user.role !== "admin" && req.user.userId !== brandId && req.user.brandId !== brandId && req.user.userId !== customerId ) {
             return res.status(401).json({
                 message: "Access Denied!"
             })
@@ -122,13 +76,14 @@ exports.getAllOrders = function (req, res, next) {
         var limit = parseInt(req.query.limit);
         var page = parseInt(req.query.page);
         var outletId = req.query.outletId;
+        var totalOrders;
 
         var skip = (page - 1) * limit;
 
-        var matchQuery = {
-            "brand.id":brandId
-        };
-        console.log("order type - ",orderType);
+        var matchQuery = {};
+        if(brandId){
+            matchQuery["brand.id"] = brandId;
+        }
         if (orderType) {
             matchQuery["orderType"] = orderType;
         }
@@ -138,15 +93,24 @@ exports.getAllOrders = function (req, res, next) {
         if(outletId){
             matchQuery["outlet.id"] = outletId;
         }
+        if(customerId){
+            matchQuery["customer.customer._id"] = customerId;
+        }
         console.log(matchQuery);
         orders
+        .countDocuments(matchQuery)
+        .then(function (availableOrders) {
+            totalOrders = availableOrders;
+            return orders
             .find(matchQuery)
             .skip(skip)
             .limit(limit)
+        })
             .then(function (matchedOrders) {
                 return res.status(200).json({
                     message: "orders fetched successfully",
-                    orders: matchedOrders
+                    orders: matchedOrders,
+                    totalOrders:totalOrders
                 })
             })
             .catch(function (error) {
@@ -186,6 +150,11 @@ exports.changeStatus = function (req, res, next) {
             })
             .then(function (orderData) {
                 currentOrderData = orderData;
+                var socketInstance = getSocketInstance();
+                socketInstance.to(orderData.customer.customer._id.toString()).emit("orderStatusChanged",{
+                    orderData:orderData,
+                    message:"Highlighted Order's Status is Changed!"
+                })
                 return outlets.findOne({
                     _id: outletId
                 })
@@ -272,3 +241,95 @@ exports.editOrder = function (req, res, next) {
         })
     }
 }
+
+// var execute = async function () {
+//     var outletDocs = [];
+//     for (let i = 0; i < 5000; i++) {
+//         console.log(i);
+//         var newFood = {
+//             createdAt:new Date(),
+//             orderedItems: [
+//     {
+//         foodItemId: new ObjectId("638fae1841df139c2f197d4f"),
+//         foodName: 'pizza 234',
+//         foodPrice: 23,
+//         quantity: 1,
+//         category: 'fast food',
+//         subCategory: 'non veg',
+//         taxes: [Array],
+//         _id: new ObjectId("639c081bab4e83b4bd2659f0")
+//       },
+//       {
+//         foodItemId: new ObjectId("63944f452ea3e9be03d4acf2"),
+//         foodName: 'noodles123467',
+//         foodPrice: 12,
+//         quantity: 2,
+//         category: 'fast food',
+//         subCategory: 'veg',
+//         taxes: [Array],
+//         _id: new ObjectId("639c081bab4e83b4bd2659f1")
+//       },
+//       {
+//         foodItemId: new ObjectId("63944b53cc10c4b370015523"),
+//         foodName: 'noodles',
+//         foodPrice: 12,
+//         quantity: 2,
+//         category: 'fast food',
+//         subCategory: 'veg',
+//         taxes: [Array],
+//         _id: new ObjectId("639c081bab4e83b4bd2659f2")
+//       },
+//       {
+//         foodItemId: new ObjectId("6377287a2d148937a0daed2d"),
+//         foodName: 'dish99',
+//         foodPrice: 9,
+//         quantity: 2,
+//         category: 'italian',
+//         subCategory: 'subitalian',
+//         taxes: [],
+//         _id: new ObjectId("639c081bab4e83b4bd2659f3")
+//       },
+//       {
+//         foodItemId: new ObjectId("6371fbf29a41aa2a90d4f3e5"),
+//         foodName: 'dish12',
+//         foodPrice: 15,
+//         quantity: 1,
+//         category: 'Indian',
+//         subCategory: 'South Indian',
+//         taxes: [],
+//         _id: new ObjectId("639c081bab4e83b4bd2659f4")
+//       }
+//     ],
+//             amountPaid: 104,
+//             outlet: { id: ObjectId("6371291b0f6d4932bc863cbe"), name: 'outlet2' },
+//             customer: {
+//     customer: {
+//         name: 'Bhanu Arora',
+//         phoneNumber: '9213311703',
+//         brandId: new ObjectId("63711a74e11197253c3dff7f"),
+//         outletId: new ObjectId("6371291b0f6d4932bc863cbe"),
+//         _id: new ObjectId("63907fa140c40653c9e4d559")
+//       },
+//       paidVia: 'Card'
+//     },
+//             brand: { id: ObjectId("63711a74e11197253c3dff7f"), name: 'brand1' },
+//             orderType: i>2500?'Dine In':'Take Away',
+//             assignedTable:i>2500?`${((i%10)+1)}`:null
+//         };
+
+//         outletDocs.push(newFood);
+//     }
+//     console.log(outletDocs);
+//     await orders.insertMany(outletDocs);
+//     console.log("done");
+// }
+
+// execute();
+
+// // async function ex() {
+// //     var orderData = await orders.findOne({
+// //         _id:ObjectId("639c081bab4e83b4bd2659ee")
+// //     })
+// //     console.log(orderData);
+// // }
+// // ex();

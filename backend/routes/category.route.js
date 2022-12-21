@@ -29,4 +29,6 @@ router.post("/sub/create",
 
 router.get("/sub/get", passport.authenticate("jwt", { session: false }), categoryController.getSubCategories);
 
+router.get("/availableCategories",passport.authenticate("jwt", { session: false }), categoryController.getCategoriesForBrand);
+
 module.exports = router;

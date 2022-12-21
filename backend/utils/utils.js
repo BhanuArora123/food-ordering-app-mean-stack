@@ -8,6 +8,8 @@ var throwError = require("../utils/errors");
 
 var passwordGenerator = require("generate-password");
 
+var moment = require("moment-timezone");
+
 exports.convertToArray = function (obj) {
     return Object.keys(obj).map(function (keys) {
         return obj[keys];
@@ -55,6 +57,28 @@ exports.genRandomPassword = function () {
             uppercase:true
         });
         return password;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+exports.convertTimezone = function (date,currentTimezone,timezone) {
+    try {
+        moment.tz.setDefault(currentTimezone);
+        var requiredDate = moment(date).tz(timezone).toDate();
+        moment.tz.setDefault("UTC");
+        return requiredDate;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+exports.setTimeInDate = function (date,currentTimezone,timezone,hour) {
+    try {
+        var currentDate = exports.convertTimezone(date,currentTimezone,timezone).setHours(hour,0,0,0);
+        var requiredDate = exports.convertTimezone(moment(currentDate),currentTimezone,timezone);
+        console.log(requiredDate);
+        return requiredDate;
     } catch (error) {
         console.log(error);
     }
