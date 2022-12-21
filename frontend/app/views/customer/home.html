@@ -1,0 +1,38 @@
+<section ng-init="getCustomerOrders()">
+    <!-- customer details  -->
+    <div class="w-100 d-flex justify-content-around align-items-sm-center flex-column">
+        <div class="w-100 d-flex justify-content-around align-items-start flex-column m-5">
+            <span class="ml-3 mb-3">Name : {{customerData.name}}</span>
+            <span class="ml-3 mb-3">Phone Number : {{customerData.phoneNumber}}</span>
+        </div>
+    </div>
+    <!-- tables - orders Management  -->
+    <table ng-table="customerOrders" class="table table-striped">
+
+        <tr ng-show="customerOrders.length" ng-repeat="order in customerOrders" class="{{getHighlightClass(order._id)}}">
+
+            <td class="text-center" data-title="'Order No.'">
+                <div>
+                    {{$index + 1}}.
+                </div>
+            </td>
+
+            <td class="text-center" data-title="'Order Status'">
+                <div>
+                    {{order.status}}
+                </div>
+            </td>
+
+            <td class="text-center" data-title="'Order Type'">{{order.orderType}}</td>
+
+            <td class="text-center" data-title="'Actions'">
+                <button class="btn btn-primary" ng-click="viewDetails($index)">View Details</button>
+            </td>
+
+        </tr>
+
+        <tr ng-hide="customerOrders.length">
+            <td>No Orders created yet</td>
+        </tr>
+    </table>
+</section>

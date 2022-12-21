@@ -171,6 +171,9 @@ appModule
                         cb(argumentsList);
                     },delay);
                 }
+            },
+            getCurrentTimezone : function () {
+                return Intl.DateTimeFormat().resolvedOptions().timeZone;
             }
         }
     })

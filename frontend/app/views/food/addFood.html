@@ -50,9 +50,9 @@
                     ng-click="createSubCategory(food.subCategory,food.category)">Create Sub Category</button>
             </div>
         </div>
-        <div class="w-75 d-flex justify-content-around align-items-start flex-column">
+        <div class="dark-theme w-75 d-flex justify-content-around align-items-start flex-column">
             <label>Add Taxes</label>
-            <oi-select oi-options="item.name for item in taxesAvailable" ng-model="food.taxes" multiple
+            <oi-select class="dark-theme" oi-options="item.name for item in taxesAvailable" ng-model="food.taxes" multiple
                 placeholder="Select" class="h-50p">
             </oi-select>
             <button type="button"

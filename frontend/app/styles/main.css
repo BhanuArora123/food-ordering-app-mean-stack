@@ -62,6 +62,9 @@ body{
 .h-60p{
   height: 60px;
 }
+.h-70p{
+  height: 70px;
+}
 .h-60{
   height: 60%;
 }
@@ -139,7 +142,25 @@ input.ng-invalid.ng-touched{
   list-style: none;
 }
 
-oi-select .select-search {
+oi-select *{
+  color: black;
+}
+
+oi-select .select-search-list-item:not(.select-search-list-item_input), oi-select .select-search-list-item_selection-remove{
+  /* background-color: white; */
+  color: black;
+}
+oi-select .select-dropdown-optgroup-option{
+  /* background-color: rgb(45,50,63); */
+  color: black;
+}
+
+oi-select .select-dropdown-optgroup-option.active:not(.disabled){
+  /* background-color: #1d2331; */
+  color: black;
+}
+
+.dark-theme oi-select .select-search {
   background-color: rgb(45,50,63) !important;
   outline: none;
   border: 0;
@@ -149,35 +170,36 @@ oi-select .select-search {
   padding: 5px;
 }
 
-/* tags-input .tags{
-  width: 100% !important;
-  background-color: rgb(45,50,63) !important;
-  height: 100% !important;
-  outline: none;
-  border: none;
-} */
-
-oi-select * {
+.dark-theme oi-select * {
   background-color: rgb(45,50,63);
+  color:white
 }
-oi-select .select-search-list-item:not(.select-search-list-item_input), oi-select .select-search-list-item_selection-remove{
+.dark-theme oi-select .select-search-list-item:not(.select-search-list-item_input),.dark-theme oi-select .select-search-list-item_selection-remove{
   background-color: white;
   color: black;
 }
-oi-select .select-dropdown-optgroup-option{
+.dark-theme oi-select .select-dropdown-optgroup-option{
   background-color: rgb(45,50,63);
+  color: black;
+}
+.dark-theme oi-select .select-dropdown-optgroup-option.active:not(.disabled){
+  background-color: #1d2331;
+  color: white;
 }
 
-oi-select .select-dropdown-optgroup-option.active:not(.disabled){
-  background-color: #1d2331;
+.dark-theme oi-select .select-dropdown-optgroup > li{
+  /* background-color: #1d2331; */
+  color: white;
 }
 
 .cursor-pointer{
-  cursor:pointer !important;
+  cursor:pointer;
 }
-oi-select:not(.multiple) .select-search-list-item_selection:not(:active){
+.dark-theme oi-select:not(.multiple) .select-search-list-item_selection:not(:active){
   color: white !important;
-}
-.maxSoldItems .ng-table-header span{
+  background-color: rgb(45,50,63);
+  border:0px;
+} 
+.max-sold-items .ng-table-header span, .food-items .ng-table-header span{
   color: black;
 }

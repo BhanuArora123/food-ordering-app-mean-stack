@@ -1,7 +1,9 @@
 
 
-appModule.controller("adminController", function ($scope, outletService, adminService, brandService, adminData, allBrands, blockUI, NgTableParams, utility,permission) {
+appModule.controller("adminController", function ($scope, outletService, adminService, brandService, adminData, brandsData, blockUI, NgTableParams, utility,permission) {
     // setting value for default value
+    var allBrands = brandsData.allBrands;
+    
     $scope.signup = {
         userRole: "Brand"
     }
@@ -48,9 +50,22 @@ appModule.controller("adminController", function ($scope, outletService, adminSe
     // all brands
     $scope.allBrands = allBrands;
 
+    $scope.totalBrands = brandsData.totalBrands;
+
     $scope.allBrandsData = new NgTableParams({}, {
-        dataset: allBrands
+        dataset: allBrands,
     })
+
+    $scope.getBrands = function (page) {
+        brandService
+        .getBrands(page,9)
+        .then(function (data) {
+            $scope.allBrands = data.brands;
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
+    }
 
     // editing password 
     $scope.allowEdit = function () {
@@ -138,14 +153,15 @@ appModule.controller("adminController", function ($scope, outletService, adminSe
     }
 
     // admin permissions
-    $scope.getAllAdmins = function () {
+    $scope.getAllAdmins = function (page = 1) {
         blockUI.start({
             message: "fetching admins"
         })
         adminService
-            .getAllAdmins()
+            .getAllAdmins(page,9)
             .then(function (data) {
                 $scope.allAdmins = data.admins;
+                $scope.totalAdmins = data.totalAdmins;
                 blockUI.stop();
             })
             .catch(function (error) {

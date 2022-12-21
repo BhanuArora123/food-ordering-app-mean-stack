@@ -1,7 +1,7 @@
 
 
 appModule
-    .controller("ordersController", function ($scope, outletOrders, orderService, outletService, utility,socketService) {
+    .controller("ordersController", function ($scope, $rootScope, outletOrders, orderService, outletService, utility,socketService,brandService, blockUI) {
         // current order status
         $scope.currentOrderStatus = "All";
 
@@ -9,22 +9,33 @@ appModule
 
         $scope.actualOrderStatuses = ["Preparing", "Out For Delivery", "Closed"];
 
-        $scope.getAllOutletOrders = outletOrders;
+        $scope.takeAway = {
+            currentPage:1
+        };
+
+        $scope.dineIn = {
+            currentPage:1
+        };
+
+        $scope.getAllOutletOrders = outletOrders.orders;
+        $scope.totalOrders = outletOrders.totalOrders;
+        
+        console.log($scope.totalOrders);
 
         $scope.currentScope = $scope;
+
+        $scope.currentOrderType = 'Dine In';
 
         // socket listeners 
         socketService.recieveEvent("orderCreation",function (data) {
             console.log(data,$scope.getAllOutletOrders);
-            var orderId = data.orderId;
-            $scope.getAllOutletOrders = $scope.getAllOutletOrders.map(function (order) {
-                if(order._id === orderId){
-                    order.status = "Preparing";
-                    return order;
-                }
-                return order;
-            })
-            $scope.$apply();
+            var orderData = data.orderData;
+            if(orderData.orderType === $scope.currentOrderType){
+                $scope.getAllOutletOrders.push(orderData);
+                $scope.$apply();
+            }
+            $rootScope.progress = 100;
+            $rootScope.progressBarText = "Order Created Successfully - Preparing Your Order";
         })
 
         // get role 
@@ -33,17 +44,22 @@ appModule
         }
 
         $scope.getHeight = function (viewPortScale) {
-            return (500 * Math.ceil(($scope.getAllOutletOrders.length) / viewPortScale)) + 200;
+            return (600 * Math.ceil(($scope.getAllOutletOrders.length) / viewPortScale)) + 200;
         }
 
-        $scope.getOrders = function (status, type) {
+        $scope.getOrders = function (status, type, page,limit) {
+            if(type){
+                $scope.currentOrderType = type;
+            }
             if (status === "All") {
                 status = undefined;
             }
             orderService
-                .getAllOrders(status, type)
+                .getAllOrders(status, type,undefined,page,limit)
                 .then(function (data) {
                     $scope.getAllOutletOrders = data.orders;
+                    $scope.totalOrders = data.totalOrders;
+                    console.log($scope.totalOrders);
                 })
                 .catch(function (error) {
                     console.log(error);
@@ -62,6 +78,21 @@ appModule
         }
 
         $scope.viewDetails = function (index, assignedTable) {
+            var brandData = brandService.getServiceData().brandData;
+            
+            if(brandData){
+                return utility.openModal(
+                    'views/orders/displayModal.html',
+                    'orderDetailsController',
+                    'orderDisplayModal',
+                    $scope,
+                    {
+                        currentIndex: index
+                    },
+                    $scope
+                )
+            }
+            blockUI.start();
             return outletService
                 .getTables(1, 9, undefined)
                 .then(function (data) {
@@ -78,9 +109,11 @@ appModule
                             currentIndex: index
                         },
                         $scope
-                    )
+                    );
+                    blockUI.stop();
                 })
                 .catch(function (error) {
+                    blockUI.stop();
                     console.log(error);
                 })
         }

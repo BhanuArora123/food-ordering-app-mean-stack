@@ -3,6 +3,15 @@
 // home controller
 appModule.controller("homeController", function ($scope,$rootScope, adminService,outletService,brandService , $uibModal,utility,permission) {
 
+    // order creation progress bar 
+    $rootScope.max = 100;
+    $rootScope.progress = 0;
+
+    $rootScope.closeProgressBar = function () {
+        $rootScope.displayProgressBar = false;
+        $rootScope.progress = 100;
+    }
+
     $scope.isNavCollapsed = (screen.width <= 765 );
     // dismiss alerts 
     $scope.closeError = function () {
@@ -60,4 +69,6 @@ appModule.controller("homeController", function ($scope,$rootScope, adminService
         var role = localStorage.getItem("role");
         return permission.isAuthorized(userPermissions,requiredPermissionId,allowedRoles,role);
     }
+
+
 });

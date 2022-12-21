@@ -41,20 +41,21 @@
     <!-- report 1 - get brand/outlet item sold count  -->
     <div ng-show="selectedReport.id === 1" class="w-100 d-flex justify-content-around align-items-center flex-column">
         <div class="w-100 mb-3">
-            <oi-select oi-options="food.name for food in availableFoods" ng-model="reportData.selectedFoodItems"
+            <oi-select oi-options="food.name for food in getFoodItems($query,reportData.selectedBrands._id)" ng-model="reportData.selectedFoodItems"
                 multiple placeholder="Select Food" class="no-oi-style" ng-disabled="!reportData.selectedBrand"
                 ng-change="updateFoodList(reportData.selectedFoodItems)">
             </oi-select>
         </div>
         <div class="w-100 d-flex justify-content-around align-items-center mb-3">
             <div class="w-40">
-                <oi-select oi-options="outlet.name for outlet in availableOutlets" ng-model="reportData.selectedOutlet"
+                <oi-select oi-options="outlet.name for outlet in getOutlets($query,reportData.selectedBrand._id)" ng-model="reportData.selectedOutlet"
                     placeholder="Select Outlet" class="h-50p" ng-disabled="!reportData.selectedBrand">
                 </oi-select>
             </div>
+            <div class="text-dark">value is {{a}}</div>
             <div class="w-40">
-                <oi-select oi-options="brand.name for brand in availableBrands" ng-model="reportData.selectedBrand"
-                    placeholder="Select Brand" class="h-50p" ng-change="onBrandSelect(reportData.selectedBrand)">
+                <oi-select oi-options="brand.name for brand in getBrands($query)" ng-model="reportData.selectedBrand"
+                    placeholder="Select Brand" class="h-50p" ng-change="">
                 </oi-select>
             </div>
         </div>
@@ -70,7 +71,7 @@
     <!-- report 2 - get brand total revenue  -->
     <div ng-show="selectedReport.id === 2" class="w-100 d-flex justify-content-around align-items-center flex-column">
         <div class="w-100 mb-3">
-            <oi-select oi-options="brand.name for brand in availableBrands" ng-model="reportData.selectedBrands"
+            <oi-select oi-options="brand.name for brand in getBrands($query)" ng-model="reportData.selectedBrands"
                 placeholder="Select Brand" class="h-50p" multiple>
             </oi-select>
         </div>
@@ -86,15 +87,22 @@
     <!-- report 3 - get brand max sold items  -->
     <div ng-show="selectedReport.id === 3" class="w-100 d-flex justify-content-around align-items-center flex-column">
         <div class="w-100 mb-3">
-            <oi-select oi-options="brand.name for brand in availableBrands" ng-model="reportData.brandSelected"
+            <oi-select oi-options="brand.name for brand in getBrands($query)" ng-model="reportData.brandSelected"
                 placeholder="Select Brand" class="h-50p">
             </oi-select>
+        </div>
+        <div class="w-100 d-flex justify-content-around align-items-center mb-3">
+            <div class="w-40">
+                <oi-select oi-options="timeSlot for timeSlot in timeSlots" ng-model="reportData.startHour"
+                    placeholder="Select Time Slot" class="h-50p">
+                </oi-select>
+            </div>
         </div>
         <div class="w-100 d-flex justify-content-around align-items-center mb-3">
             <button class="btn btn-primary" ng-click="getMaxSoldItems(reportData)">Generate Report</button>
         </div>
         <div class="w-100 d-flex justify-content-around align-items-center mb-3">
-            <table ng-table="maxSoldItems" class="table table-striped w-100 maxSoldItems">
+            <table ng-table="maxSoldItems" class="table table-striped w-100 max-sold-items">
 
                 <tr ng-show="maxSoldItems.length" ng-repeat="item in maxSoldItems">
     

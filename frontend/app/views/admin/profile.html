@@ -43,108 +43,114 @@
             </div>
         </div>
         <!-- tables - brand management -->
-        <table ng-show="isAuthorized(adminData.permissions,2,adminData.role)" ng-table="allBrandsData" class="table table-striped">
+        <div class="w-100 d-flex justify-content-around flex-column">
+            <table ng-show="isAuthorized(adminData.permissions,2,adminData.role)" ng-table="allBrandsData" class="table table-striped">
 
-            <tr ng-show="allBrands.length" ng-repeat="brand in allBrands">
-
-                <td class="text-center" data-title="'Brand Name'">
-                    <div ng-hide="$index === editElementIndex">
-                        {{brand.name}}
-                    </div>
-                    <!-- editing brand name  -->
-                    <input ng-show="$index === editElementIndex"
-                        class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="text"
-                        ng-model="brand.name" ng-required="true">
-                </td>
-
-                <td class="text-center" data-title="'Email'">
-                    <div ng-hide="$index === editElementIndex">
-                        {{brand.email}}
-                    </div>
-                    <!-- editing brand name  -->
-                    <input ng-show="$index === editElementIndex"
-                        class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="email"
-                        ng-model="brand.email" ng-required="true">
-                </td>
-
-                <td data-title="'Permissions'">
-                    <oi-select
-                        placeholder="Select Permission"
-                        oi-options="permission.permissionName for permission in getPermissions('Brand') track by permission.permissionId"
-                        ng-model="brand.permissions" ng-change="updatePermissions(brand._id,brand.permissions,'brand')" multiple ng-required="true">
-
-                    </oi-select>
-                </td>
-
-                <td class="text-center" data-title="'Actions'">
-                    <button ng-hide="$index === editElementIndex" class="btn btn-primary"
-                        ng-click="makeEditable($index)">Edit</button>
-                    <button ng-show="$index === editElementIndex" class="btn btn-primary"
-                        ng-click="disableEditing()">Cancel</button>
-                    <button ng-show="$index === editElementIndex" class="btn btn-primary"
-                        ng-click="updateBrand(brand)">Update</button>
-                    <button ng-show="!brand.isDisabled" class="btn btn-primary"
-                        ng-click="toggleBrandAccess(brand)">Disable</button>
-                    <button ng-show="brand.isDisabled" class="btn btn-primary"
-                        ng-click="toggleBrandAccess(brand)">Enable</button>
-                </td>
-
-            </tr>
-
-            <tr ng-hide="allBrands.length">
-                <td>No Brands added yet</td>
-            </tr>
-        </table>
+                <tr ng-show="allBrands.length" ng-repeat="brand in allBrands">
+    
+                    <td class="text-center" data-title="'Brand Name'">
+                        <div ng-hide="$index === editElementIndex">
+                            {{brand.name}}
+                        </div>
+                        <!-- editing brand name  -->
+                        <input ng-show="$index === editElementIndex"
+                            class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="text"
+                            ng-model="brand.name" ng-required="true">
+                    </td>
+    
+                    <td class="text-center" data-title="'Email'">
+                        <div ng-hide="$index === editElementIndex">
+                            {{brand.email}}
+                        </div>
+                        <!-- editing brand name  -->
+                        <input ng-show="$index === editElementIndex"
+                            class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="email"
+                            ng-model="brand.email" ng-required="true">
+                    </td>
+    
+                    <td class="dark-theme" data-title="'Permissions'">
+                        <oi-select
+                            placeholder="Select Permission"
+                            oi-options="permission.permissionName for permission in getPermissions('Brand') track by permission.permissionId"
+                            ng-model="brand.permissions" ng-change="updatePermissions(brand._id,brand.permissions,'brand')" multiple ng-required="true">
+    
+                        </oi-select>
+                    </td>
+    
+                    <td class="text-center" data-title="'Actions'">
+                        <button ng-hide="$index === editElementIndex" class="btn btn-primary"
+                            ng-click="makeEditable($index)">Edit</button>
+                        <button ng-show="$index === editElementIndex" class="btn btn-primary"
+                            ng-click="disableEditing()">Cancel</button>
+                        <button ng-show="$index === editElementIndex" class="btn btn-primary"
+                            ng-click="updateBrand(brand)">Update</button>
+                        <button ng-show="!brand.isDisabled" class="btn btn-primary"
+                            ng-click="toggleBrandAccess(brand)">Disable</button>
+                        <button ng-show="brand.isDisabled" class="btn btn-primary"
+                            ng-click="toggleBrandAccess(brand)">Enable</button>
+                    </td>
+    
+                </tr>
+    
+                <tr ng-hide="allBrands.length">
+                    <td>No Brands added yet</td>
+                </tr>
+            </table>
+            <ul ng-show="totalBrands" class="w-100" uib-pagination max-size="5" items-per-page="9" total-items="totalBrands" ng-model="brands.currentPage" ng-change="getBrands(brands.currentPage)"></ul>
+        </div>
         <!-- <input type="text" placeholder="{{dataName}}" ng-model="adminData.dataName"> -->
         <!-- tables - all admins -->
-        <table ng-show="isAuthorized(adminData.permissions,1,adminData.role)" ng-table="allAdmins" class="table table-striped" ng-init="admins = getAllAdmins();">
+        <div class="w-100 d-flex justify-content-around flex-column">
+            <table ng-show="isAuthorized(adminData.permissions,1,adminData.role)" ng-table="allAdmins" class="table table-striped" ng-init="admins = getAllAdmins();">
 
-            <tr ng-show="allAdmins.length" ng-repeat="admin in allAdmins">
-
-                <td class="text-center" data-title="'Admin Name'">
-                    <div ng-hide="$index === editElementIndex">
-                        {{admin.name}}
-                    </div>
-                    <!-- editing brand name  -->
-                    <input ng-show="$index === editElementIndex"
-                        class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="text"
-                        ng-model="admin.name" ng-required="true">
-                </td>
-
-                <td class="text-center" data-title="'Email'">
-                    <div ng-hide="$index === editElementIndex">
-                        {{admin.email}}
-                    </div>
-                    <!-- editing brand name  -->
-                    <input ng-show="$index === editElementIndex"
-                        class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="email"
-                        ng-model="admin.email" ng-required="true">
-                </td>
-
-                <td data-title="'Permissions'">
-                    <oi-select
-                        placeholder="Select Permission"
-                        oi-options="permission.permissionName for permission in getPermissions('Admin') track by permission.permissionId"
-                        ng-model="admin.permissions" ng-change="updatePermissions(admin._id,admin.permissions)" multiple ng-required="true">
-
-                    </oi-select>
-                </td>
-
-                <td class="text-center" data-title="'Actions'">
-                    <button ng-hide="$index === editElementIndex" class="btn btn-primary"
-                        ng-click="makeEditable($index)">Edit</button>
-                    <button ng-show="$index === editElementIndex" class="btn btn-primary"
-                        ng-click="disableEditing()">Cancel</button>
-                    <button ng-show="$index === editElementIndex" class="btn btn-primary"
-                        ng-click="updateBrand(brand)">Update</button>
-                </td>
-
-            </tr>
-
-            <tr ng-hide="allAdmins.length">
-                <td>No other Admin(s) added yet</td>
-            </tr>
-        </table>
+                <tr ng-show="allAdmins.length" ng-repeat="admin in allAdmins">
+    
+                    <td class="text-center" data-title="'Admin Name'">
+                        <div ng-hide="$index === editElementIndex">
+                            {{admin.name}}
+                        </div>
+                        <!-- editing brand name  -->
+                        <input ng-show="$index === editElementIndex"
+                            class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="text"
+                            ng-model="admin.name" ng-required="true">
+                    </td>
+    
+                    <td class="text-center" data-title="'Email'">
+                        <div ng-hide="$index === editElementIndex">
+                            {{admin.email}}
+                        </div>
+                        <!-- editing brand name  -->
+                        <input ng-show="$index === editElementIndex"
+                            class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="email"
+                            ng-model="admin.email" ng-required="true">
+                    </td>
+    
+                    <td class="dark-theme" data-title="'Permissions'">
+                        <oi-select
+                            placeholder="Select Permission"
+                            oi-options="permission.permissionName for permission in getPermissions('Admin') track by permission.permissionId"
+                            ng-model="admin.permissions" ng-change="updatePermissions(admin._id,admin.permissions)" multiple ng-required="true">
+    
+                        </oi-select>
+                    </td>
+    
+                    <td class="text-center" data-title="'Actions'">
+                        <button ng-hide="$index === editElementIndex" class="btn btn-primary"
+                            ng-click="makeEditable($index)">Edit</button>
+                        <button ng-show="$index === editElementIndex" class="btn btn-primary"
+                            ng-click="disableEditing()">Cancel</button>
+                        <button ng-show="$index === editElementIndex" class="btn btn-primary"
+                            ng-click="updateBrand(brand)">Update</button>
+                    </td>
+    
+                </tr>
+    
+                <tr ng-hide="allAdmins.length">
+                    <td>No other Admin(s) added yet</td>
+                </tr>
+            </table>
+            <ul ng-show="totalAdmins" class="w-100" uib-pagination max-size="5" items-per-page="9" total-items="totalAdmins" ng-model="admins.currentPage" ng-change="getAllAdmins(admins.currentPage)"></ul>
+        </div>
     </div>
 
 </section>

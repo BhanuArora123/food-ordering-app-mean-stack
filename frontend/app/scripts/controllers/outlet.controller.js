@@ -2,13 +2,13 @@
 
 appModule.controller("outletController",function ($scope,NgTableParams,outletData,tablesData,outletService,utility,orderService) {
     
-    console.log(tablesData);
 
     $scope.tablesTable = new NgTableParams({},{
-        dataset:tablesData
+        dataset:tablesData.tablesData
     })
 
-    $scope.tablesData = tablesData;
+    $scope.tablesData = tablesData.tablesData;
+    $scope.totalTables = tablesData.totalTables;
 
     $scope.outletData = outletData;
 
@@ -35,13 +35,25 @@ appModule.controller("outletController",function ($scope,NgTableParams,outletDat
         })
     }
 
+    $scope.getTables = function (page) {
+        outletService
+        .getTables(page,9)
+        .then(function (data) {
+            $scope.tableData = data.tables;
+            $scope.totalTables = data.totalTables;
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
+    }
+
     $scope.openAddTableModal = function () {
         outletService
         .addTable({
             tableId:$scope.tablesData.length + 1
         })
         .then(function (data) {
-            $scope.tablesData = data.tables;
+            return $scope.getTables($scope.tables.currentPage,9);
         })
         .catch(function (error) {
             console.log(error);

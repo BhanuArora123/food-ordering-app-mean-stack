@@ -1,11 +1,11 @@
 
 
 appModule
-    .service("foodService", function ($http, blockUI) {
+    .service("foodService", function ($http, blockUI,outletService) {
         this.getFoodItems = function (data) {
-            blockUI.start({
-                message: "Loading..."
-            })
+            // blockUI.start({
+            //     message: "Loading..."
+            // })
             return $http({
                 url: "http://localhost:8080/food/getFoodItems",
                 method: "GET",
@@ -15,15 +15,19 @@ appModule
                     maxPrice: data.maxPrice,
                     minRating: data.minRating,
                     isVeg: data.isVeg,
-                    foodName: data.foodName
+                    foodName: data.foodName,
+                    category:data.category,
+                    subCategory:data.subCategory,
+                    page:data.page,
+                    limit:data.limit
                 }
             })
                 .then(function (response) {
-                    blockUI.stop();
+                    // blockUI.stop();
                     return response.data;
                 })
                 .catch(function (error) {
-                    blockUI.stop();
+                    // blockUI.stop();
                     console.log(error);
                 })
         };
@@ -146,6 +150,21 @@ appModule
                     return res.data.subCategories.map(function (subCategory) {
                         return subCategory.name;
                     });
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
+        }
+        this.getAvailableCategories = function () {
+            var outletData = outletService.getServiceData().outletData;
+            return $http
+                .get("http://localhost:8080/category/availableCategories", {
+                    params: {
+                        brandId:outletData?outletData.brand.id:undefined
+                    }
+                })
+                .then(function (res) {
+                    return res.data;
                 })
                 .catch(function (error) {
                     console.log(error);

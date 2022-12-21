@@ -19,4 +19,7 @@ appModule
         socket.off(eventName);
         socket.on(eventName,eventCallback);
     }
+    this.activeListenersCount = function () {
+        return socket.listeners().length;
+    }
 })

@@ -76,11 +76,14 @@ appModule
                     console.log(error);
                 })
         };
-        this.getAllOutlets = function (page, limit,brandId) {
+        this.getAllOutlets = function (page, limit,brandId,query) {
             return $http
                 .get("http://localhost:8080/brand/outlet/getAll",{
                     params:{
-                        brandId:brandId
+                        brandId:brandId,
+                        page:page,
+                        limit:limit,
+                        search:query
                     }
                 })
                 .then(function (res) {

@@ -21,8 +21,8 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css"
   integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
   <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css"> -->
-  <link rel="stylesheet" href="https://unpkg.com/ng-table@2.0.2/bundles/ng-table.min.css">
   <script src="https://kit.fontawesome.com/bedf74ce64.js" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="https://unpkg.com/ng-table@2.0.2/bundles/ng-table.min.css">
   <!-- endbuild -->
 </head>
 
@@ -57,12 +57,12 @@
   <script src="bower_components/oi.select/dist/select-tpls.min.js"></script>
   <script src="bower_components/chart.js/dist/Chart.js"></script>
   <script src="bower_components/angular-chart.js/dist/angular-chart.js"></script>
-  <script src="bower_components/socket.io-client/dist/socket.io.js"></script>
   <!-- endbower -->
   <!-- endbuild -->
   <!-- build:js({.tmp,app}) scripts/scripts.js -->
   <!-- ng table -->
   <script src="bower_components/angular-ui-router/release/stateEvents.js"></script>
+  <script src="/bower_components/socket.io-client/dist/socket.io.js"></script>
   <script src="https://unpkg.com/ng-table@2.0.2/bundles/ng-table.min.js"></script>
   <!-- socket io -->
   <!-- <script src="https://cdn.socket.io/4.5.4/socket.io.min.js" integrity="sha384-/KNQL8Nu5gCHLqwqfQjA689Hhoqgi2S84SNUxC3roTe4EhJ9AfLkp8QiQcU8AMzI" crossorigin="anonymous"></script> -->
@@ -81,6 +81,7 @@
   <script src="scripts/services/utils.services.js"></script>
   <script src="scripts/services/permissions.services.js"></script>
   <script src="scripts/services/socket.services.js"></script>
+  <script src="scripts/services/auth.services.js"></script>
   <script src="scripts/controllers/main.controller.js"></script>
   <script src="scripts/controllers/login.controller.js"></script>
   <script src="scripts/controllers/dashboard.controller.js"></script>
@@ -92,7 +93,9 @@
   <script src="scripts/controllers/brand.controller.js"></script>
   <script src="scripts/controllers/tax.controller.js"></script>
   <script src="scripts/controllers/reports.controller.js"></script>
+  <script src="scripts/controllers/customer.controller.js"></script>
   <script src="scripts/directives/validation.directive.js"></script>
+  <script src="scripts/directives/input.directive.js"></script>
   <!-- endbuild -->
 </body>
 

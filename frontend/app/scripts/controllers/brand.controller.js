@@ -1,16 +1,15 @@
 
 
 
-appModule.controller("brandsController", function ($scope, brandData, brandService, NgTableParams, allOutlets, utility, outletService, allCustomers, permission) {
+appModule.controller("brandsController", function ($scope, brandData, brandService, NgTableParams, outletsData, utility, outletService, customersData, permission, customerService) {
+    var allCustomers = customersData.allCustomers;
     $scope.brandData = brandData;
 
     $scope.allCustomers = allCustomers;
+    $scope.totalCustomers = customersData.totalCustomers;
 
-    $scope.allOutlets = new NgTableParams({}, {
-        dataset: allOutlets
-    })
-
-    $scope.allOutlets = allOutlets;
+    $scope.allOutlets = outletsData.allOutlets;
+    $scope.totalOutlets = outletsData.totalOutlets;
 
     $scope.allowEdit = function () {
         $scope.isEditClicked = true;
@@ -44,6 +43,17 @@ appModule.controller("brandsController", function ($scope, brandData, brandServi
         $scope.editElementIndex = -1;
     }
 
+    $scope.getOutlets = function (page) {
+        brandService
+        .getAllOutlets(page,9)
+        .then(function (data) {
+            $scope.allOutlets = data.outlets;
+            $scope.totalOutlets = data.totalOutlets;
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
+    }
     $scope.updateOutlet = function (outlet) {
         return brandService
             .editOutlet(outlet)
@@ -70,6 +80,18 @@ appModule.controller("brandsController", function ($scope, brandData, brandServi
                 })
         })
         updatePermissionDebounce();
+    }
+
+    $scope.getCustomers = function (page) {
+        customerService
+        .getAllCustomers(page,9)
+        .then(function (data) {
+            $scope.allCustomers = data.customers;
+            $scope.totalCustomers = data.totalCustomers;
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
     }
 
     $scope.sendInstruction = function (title, content) {

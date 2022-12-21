@@ -1,5 +1,5 @@
 
-appModule.controller("cartController", function ($scope, orderService, outletService, customerService, utility, permission) {
+appModule.controller("cartController", function ($scope, $rootScope, orderService, outletService, customerService, utility, permission, socketService,$location) {
 
 
     (function () {
@@ -14,6 +14,13 @@ appModule.controller("cartController", function ($scope, orderService, outletSer
     })()
 
     // binding assignedTable 
+
+    if($location.url() !== "/orders/display"){
+        socketService.recieveEvent("orderCreation",function (data) {
+            $rootScope.progress = 100;
+            $rootScope.progressBarText = "Order Created Successfully - Preparing Your Order";
+        })
+    }
 
     $scope.assignedTable = "None";
 
@@ -40,7 +47,8 @@ appModule.controller("cartController", function ($scope, orderService, outletSer
         var cart = Object.values($scope.getCart());
         return orderService.placeOrder($scope.customer, outletData, brandData, $scope.orderType, $scope.assignedTable,cart)
             .then(function (data) {
-                alert("order created successfully :)");
+                $rootScope.progressBarText = data.message;
+                $rootScope.displayProgressBar = true;
                 return data.orderData;
             })
             .then(function () {
@@ -69,7 +77,7 @@ appModule.controller("cartController", function ($scope, orderService, outletSer
             $scope.readOnlyCustomerName = false;
             return;
         }
-        var updatePermissionDebounce = utility.debounce(1000, function () {
+        var updatePermissionDebounce = utility.debounce(500, function () {
             customerService
                 .getCustomerByPhone(phoneNumber)
                 .then(function (data) {

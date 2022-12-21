@@ -36,73 +36,79 @@
             </div>
         </div>
         <!-- tables - outlets Management  -->
-        <table ng-table="allOutlets" class="table table-striped">
+        <div class="w-100 d-flex justify-content-around flex-column">
+            <table ng-table="allOutlets" class="table table-striped">
 
-            <tr ng-show="allOutlets.length" ng-repeat="outlet in allOutlets">
-
-                <td class="text-center" data-title="'Outlet Name'">
-                    <div ng-hide="$index === editElementIndex" >
-                        {{outlet.name}}
-                    </div>
-                     <!-- editing outlet name  -->
-                    <input ng-show="$index === editElementIndex" class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="text" ng-model="outlet.name" ng-required="true">
-                </td>
-
-                <td class="text-center" data-title="'Email'">
-                    <div ng-hide="$index === editElementIndex" >
-                        {{outlet.email}}
-                    </div>
-                     <!-- editing outlet name  -->
-                     <input ng-show="$index === editElementIndex" class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="email" ng-model="outlet.email" ng-required="true">
-                </td>
-
-                <td class="text-center" data-title="'Brand'">{{brandData.name}}</td>
-
-                <td class="w-50" data-title="'Permissions'">
-                    <oi-select
-                        placeholder="Select Permission"
-                        oi-options="permission.permissionName for permission in getPermissions('Outlet') track by permission.permissionId"
-                        ng-model="outlet.permissions" ng-change="updatePermissions(outlet._id,outlet.permissions)" multiple ng-required="true" >
-
-                    </oi-select>
-                </td>
-
-                <td class="text-center" data-title="'Actions'">
-                    <button ng-hide="$index === editElementIndex" class="btn btn-primary" ng-click="makeEditable($index)">Edit</button>
-                    <button ng-show="$index === editElementIndex" class="btn btn-primary" ng-click="disableEditing()">Cancel</button>
-                    <button ng-show="$index === editElementIndex" class="btn btn-primary" ng-click="updateOutlet(outlet)">Update</button>
-                    <button class="btn btn-primary" ng-click="openEditModal()">Remove</button>
-                </td>
-
-            </tr>
-
-            <tr ng-hide="allOutlets.length">
-                <td>No Outlets added yet</td>
-            </tr>
-        </table>
+                <tr ng-show="allOutlets.length" ng-repeat="outlet in allOutlets">
+    
+                    <td class="text-center" data-title="'Outlet Name'">
+                        <div ng-hide="$index === editElementIndex" >
+                            {{outlet.name}}
+                        </div>
+                         <!-- editing outlet name  -->
+                        <input ng-show="$index === editElementIndex" class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="text" ng-model="outlet.name" ng-required="true">
+                    </td>
+    
+                    <td class="text-center" data-title="'Email'">
+                        <div ng-hide="$index === editElementIndex" >
+                            {{outlet.email}}
+                        </div>
+                         <!-- editing outlet name  -->
+                         <input ng-show="$index === editElementIndex" class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="email" ng-model="outlet.email" ng-required="true">
+                    </td>
+    
+                    <td class="text-center" data-title="'Brand'">{{brandData.name}}</td>
+    
+                    <td class="w-50 dark-theme" data-title="'Permissions'">
+                        <oi-select
+                            placeholder="Select Permission"
+                            oi-options="permission.permissionName for permission in getPermissions('Outlet') track by permission.permissionId"
+                            ng-model="outlet.permissions" ng-change="updatePermissions(outlet._id,outlet.permissions)" multiple ng-required="true" >
+    
+                        </oi-select>
+                    </td>
+    
+                    <td class="text-center" data-title="'Actions'">
+                        <button ng-hide="$index === editElementIndex" class="btn btn-primary" ng-click="makeEditable($index)">Edit</button>
+                        <button ng-show="$index === editElementIndex" class="btn btn-primary" ng-click="disableEditing()">Cancel</button>
+                        <button ng-show="$index === editElementIndex" class="btn btn-primary" ng-click="updateOutlet(outlet)">Update</button>
+                        <button class="btn btn-primary" ng-click="openEditModal()">Remove</button>
+                    </td>
+    
+                </tr>
+    
+                <tr ng-hide="allOutlets.length">
+                    <td>No Outlets added yet</td>
+                </tr>
+            </table>
+            <ul ng-show="totalOutlets" class="w-100" uib-pagination max-size="5" items-per-page="9" total-items="totalOutlets" ng-model="outlets.currentPage" ng-change="getOutlets(outlets.currentPage)"></ul>
+        </div>
         <!-- <input type="text" placeholder="{{dataName}}" ng-model="brandData.dataName"> -->
-        <table ng-show="isAuthorized(1,['brand'])" ng-table="allCustomers" class="table table-striped">
+        <div class="w-100 d-flex justify-content-around flex-column">
+            <table ng-show="isAuthorized(1,['brand'])" ng-table="allCustomers" class="table table-striped">
 
-            <tr ng-show="allCustomers.length" ng-repeat="customer in allCustomers">
-
-                <td class="text-center" data-title="'Customer Name'">
-                    <div>
-                        {{customer.name}}
-                    </div>
-                </td>
-
-                <td class="text-center" data-title="'Customer PhoneNumber'">
-                    <div>
-                        {{customer.phoneNumber}}
-                    </div>
-                </td>
-
-                <td class="text-center" data-title="'Brand'">{{brandData.name}}</td>
-
-            <tr ng-hide="allCustomers.length">
-                <td>No Customer ordered from your outlets yet</td>
-            </tr>
-        </table>
+                <tr ng-show="allCustomers.length" ng-repeat="customer in allCustomers">
+    
+                    <td class="text-center" data-title="'Customer Name'">
+                        <div>
+                            {{customer.name}}
+                        </div>
+                    </td>
+    
+                    <td class="text-center" data-title="'Customer PhoneNumber'">
+                        <div>
+                            {{customer.phoneNumber}}
+                        </div>
+                    </td>
+    
+                    <td class="text-center" data-title="'Brand'">{{brandData.name}}</td>
+    
+                <tr ng-hide="allCustomers.length">
+                    <td>No Customer ordered from your outlets yet</td>
+                </tr>
+            </table>
+            <ul ng-show="totalCustomers" class="w-100" uib-pagination max-size="5" items-per-page="9" total-items="totalCustomers" ng-model="customers.currentPage" ng-change="getCustomers(customers.currentPage)"></ul>
+        </div>
 
         <!-- send instructions to outlets  -->
         <form ng-show="isAuthorized(2,['brand'])" class="w-75 d-flex justify-content-around align-items-center flex-column h-75"

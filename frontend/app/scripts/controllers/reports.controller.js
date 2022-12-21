@@ -55,6 +55,9 @@ appModule.controller("reportModalController", function ($scope, adminService, br
     var endDate = new Date(new Date().setDate($scope.startDate.getDate() + 1));
     $scope.endDate = endDate;
     $scope.selectedReport = $scope.$parent.extraData.selectedReport;
+    $scope.timeSlots = Array(24).fill(0, 0, 24).map(function (value, index) {
+        return `${index}-${index + 1}`;
+    });
     $scope.popup1 = {
         opened: false
     };
@@ -78,7 +81,7 @@ appModule.controller("reportModalController", function ($scope, adminService, br
         $scope.popup2.opened = true;
     };
 
-    $scope.getBrands = function () {
+    $scope.getBrands = function (query) {
         var role = utility.getRole();
         if (role === 'brand' || role === 'outlet') {
             var outletData = outletService.getServiceData().outletData;
@@ -92,23 +95,22 @@ appModule.controller("reportModalController", function ($scope, adminService, br
             ];
         }
         return adminService
-            .getBrands()
+            .getBrands(1,9,query)
             .then(function (data) {
-                $scope.availableBrands = data.brands;
                 return data.brands;
             })
             .catch(function (error) {
                 console.log(error);
             })
     }
-    $scope.getOutlets = function (brandId) {
+    $scope.getOutlets = function (query,brandId) {
         var role = utility.getRole();
         if(role === 'outlet'){
             var outletData = outletService.getServiceData().outletData;
             return $scope.availableOutlets = [outletData];
         }
         return brandService
-            .getAllOutlets(1, 9, brandId)
+            .getAllOutlets(1, 9, brandId,query)
             .then(function (data) {
                 $scope.availableOutlets = data.outlets;
                 return data.outlets;
@@ -117,27 +119,18 @@ appModule.controller("reportModalController", function ($scope, adminService, br
                 console.log(error);
             })
     }
-    $scope.getFoodItems = function (brandId) {
+    $scope.getFoodItems = function (query,brandId) {
         return foodService
             .getFoodItems({
-                brandId: brandId
+                brandId: brandId,
+                foodName:query
             })
             .then(function (data) {
-                $scope.availableFoods = data.matchedFoodItems.map(function (food) {
-                    return {
-                        name: food.name,
-                        id: food._id
-                    }
-                });
                 return data.matchedFoodItems;
             })
             .catch(function (error) {
                 console.log(error);
             })
-    }
-    $scope.onBrandSelect = function (brand) {
-        $scope.getOutlets(brand._id);
-        $scope.getFoodItems(brand._id);
     }
 
     $scope.updateFoodList = function (foodItems) {
@@ -156,7 +149,8 @@ appModule.controller("reportModalController", function ($scope, adminService, br
                 outletId: data.selectedOutlet ? data.selectedOutlet._id : undefined,
                 startDate: $scope.startDate,
                 endDate: $scope.endDate,
-                selectedFoodItems: JSON.stringify($scope.foodList)
+                selectedFoodItems: JSON.stringify($scope.foodList),
+                timezone:utility.getCurrentTimezone()
             })
             .then(function (data) {
                 var chartDataMap = {};
@@ -168,9 +162,7 @@ appModule.controller("reportModalController", function ($scope, adminService, br
                 })
                 var chartSeries = Object.keys(chartDataMap);
                 var chartData = Object.values(chartDataMap);
-                $scope.chartLabels = Array(24).fill(0, 0, 24).map(function (value, index) {
-                    return `${index}-${index + 1}`;
-                })
+                $scope.chartLabels = $scope.timeSlots;
                 // handling those items which are selected but not in list 
                 $scope.reportData.selectedFoodItems.forEach(function (food) {
                     if (!chartDataMap[food.name]) {
@@ -226,7 +218,9 @@ appModule.controller("reportModalController", function ($scope, adminService, br
             .getRequiredReport($scope.selectedReport.url, {
                 brandId: data.brandSelected._id,
                 startDate: $scope.startDate,
-                endDate: $scope.endDate
+                endDate: $scope.endDate,
+                timezone:utility.getCurrentTimezone(),
+                startHour:data.startHour?data.startHour.split("-")[0]:undefined
             })
             .then(function (resData) {
                 $scope.maxSoldItems = resData.reportData;

@@ -76,10 +76,13 @@ appModule
                         console.log(error);
                     })
             };
-            this.getBrands = function () {
+            this.getBrands = function (page,limit,search) {
                 return $http.get("http://localhost:8080/admin/brand/getAll", {
-                    page: 1,
-                    limit: 9
+                    params:{
+                        page: page,
+                        limit: limit,
+                        search:search
+                    }
                 })
                     .then(function (res) {
                         return res.data;
@@ -108,9 +111,15 @@ appModule
                         console.log(error);
                     })
             };
-            this.getAllAdmins = function () {
+            this.getAllAdmins = function (page,limit) {
                 return $http
-                .get("http://localhost:8080/admin/get/all")
+                .get("http://localhost:8080/admin/get/all",
+                {
+                    params:{
+                        page:page,
+                        limit:limit
+                    }
+                })
                 .then(function (response) {
                     return response.data;
                 })

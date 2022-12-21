@@ -37,26 +37,30 @@
             </div>
         </div>
         <!-- tables  -->
-        <table ng-table="tablesData" class="table table-striped">
+        <div class="w-100 d-flex justify-content-around flex-column">
+            <table ng-table="tablesData" class="table table-striped">
 
-            <tr ng-show="tablesData.length" ng-repeat="table in tablesData">
-
-                <td class="text-center" data-title="'TableId'">{{table.tableId}}</td>
-
-                <td class="text-center" data-title="'Status'">{{table.isAssigned?'Assigned':'Vacant'}}</td>
-
-                <td class="text-center" data-title="'Assigned To'">{{table.assignedTo?table.assignedTo:'-'}}</td>
-
-                <td class="text-center" data-title="'Actions'">
-                    <button class="btn btn-primary" ng-click="openEditModal()">Remove</button>
-                </td>
-
-            </tr>
-
-            <tr ng-hide="tablesData.length">
-                <td>No Table added yet</td>
-            </tr>
-        </table>
+                <tr ng-show="tablesData.length" ng-repeat="table in tablesData">
+    
+                    <td class="text-center" data-title="'TableId'">{{table.tableId}}</td>
+    
+                    <td class="text-center" data-title="'Status'">{{table.isAssigned?'Assigned':'Vacant'}}</td>
+    
+                    <td class="text-center" data-title="'Assigned To'">{{table.assignedTo?table.assignedTo:'-'}}</td>
+    
+                    <td class="text-center" data-title="'Actions'">
+                        <button class="btn btn-primary" ng-click="openEditModal()">Remove</button>
+                    </td>
+    
+                </tr>
+    
+                <tr ng-hide="tablesData.length">
+                    <td>No Table added yet</td>
+                </tr>
+            </table>
+            <ul ng-show="totalTables" class="w-100" items-per-page="9" max-size="5" uib-pagination total-items="totalTables" ng-model="tables.currentPage" ng-change="getTables(tables.currentPage)"></ul>
+        </div>
+        
         <!-- <input type="text" placeholder="{{dataName}}" ng-model="outletData.dataName"> -->
     </div>
 

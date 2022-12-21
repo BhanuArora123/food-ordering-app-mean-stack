@@ -1,6 +1,8 @@
 
 
-appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, blockUIConfig) {
+appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, blockUIConfig,oiSelectProvider) {
+
+  oiSelectProvider.options.debounce = 500;
   // spinner config 
   blockUIConfig.autoBlock = false;
   $stateProvider
@@ -51,8 +53,11 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
       url: "/",
       controller: "dashboardController",
       templateUrl: "views/home/dashboard.html",
-      resolve:{
-        connectToOutlet : function (socketService,outletService) {
+      resolve: {
+        authenticate: function (auth) {
+          return auth.isAuthenticated();
+        },
+        connectToOutlet: function (socketService, outletService) {
           var outletData = outletService.getServiceData().outletData;
           if (outletData) {
             console.log(outletData._id);
@@ -81,13 +86,8 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
       templateUrl: "views/food/index.html",
       abstract: true,
       resolve: {
-        foodItems: function (foodService) {
-          var foodItemsData = foodService
-            .getFoodItems({})
-            .then(function (data) {
-              return data.matchedFoodItems;
-            });
-          return foodItemsData;
+        authenticate: function (auth) {
+          return auth.isAuthenticated();
         },
         allCategories: function (foodService) {
           return foodService
@@ -110,6 +110,13 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
             .catch(function (error) {
               console.log(error);
             })
+        },
+        availableCategories:function (foodService) {
+          return foodService
+          .getAvailableCategories()
+          .then(function (data) {
+            return data.categories
+          })
         }
       }
     })
@@ -126,6 +133,9 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
       templateUrl: "views/food/displayFood.html"
     })
     .state({
+      authenticate: function (auth) {
+        return auth.isAuthenticated();
+      },
       name: "home.admin",
       url: "/admin",
       templateUrl: "views/admin/index.html",
@@ -148,11 +158,14 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
               console.log(error);
             })
         },
-        allBrands: function (adminService) {
+        brandsData: function (adminService) {
           return adminService
-            .getBrands()
+            .getBrands(1,9)
             .then(function (data) {
-              return data.brands;
+              return {
+                allBrands:data.brands,
+                totalBrands:data.totalBrands
+              };
             })
             .catch(function (error) {
               console.log(error);
@@ -165,7 +178,12 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
       name: "home.orders",
       url: "/orders",
       templateUrl: "views/orders/index.html",
-      abstract: true
+      abstract: true,
+      resolve: {
+        authenticate: function (auth) {
+          return auth.isAuthenticated();
+        },
+      }
     })
     .state({
       name: "home.orders.display",
@@ -180,12 +198,12 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
           var brandId = brandData ? brandData._id : outletData.brand.id;
           var outletId = outletData ? outletData._id : undefined;
           return orderService
-            .getAllOrders({
-              brandId: brandId,
-              outletId: outletId
-            })
+            .getAllOrders(undefined,"Dine In",undefined,1,9)
             .then(function (data) {
-              return data.orders;
+              return {
+                orders:data.orders,
+                totalOrders:data.totalOrders
+              };
             })
             .catch(function (error) {
               console.log(error);
@@ -197,7 +215,12 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
       name: "home.outlet",
       url: "/outlet",
       templateUrl: "views/outlet/index.html",
-      abstract: true
+      abstract: true,
+      resolve: {
+        authenticate: function (auth) {
+          return auth.isAuthenticated();
+        }
+      }
     })
     .state({
       name: "home.outlet.display",
@@ -219,7 +242,10 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
           return outletService
             .getTables(1, 9)
             .then(function (data) {
-              return data.tables;
+              return {
+                tablesData:data.tables,
+                totalTables:data.totalTables
+              };
             })
             .catch(function (error) {
               console.log(error);
@@ -230,7 +256,12 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
     .state({
       name: "home.brand",
       templateUrl: "views/brand/index.html",
-      url: "/brand"
+      url: "/brand",
+      resolve: {
+        authenticate: function (auth) {
+          return auth.isAuthenticated();
+        },
+      }
     })
     .state({
       name: "home.brand.display",
@@ -248,21 +279,27 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
               console.log(error);
             })
         },
-        allOutlets: function (brandService) {
+        outletsData: function (brandService) {
           return brandService
             .getAllOutlets(1, 9)
             .then(function (data) {
-              return data.outlets;
+              return {
+                allOutlets:data.outlets,
+                totalOutlets:data.totalOutlets
+              };
             })
             .catch(function (error) {
               console.log(error);
             })
         },
-        allCustomers: function (customerService) {
+        customersData: function (customerService) {
           return customerService
-            .getAllCustomers()
+            .getAllCustomers(1,9)
             .then(function (data) {
-              return data.customers;
+              return {
+                allCustomers : data.customers,
+                totalCustomers:data.totalCustomers
+              };
             })
             .catch(function (error) {
               console.log(error);
@@ -276,6 +313,9 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
       controller: "loginSignupController",
       templateUrl: "views/home/login.html",
       resolve: {
+        authenticate: function (auth) {
+          return auth.isAuthenticated();
+        },
         role: function ($stateParams) {
           return $stateParams.role;
         }
@@ -285,19 +325,57 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
       name: "home.reports",
       url: "/reports/display",
       controller: "reportsController",
-      templateUrl: "views/reports/display.html"
+      templateUrl: "views/reports/display.html",
+      resolve: {
+        authenticate: function (auth) {
+          return auth.isAuthenticated();
+        },
+      }
     })
     .state({
       name: "home.customer",
-      url: "/customer/display",
-      // controller:"customerController",
-      templateUrl: "views/customer/display.html"
+      url: "/customer",
+      abstract:true,
+      templateUrl:"views/customer/index.html"
+    })
+    .state({
+      name: "home.customer.dashboard",
+      url: "/home",
+      controller: "customerController",
+      templateUrl: "views/customer/home.html",
+      resolve: {
+        authenticate: function (auth) {
+          return auth.isAuthenticated();
+        },
+        customerData: function (customerService,socketService) {
+          return customerService
+            .getCustomerByPhone()
+            .then(function (data) {
+              socketService.emitEvent("customerJoined",data.customerData._id);
+              return data.customerData;
+            })
+            .catch(function (error) {
+              console.log(error);
+            })
+        }
+      }
+    })
+    .state({
+      name: "home.customer.login",
+      url: "/login",
+      controller: "customerLoginController",
+      templateUrl: "views/customer/login.html",
     })
     .state({
       name: "home.sendInstructions",
       url: "/send/instructions",
       // controller:"emailController",
-      templateUrl: "views/email/send.html"
+      templateUrl: "views/email/send.html",
+      resolve: {
+        authenticate: function (auth) {
+          return auth.isAuthenticated();
+        },
+      }
     })
 
   // default route 
@@ -305,24 +383,20 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
   // adding interceptor
   $httpProvider.interceptors.push('intercepterService');
 })
-  .run(function ($location, $timeout, $rootScope, socketService, outletService) {
+  .run(function ($location, $state, $rootScope, socketService, outletService) {
     // route safety 
 
     var token = localStorage.getItem("token");
-    $rootScope.$on("$stateChangeStart", function (event) {
-      console.log(event);
-      if (!token) {
-        $timeout(function () {
-          $location.url("login");
-        })
-      }
-    })
+    $state.defaultErrorHandler(function (error) {
+      // This is a naive example of how to silence the default error handler.
+      $state.go("home.login")
+    });
 
+    socketService.connect();
     if (!token) {
       return;
     }
 
-    socketService.connect();
     var outletData = outletService.getServiceData().outletData;
     if (outletData) {
       console.log(outletData._id);
@@ -332,3 +406,4 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
     }
 
   })
+  // .factory('$location', downgradeInjectable($locationShim));

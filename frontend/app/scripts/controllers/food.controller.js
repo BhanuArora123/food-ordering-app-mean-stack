@@ -1,8 +1,9 @@
 
 
-appModule.controller("foodController", function ($scope, foodService, outletService, foodItems, brandService, allCategories, utility, blockUI, availableTaxes, permission) {
+appModule.controller("foodController", function ($scope, foodService, outletService, brandService, allCategories, utility, blockUI, availableTaxes, permission, availableCategories) {
 
-    $scope.foodItemsToDisplay = utility.categorizeItems(foodItems);
+    $scope.foodItemsToDisplay = [];
+    $scope.availableCategories = availableCategories;
     $scope.categories = allCategories;
 
     // getting user cart 
@@ -14,7 +15,6 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
     $scope.activeSubcategory = 0;
 
     $scope.setActiveClass = function (index, type) {
-        console.log(index);
         if (type === 'category') {
             $scope.activeCategory = index;
             $scope.activeSubcategory = 0;
@@ -31,12 +31,6 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
         else {
             return ($scope.activeSubcategory === index) ? 'text-white bg-primary border-0' : 'text-dark';
         }
-    }
-
-    // display food item
-    $scope.getFoodItems = function () {
-        $scope.foodItemsToDisplay = foodItems;
-        return foodItems;
     }
 
     $scope.addFoodItems = function (food) {
@@ -56,13 +50,24 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
             })
     }
 
-    $scope.getFoodItem = function (data) {
+    $scope.getFoodItems = function (category,subCategory,index,type) {
+        console.log(category,subCategory,index,type);
+        var brandData = brandService.getServiceData().brandData;
+        $scope.setActiveClass(index,type);
+        if(type === 'category'){
+            $scope.foodPagination = Array(availableCategories[index].length).fill(1);
+        }
         return foodService
             .getFoodItems({
-                brandId: data.brandId
+                brandId: brandData?brandData._id:outletData.brand.id,
+                category:category,
+                subCategory:subCategory,
+                page:(type === 'category'?1:$scope.foodPagination[index]),
+                limit:9
             })
             .then(function (data) {
-                $scope.foodItemsToDisplay = utility.categorizeItems(data.matchedFoodItems);
+                $scope.foodItemsToDisplay = data.matchedFoodItems;
+                $scope.totalFoodItems = data.totalFoodItems;
             })
             .catch(function (error) {
                 console.log(error);
@@ -75,7 +80,7 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
             .editFoodItem(food)
             .then(function () {
                 $scope.editClicked = false;
-                return $scope.getFoodItem();
+                return $scope.getFoodItems();
             })
             .catch(function (error) {
                 console.log(error);

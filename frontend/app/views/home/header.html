@@ -21,6 +21,22 @@
     </div>
 </div>
 
+<!-- progress bar for order creation -->
+
+<div ng-show="displayProgressBar" class="w-50 h-70p d-flex justify-content-between rounded align-items-center fixed-bottom ml-auto mb-2 mr-2 bg-theme-light text-dark p-2 z-index-popover">
+    <div class="w-90 d-flex justify-content-around flex-column align-items-center h-100 ml-3">
+        <div class="w-100 text-center">{{progressBarText}}</div>
+        <uib-progressbar class="w-100 h-25" max="max" value="progress">
+            <span class="w-100 bg-info"></span>
+        </uib-progressbar>
+    </div>
+    <div class="w-10 d-flex justify-content-center align-items-center h-100">
+        <button type="button" class="close" data-dismiss="alert" aria-label="Close" ng-click="closeProgressBar()">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+</div>
+
  <!-- nav bar  -->
 <nav class="navbar navbar-expand-md navbar-light bg-theme-darker w-100" role="navigation">
     <div class="navbar-brand text-white" ui-sref="home.dashboard">FoodZ</div>

@@ -39,16 +39,17 @@ appModule
                     console.log(error);
                 })
         };
-        this.getAllOrders = function (status, type) {
+        this.getAllOrders = function (status, type, customerId,page,limit) {
             blockUI.start({
                 message: "Loading..."
             })
+            console.log(arguments);
             var brand;
             var brandData = brandService.getServiceData().brandData;
             var outletData = outletService.getServiceData().outletData;
             var queryParam = {
-                page: 1,
-                limit: 9
+                page: page,
+                limit: limit
             };
             if (brandData) {
                 brand = {
@@ -63,11 +64,13 @@ appModule
             if (status) {
                 queryParam["status"] = status;
             }
-            queryParam["orderType"] = type ? type : "Dine In";
+            queryParam["orderType"] = type;
+            queryParam["customerId"] = customerId;
             if (brand) {
                 queryParam["brandId"] = brand.id;
                 queryParam["brandName"] = brand.name;
             }
+
             return $http
                 .get("http://localhost:8080/orders/getAllOrders", {
                     params: queryParam

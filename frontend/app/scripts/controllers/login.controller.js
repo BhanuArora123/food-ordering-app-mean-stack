@@ -1,6 +1,6 @@
 
 
-appModule.controller("loginSignupController", function ($scope, brandService, adminService, outletService,role,utility) {
+appModule.controller("loginSignupController", function ($scope,$state, brandService, adminService, outletService,role,utility) {
 
     //default user role in login 
     $scope.login = {
@@ -62,6 +62,7 @@ appModule.controller("loginSignupController", function ($scope, brandService, ad
             outletService
             .signup(name,email,permissions)
             .then(function (response) {
+                $state.go("home.dashboard");
                 console.log(response);
             })
             .catch(function (error) {
@@ -72,6 +73,7 @@ appModule.controller("loginSignupController", function ($scope, brandService, ad
             brandService
             .signup(name,email,permissions)
             .then(function (response) {
+                $state.go("home.dashboard");
                 console.log(response);
             })
             .catch(function (error) {
@@ -82,6 +84,7 @@ appModule.controller("loginSignupController", function ($scope, brandService, ad
             adminService
             .signup(name,email,$scope.signup.role,permissions)
             .then(function (response) {
+                $state.go("home.dashboard");
                 console.log(response);
             })
             .catch(function (error) {
@@ -104,5 +107,18 @@ appModule.controller("loginSignupController", function ($scope, brandService, ad
     $scope.getActiveCssClass = function (path) {
         var cssClass = $scope.onActivePath(path)?"fw-bold h3 text-decoration-underline text-white":"text-secondary";
         return cssClass;
+    }
+})
+
+appModule.controller("customerLoginController",function ($scope,$state,customerService) {
+    $scope.customerLoginHandler = function (phoneNumber) {
+        customerService
+        .customerLogin(phoneNumber)
+        .then(function (data) {
+            $state.go("home.customer.dashboard");
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
     }
 })
