@@ -48,6 +48,13 @@ exports.getValue = function (key) {
     }
 }
 
+exports.deleteValue = function (key) {
+    try {
+        redisConnection.DEL(key);
+    } catch (error) {
+        console.log(error);
+    }
+}
 exports.storeHashMap = function (key,dataObject) {
     try {
         for (const keyValue in dataObject) {

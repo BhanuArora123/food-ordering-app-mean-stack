@@ -1,9 +1,8 @@
 var passportJwt = require("passport-jwt");
 
-var admin = require("../models/admin.model");
-var outlets = require("../models/outlets.model");
-var brands = require("../models/brands.model");
+var users = require("../models/users.model");
 var customerModel = require("../models/customer.model").model;
+var redisUtils = require("../utils/redis/redis.utils");
 
 var JwtStrategy = passportJwt.Strategy;
 
@@ -17,75 +16,65 @@ exports.applyJwtStrategy = function () {
     return new JwtStrategy(options, function (jwtPayload, done) {
         var email = jwtPayload.email;
         var phoneNumber = jwtPayload.phoneNumber;
-        var isUserFound = false;
-        admin.findOne({
-            email: email
-        })
-            .then(function (adminData) {
-                if (adminData) {
-                    isUserFound = true;
-                    return done(null, {
-                        email: email,
-                        userId: adminData._id,
-                        role: adminData.role,
-                        permissions:adminData.permissions
-                    });
-                }
-                return brands.findOne({
-                    email: email
-                });
-            })
-            .then(function (brandData) {
-                if (isUserFound) {
-                    return;
-                }
-                if (brandData && !(brandData.isDisabled)) {
-                    isUserFound = true;
-                    return done(null, {
-                        email: email,
-                        userId: brandData._id,
-                        role: "brand",
-                        permissions:brandData.permissions
-                    });
-                }
-                return outlets.findOne({
-                    email: email
-                })
-            })
-            .then(function (outletData) {
-                if (isUserFound) {
-                    return;
-                }
-                if (outletData) {
-                    isUserFound = true;
-                    return done(null, {
-                        email: email,
-                        userId: outletData._id,
-                        role:"outlet",
-                        brandId:outletData.brand.id.toString(),
-                        permissions:outletData.permissions
-                    });
-                }
-                return customerModel.findOne({
-                    phoneNumber:phoneNumber
-                })
-            })
-            .then(function (customerData) {
-                if(isUserFound){
-                    return ;
-                }
-                console.log(customerData);
-                if(customerData){
-                    return done(null,{
-                        phoneNumber:phoneNumber,
-                        userId:customerData._id
+        var role = jwtPayload.role;
+        var userId = jwtPayload.userId;
+        var isRedisResponse;
+
+        redisUtils
+            .getValue(userId)
+            .then(function (data) {
+                if (!data) {
+                    return users.findOne({
+                        _id: userId
                     })
+                }
+                isRedisResponse = true;
+                return JSON.parse(data);
+            })
+            .then(function (userData) {
+                if (userData) {
+                    return done(null, {
+                        email: email,
+                        userId: userData._id,
+                        role: userData.role,
+                        permissions: userData.permissions
+                    });
+                }
+                if (!isRedisResponse) {
+                    redisUtils.setValue(userData._id, JSON.stringify(userData._doc));
                 }
                 done(null, false);
             })
             .catch(function (error) {
                 done(error, false);
             })
+
+        // redisUtils
+        //     .getValue(`customer-${phoneNumber}`)
+        //     .then(function (customerData) {
+        //         if (!customerData) {
+        //             return customerModel.findOne({
+        //                 phoneNumber: phoneNumber
+        //             })
+        //         }
+        //         isRedisResponse = true;
+        //         return JSON.parse(customerData);
+        //     })
+        //     .then(function (customerData) {
+        //         if (customerData) {
+        //             if(!isRedisResponse){
+        //                 redisUtils.setValue(`customer-${phoneNumber}`,JSON.stringify(customerData));
+        //             }
+        //             return done(null, {
+        //                 phoneNumber: phoneNumber,
+        //                 userId: customerData._id
+        //             })
+        //         }
+        //         done(null, false);
+        //     })
+        //     .catch(function (error) {
+        //         done(error, false);
+        //     })
     })
 }
 

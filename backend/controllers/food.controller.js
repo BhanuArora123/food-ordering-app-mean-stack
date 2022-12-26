@@ -27,7 +27,7 @@ exports.addFoodItem = function (req, res, next) {
 
             verifyRole: function (cb) {
                 // checking the allowed role for creating food item
-                if (req.user.role !== "admin" && req.user.role !== "superAdmin" && req.user.role !== "brand") {
+                if (req.user.role.name !== "admin" && req.user.role.name !== "superAdmin" && req.user.role.name !== "brand") {
                     return cb(new Error("Access Denied! you don't have correct privileges to perform this action", {
                         cause: {
                             statusCode: 401
@@ -151,12 +151,12 @@ exports.displayFoodItem = function (req, res, next) {
         if (isVeg !== undefined) {
             matchQuery["isVeg"] = isVeg;
         }
-        if (foodName) {
-            matchQuery["name"] = {
-                $regex: foodName,
-                $options: "i"
-            }
-        }
+        // if (foodName) {
+        //     matchQuery["name"] = {
+        //         $regex: foodName,
+        //         $options: "i"
+        //     }
+        // }
         if (subCategory) {
             matchQuery["subCategory"] = subCategory;
         }

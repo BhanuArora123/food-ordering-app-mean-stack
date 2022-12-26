@@ -14,7 +14,6 @@ var customerModel = require("../models/customer.model").model
 
 exports.placeOrder = function (req, res, next) {
     try {
-        var outletId = req.user.userId;
         var customer = req.body.customer;
         var brand = req.body.brand;
         var outlet = req.body.outlet;
@@ -66,11 +65,11 @@ exports.getAllOrders = function (req, res, next) {
         var customerId = req.query.customerId;
 
         // authorizing
-        if (req.user.role !== "superAdmin" && req.user.role !== "admin" && req.user.userId !== brandId && req.user.brandId !== brandId && req.user.userId !== customerId ) {
-            return res.status(401).json({
-                message: "Access Denied!"
-            })
-        }
+        // if (req.user.role.name !== "superAdmin" && req.user.role.name !== "admin" && req.user.role.name !== "brand") {
+        //     return res.status(401).json({
+        //         message: "Access Denied!"
+        //     })
+        // }
         var status = req.query.status;
         var orderType = req.query.orderType;
         var limit = parseInt(req.query.limit);
@@ -241,95 +240,3 @@ exports.editOrder = function (req, res, next) {
         })
     }
 }
-
-// var execute = async function () {
-//     var outletDocs = [];
-//     for (let i = 0; i < 5000; i++) {
-//         console.log(i);
-//         var newFood = {
-//             createdAt:new Date(),
-//             orderedItems: [
-//     {
-//         foodItemId: new ObjectId("638fae1841df139c2f197d4f"),
-//         foodName: 'pizza 234',
-//         foodPrice: 23,
-//         quantity: 1,
-//         category: 'fast food',
-//         subCategory: 'non veg',
-//         taxes: [Array],
-//         _id: new ObjectId("639c081bab4e83b4bd2659f0")
-//       },
-//       {
-//         foodItemId: new ObjectId("63944f452ea3e9be03d4acf2"),
-//         foodName: 'noodles123467',
-//         foodPrice: 12,
-//         quantity: 2,
-//         category: 'fast food',
-//         subCategory: 'veg',
-//         taxes: [Array],
-//         _id: new ObjectId("639c081bab4e83b4bd2659f1")
-//       },
-//       {
-//         foodItemId: new ObjectId("63944b53cc10c4b370015523"),
-//         foodName: 'noodles',
-//         foodPrice: 12,
-//         quantity: 2,
-//         category: 'fast food',
-//         subCategory: 'veg',
-//         taxes: [Array],
-//         _id: new ObjectId("639c081bab4e83b4bd2659f2")
-//       },
-//       {
-//         foodItemId: new ObjectId("6377287a2d148937a0daed2d"),
-//         foodName: 'dish99',
-//         foodPrice: 9,
-//         quantity: 2,
-//         category: 'italian',
-//         subCategory: 'subitalian',
-//         taxes: [],
-//         _id: new ObjectId("639c081bab4e83b4bd2659f3")
-//       },
-//       {
-//         foodItemId: new ObjectId("6371fbf29a41aa2a90d4f3e5"),
-//         foodName: 'dish12',
-//         foodPrice: 15,
-//         quantity: 1,
-//         category: 'Indian',
-//         subCategory: 'South Indian',
-//         taxes: [],
-//         _id: new ObjectId("639c081bab4e83b4bd2659f4")
-//       }
-//     ],
-//             amountPaid: 104,
-//             outlet: { id: ObjectId("6371291b0f6d4932bc863cbe"), name: 'outlet2' },
-//             customer: {
-//     customer: {
-//         name: 'Bhanu Arora',
-//         phoneNumber: '9213311703',
-//         brandId: new ObjectId("63711a74e11197253c3dff7f"),
-//         outletId: new ObjectId("6371291b0f6d4932bc863cbe"),
-//         _id: new ObjectId("63907fa140c40653c9e4d559")
-//       },
-//       paidVia: 'Card'
-//     },
-//             brand: { id: ObjectId("63711a74e11197253c3dff7f"), name: 'brand1' },
-//             orderType: i>2500?'Dine In':'Take Away',
-//             assignedTable:i>2500?`${((i%10)+1)}`:null
-//         };
-
-//         outletDocs.push(newFood);
-//     }
-//     console.log(outletDocs);
-//     await orders.insertMany(outletDocs);
-//     console.log("done");
-// }
-
-// execute();
-
-// // async function ex() {
-// //     var orderData = await orders.findOne({
-// //         _id:ObjectId("639c081bab4e83b4bd2659ee")
-// //     })
-// //     console.log(orderData);
-// // }
-// // ex();

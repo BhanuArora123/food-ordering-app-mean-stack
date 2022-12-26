@@ -2,11 +2,7 @@ var express = require("express");
 var app = express();
 var mongoose = require("mongoose");
 
-var redisUtils = require("./utils/redis/redis.utils");
-
 var blueBird = require("bluebird");
-
-var http = require("http");
 
 var cors = require("cors");
 
@@ -22,8 +18,6 @@ var outletRouter = require("./routes/outlets.route");
 
 var brandRouter = require("./routes/brands.route");
 
-var adminRouter = require("./routes/admin.route");
-
 var foodRouter = require("./routes/food.route");
 
 var orderRouter = require("./routes/orders.route");
@@ -35,6 +29,8 @@ var taxRouter = require("./routes/tax.route");
 var reportRouter = require("./routes/reports.route");
 
 var customerRouter = require("./routes/customer.route");
+
+var userRouter = require("./routes/users.route");
 
 // passport configuration
 var applyJwtStrategy = require("./middleware/auth.verification").applyJwtStrategy();
@@ -61,8 +57,6 @@ app.use("/outlet", outletRouter);
 
 app.use("/brand", brandRouter);
 
-app.use("/admin", adminRouter);
-
 app.use("/food", foodRouter);
 
 app.use("/orders", orderRouter);
@@ -74,6 +68,8 @@ app.use("/tax", taxRouter);
 app.use("/customer",customerRouter);
 
 app.use("/reports",reportRouter);
+
+app.use("/user",userRouter);
 
 // mongoose config
 mongoose.Promise = blueBird;

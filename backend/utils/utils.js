@@ -1,8 +1,10 @@
 var bcrypt = require("bcryptjs");
-var adminModel = require("../models/admin.model");
+
 var brandsModel = require("../models/brands.model");
 
 var outletsModel = require("../models/outlets.model");
+
+var users = require("../models/users.model");
 
 var throwError = require("../utils/errors");
 
@@ -16,45 +18,37 @@ exports.convertToArray = function (obj) {
     });
 }
 
-exports.updatePassword = function (currentPassword,newPassword,oldPassword,userId,role) {
-    bcrypt.compare(currentPassword,oldPassword)
-    .then(function (isPasswordCorrect) {
-        if(!isPasswordCorrect){
-            throwError("incorrect current password!",401);
-        }
-        return bcrypt.genSalt(12);
-    })
-    .then(function (salt) {
-        return bcrypt.hash(newPassword,salt);
-    })
-    .then(function (hashedPassword) {
-
-        var modelToUpdate = adminModel;
-
-        if(role === "outlet"){
-            modelToUpdate = outletsModel
-        }
-        else if(role === "brand"){
-            modelToUpdate = brandsModel;
-        }
-        return modelToUpdate.updateOne({
-            _id:userId
-        },{
-            $set:{
-                password:hashedPassword
+exports.updatePassword = function (currentPassword, newPassword, oldPassword, userId) {
+    bcrypt.compare(currentPassword, oldPassword)
+        .then(function (isPasswordCorrect) {
+            if (!isPasswordCorrect) {
+                throwError("incorrect current password!", 401);
             }
-        });
-    })
+            return bcrypt.genSalt(12);
+        })
+        .then(function (salt) {
+            return bcrypt.hash(newPassword, salt);
+        })
+        .then(function (hashedPassword) {
+
+            return users.updateOne({
+                _id: userId
+            }, {
+                $set: {
+                    password: hashedPassword
+                }
+            });
+        })
 }
 
 exports.genRandomPassword = function () {
     try {
         var password = passwordGenerator.generate({
-            length:10,
-            numbers:true,
-            symbols:true,
-            lowercase:true,
-            uppercase:true
+            length: 10,
+            numbers: true,
+            symbols: true,
+            lowercase: true,
+            uppercase: true
         });
         return password;
     } catch (error) {
@@ -62,7 +56,7 @@ exports.genRandomPassword = function () {
     }
 }
 
-exports.convertTimezone = function (date,currentTimezone,timezone) {
+exports.convertTimezone = function (date, currentTimezone, timezone) {
     try {
         moment.tz.setDefault(currentTimezone);
         var requiredDate = moment(date).tz(timezone).toDate();
@@ -73,12 +67,114 @@ exports.convertTimezone = function (date,currentTimezone,timezone) {
     }
 }
 
-exports.setTimeInDate = function (date,currentTimezone,timezone,hour) {
+exports.setTimeInDate = function (date, currentTimezone, timezone, hour) {
     try {
-        var currentDate = exports.convertTimezone(date,currentTimezone,timezone).setHours(hour,0,0,0);
-        var requiredDate = exports.convertTimezone(moment(currentDate),currentTimezone,timezone);
+        var currentDate = exports.convertTimezone(date, currentTimezone, timezone).setHours(hour, 0, 0, 0);
+        var requiredDate = exports.convertTimezone(moment(currentDate), currentTimezone, timezone);
         console.log(requiredDate);
         return requiredDate;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+exports.isUserAuthorized = function (role, permissions, userRole, requiredPermission) {
+    try {
+        var priority = {
+            superAdmin: 3,
+            admin: 2,
+            brand: 1,
+            outlet: 0
+        };
+
+        // priority check
+        if (priority[role.name] < priority[userRole.name]) {
+            return {
+                isAuthorized: false,
+                message: "unauthorised!"
+            }
+        }
+
+        // permission check 
+        var permissionAuthorization = permissions.find(function (permission) {
+            return permission.permissionName === requiredPermission;
+        })
+
+        if (!permissionAuthorization) {
+            return {
+                isAuthorized: false,
+                message: "unauthorised!"
+            };
+        }
+
+        return {
+            isAuthorized: true
+        }
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+exports.registerBrandOrOutlet = function (role, brand, outlet) {
+    try {
+        if (role === "brand") {
+            return brandsModel.findOne({
+                _id: brand._id
+            }, {
+                _id: 1,
+                name: 1
+            })
+                .then(function (brandData) {
+                    if (brandData) {
+                        return brandData;
+                    }
+                    var newBrand = new brandsModel({
+                        name: brand.brandName
+                    });
+                    return newBrand
+                        .save()
+                        .then(function (brandData) {
+                            return {
+                                id: brandData._id,
+                                name: brandData.name
+                            }
+                        })
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
+        }
+        else if (role === "outlet") {
+            return outletsModel.findOne({
+                _id: outlet.id
+            }, {
+                id: "$_id",
+                name: 1,
+                brand: 1
+            })
+                .then(function (outletData) {
+                    if (outletData) {
+                        return outletData;
+                    }
+                    var newOutlet = new outletsModel({
+                        name: outlet.name,
+                        brand: outlet.brand
+                    });
+                    return newOutlet
+                        .save()
+                        .then(function (outletData) {
+                            console.log(outletData);
+                            return {
+                                id: outletData._id,
+                                name: outletData.name,
+                                brand: outletData.brand
+                            }
+                        })
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
+        }
     } catch (error) {
         console.log(error);
     }

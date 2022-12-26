@@ -1,7 +1,7 @@
 var router = require("express").Router();
 
 var passport = require("passport");
-var adminController = require("../controllers/admin.controller");
+var usersController = require("../controllers/users.controller");
 
 var body = require("express-validator").body;
 
@@ -9,7 +9,6 @@ var validate = require("../middleware/validation.middleware").validate;
 
 router
     .post("/register",
-        passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),
         [
             body("name").notEmpty().isString(),
             body("password").optional().isLength({
@@ -17,13 +16,17 @@ router
                 max: 16
             }),
             body("email").notEmpty().isEmail(),
-            body("role").optional().isString(),
-            body("permissions").notEmpty().isArray(),
+            body("role.name").notEmpty().isString(),
+            body("role.subRole.*").notEmpty().isString(),
+            body("brand._id").optional().isString(),
+            body("brand.name").optional().isString(),
+            body("outlet._id").optional().isString(),
+            body("outlet.name").optional().isString(),
             body("permission.*.permissionId").notEmpty().isString(),
             body("permissions.*.permissionName").notEmpty().isString()
         ],
         validate,
-        adminController.registerAdmin);
+        usersController.registerUser);
 
 router.post("/login",
     [
@@ -34,11 +37,13 @@ router.post("/login",
         body("email").notEmpty().isEmail()
     ]
     , validate
-    , adminController.loginAdmin);
+    , usersController.loginUser);
 
-router.get("/adminData", passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }), adminController.getAdminData);
+router.get("/profile", passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }), usersController.getUserData);
 
-router.get("/get/all", passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }), adminController.getAllAdmins);
+router.get("/admin/all", passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }), usersController.getAllAdmins);
+
+router.get("/admin/count",usersController.getAdminCount);
 
 router.put("/updatePassword",
     passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),
@@ -47,44 +52,27 @@ router.put("/updatePassword",
             min: 6,
             max: 16
         }),
-        body("oldPassword").isLength({
+        body("newPassword").isLength({
             min: 6,
             max: 16
-        })
+        }),
+        body("userId").notEmpty().isString()
     ],
     validate,
-    adminController.updatePassword);
-
-router.get("/brand/getAll", passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }), adminController.getAllBrands)
-
-router
-    .put("/brand/edit",
-        passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),
-        [
-            body("name").optional().isString(),
-            body("email").optional().isEmail(),
-            body("isDisabled").optional().isBoolean(),
-            body("brandId").notEmpty().isString()
-        ],
-        validate,
-        adminController.editBrand
-    )
-
-// permissions 
-
-router.get("/permissions/get",
-    passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),
-    adminController.getPermissions
-)
+    usersController.updatePassword);
 
 router.put("/permissions/edit",
     passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),
     [
         body("adminId").notEmpty().isString(),
         body("permissions").notEmpty().isArray(),
+        body("currentUserRole.name").notEmpty().isString(),
+        body("currentUserRole.subRole.*").notEmpty().isString(),
+        body("role.name").notEmpty().isString(),
+        body("role.subRole.*").notEmpty().isString(),
         body("permission.*.permissionId").notEmpty().isString(),
         body("permissions.*.permissionName").notEmpty().isString()
     ],
-    adminController.editPermissions
+    usersController.editPermissions
 )
 module.exports = router;

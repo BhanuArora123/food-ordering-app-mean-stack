@@ -7,32 +7,9 @@ var brandsSchema = new schema({
         type:String,
         required:true
     },
-    email:{
-        type:String,
-        required:true
-    },
-    password:{
-        type:String,
-        required:true
-    },
     isDisabled:{
         type:Boolean,
         default:false
-    },
-    permissions:[
-        {
-            permissionId:{
-                type:Number,
-                required:true
-            },
-            permissionName:{
-                type:String,
-                required:true
-            }
-        }
-    ],
-    secretKey:{
-        type:String
     }
 },{
     timestamps:true

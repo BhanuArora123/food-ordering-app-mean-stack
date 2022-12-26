@@ -10,193 +10,18 @@ var brandsModel = require("../models/brands.model");
 
 var redisUtils = require("../utils/redis/redis.utils");
 
-var utils = require("../utils/utils");
+var users = require("../models/users.model");
 
 require("dotenv").config("./.env");
-
-exports.registerOutlet = function (req, res, next) {
-    try {
-
-        var name = req.body.name;
-        var email = req.body.email;
-        var password = utils.genRandomPassword() || req.body.password;
-        var brand = req.body.brand;
-
-        var emailContent = `Hi ${name} , Your Outlet Registration is successful, please use below creds to access the portal!
-            Email:${email}
-            Password:${password}
-        `;
-
-        outlets.findOne({
-            email: email
-        })
-            .then(function (outletData) {
-                if (outletData) {
-                    throwError("outlet email already exist", 404);
-                }
-                return bcrypt.genSalt(12);
-            })
-            .then(function (salt) {
-                return bcrypt.hash(password, salt);
-            })
-            .then(function (hashedPassword) {
-                var newOutlet = new outlets({
-                    name: name,
-                    email: email,
-                    password: hashedPassword,
-                    brand: brand,
-                    secretKey: process.env.AUTH_SECRET
-                });
-                return newOutlet.save();
-            })
-            .then(function (outletData) {
-                // send email to brand 
-                addTaskToQueue("SEND_EMAIL", {
-                    MessageBody: {
-                        email: email,
-                        subject: 'Outlet Registration Success!',
-                        content: emailContent
-                    }
-                });
-                return res.status(201).json({
-                    message: "outlet registered successfully",
-                    outletData: outletData
-                })
-            })
-            .catch(function (error) {
-                var statusCode = error.cause ? error.cause.statusCode : 500;
-                return res.status(statusCode).json({
-                    message: error.message
-                })
-            })
-    } catch (error) {
-        return res.status(500).json({
-            message: error.message
-        })
-    }
-}
-
-exports.loginOutlet = function (req, res, next) {
-    try {
-        var email = req.body.email;
-        var password = req.body.password;
-        var outletDetails;
-        outlets.findOne({
-            email: email
-        })
-            .then(function (outletData) {
-                if (!outletData) {
-                    throwError("outlet doesn't exist", 404);
-                }
-                outletDetails = outletData;
-                return brandsModel.findOne({
-                    _id: outletData.brand.id,
-                    isDisabled: false
-                }, {
-                    name: 1,
-                    email: 1
-                });
-            })
-            .then(function (brandData) {
-                if (!brandData) {
-                    throwError("brand is disabled or it doesn't exist!", 404);
-                }
-                return outletDetails;
-            })
-            .then(function (outletData) {
-                return bcrypt.compare(password, outletData.password);
-            })
-            .then(function (result) {
-                if (!result) {
-                    throwError("unauthorised!", 401);
-                }
-                return jwt.sign({
-                    email: email
-                }, process.env.AUTH_SECRET, {
-                    expiresIn: "15h"
-                })
-            })
-            .then(function (jwtToken) {
-                return res.status(200).json({
-                    message: "outlet logged in successfully",
-                    token: jwtToken,
-                    outletData: outletDetails
-                });
-            })
-            .catch(function (error) {
-                var statusCode = error.cause ? error.cause.statusCode : 500;
-                return res.status(statusCode).json({
-                    message: error.message
-                })
-            })
-    } catch (error) {
-        return res.status(500).json({
-            message: error.message
-        });
-    }
-}
-
-exports.getOutletData = function (req, res, next) {
-    try {
-        var outletId = req.user.userId;
-
-        var page = req.query.page ? parseInt(req.query.skip) : 0;
-        var limit = req.query.limit ? parseInt(req.query.limit) : 9;
-
-        var skip = (page - 1) * limit;
-
-        redisUtils
-            .getValue(`outlet-${outletId}`)
-            .then(function (outletData) {
-                if (!outletData) {
-                    return outlets.findOne({
-                        _id: outletId
-                    }, {
-                        tables: {
-                            $slice: [skip, limit]
-                        },
-                        permissions: 1,
-                        brand: 1,
-                        name: 1,
-                        email: 1,
-                        cart: 1
-                    })
-                }
-                req.isRedisResponse = true;
-                return JSON.parse(outletData);
-            })
-            .then(function (outletData) {
-                if (!outletData) {
-                    throwError("outlet doesn't exist", 404);
-                }
-                if(!req.isRedisResponse){
-                    redisUtils.setValue(`outlet-${outletId}`,JSON.stringify(outletData._doc)); 
-                }
-                return res.status(200).json({
-                    message: "outlet data fetched successfully",
-                    outletData: outletData
-                });
-            })
-            .catch(function (error) {
-                var statusCode = error.cause ? error.cause.statusCode : 500;
-                return res.status(statusCode).json({
-                    message: error.message
-                })
-            })
-    } catch (error) {
-        return res.status(500).json({
-            message: error.message
-        })
-    }
-}
 
 exports.getTables = function (req, res, next) {
     try {
         var isAssigned = req.query.isAssigned;
-        var page = req.query.page ? parseInt(req.query.skip) : 0;
+        var page = req.query.page ? parseInt(req.query.page) : 1;
         var limit = req.query.limit ? parseInt(req.query.limit) : 9;
 
         var skip = (page - 1) * limit;
+
         var totalTables;
 
         var outletId = req.query.outletId || req.user.userId;
@@ -253,7 +78,7 @@ exports.addTable = function (req, res, next) {
         var tableId = req.body.tableId;
         var assignedOrderId = req.body.assignedOrderId;
 
-        var outletId = req.user.userId;
+        var outletId = req.body.outletId || req.user.userId;
 
         outlets.findOne({
             _id: outletId
@@ -291,118 +116,13 @@ exports.addTable = function (req, res, next) {
     }
 }
 
-exports.addToCart = function (req, res, next) {
-    try {
-        var foodItemName = req.body.foodItemName;
-        var foodItemPrice = req.body.foodItemPrice;
-        var category = req.body.category;
-        var subCategory = req.body.subCategory;
-        var outletName = req.body.outletName;
-        var taxes = req.body.taxes;
-        var outletId = req.user.userId;
-        // if item already in cart , increase quantity, else add it.
-        outlets.findById(outletId)
-            .then(function (outletData) {
-                if (!outletData) {
-                    throwError("outlet doesn't exist", 404);
-                }
-                var userCart = outletData.cart;
-
-                // check if cart item exist 
-                var existingItemIndex = userCart
-                    .findIndex(function (cartItem) {
-                        return cartItem.foodName === foodItemName;
-                    });
-                if (existingItemIndex !== -1) {
-                    userCart[existingItemIndex].quantity++;
-                }
-                else {
-                    userCart.push({
-                        foodName: foodItemName,
-                        foodPrice: foodItemPrice,
-                        outletName: outletName,
-                        category: category,
-                        subCategory: subCategory,
-                        quantity: 1,
-                        taxes: taxes
-                    })
-                }
-                outletData.cart = userCart;
-                return outletData.save();
-            })
-            .then(function (outletData) {
-                return res.status(200).json({
-                    cartData: outletData.cart,
-                    message: "item added to cart successfully"
-                })
-            })
-            .catch(function (error) {
-                var statusCode = error.cause ? error.cause.statusCode : 500;
-                return res.status(statusCode).json({
-                    message: error.message
-                })
-            });
-    } catch (error) {
-        return res.status(500).json({
-            message: error.message
-        });
-    }
-}
-
-exports.removeFromCart = function (req, res, next) {
-    try {
-        var foodItemName = req.body.foodItemName;
-        var outletId = req.user.userId;
-
-        outlets.findById(outletId)
-            .then(function (outletData) {
-                if (!outletData) {
-                    throwError("outlet doesn't found", 404);
-                }
-                var userCart = outletData.cart;
-                var existingItemIndex = userCart.findIndex(function (cartItem) {
-                    return cartItem.foodName === foodItemName;
-                })
-                if (existingItemIndex === -1) {
-                    throwError("cart item not found!", 404);
-                }
-                else {
-                    if (userCart[existingItemIndex].quantity === 1) {
-                        userCart.splice(existingItemIndex, 1);
-                    }
-                    else {
-                        userCart[existingItemIndex].quantity--;
-                    }
-                }
-                outletData.cart = userCart;
-                return outletData.save();
-            })
-            .then(function (outletData) {
-                return res.status(200).json({
-                    message: "cart saved successfully!",
-                    cartData: outletData.cart
-                })
-            })
-            .catch(function (error) {
-                var statusCode = error.cause ? error.cause.statusCode : 500;
-                return res.status(statusCode).json({
-                    message: error.message
-                })
-            })
-    } catch (error) {
-        return res.status(500).json({
-            message: error.message
-        });
-    }
-}
-
 exports.updatePassword = function (req, res, next) {
     try {
         var outletId = req.user.userId || req.body.outletId;
         var currentPassword = req.body.currentPassword;
         var newPassword = req.body.newPassword;
 
-        if (req.user.role !== 'outlet' && req.user.role !== 'brand') {
+        if (req.user.role.name !== 'outlet' && req.user.role.name !== 'brand') {
             return res.status(403).json({
                 message: "Access Denied!"
             })
@@ -516,6 +236,152 @@ exports.editPermissions = function (req, res, next) {
                 return res.status(200).json({
                     message: "outlet permissions updated successfully",
                     outletData: outletData
+                })
+            })
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+exports.getAllOutlets = function (req, res, next) {
+    try {
+        var brandId = req.query.brandId || req.user.userId;
+        var page = parseInt(req.query.page);
+        var limit = parseInt(req.query.limit);
+        var skip = (page - 1) * limit;
+        var search = req.query.search;
+        var totalOutlets;
+        var matchQuery = {
+            "brand.id": brandId
+        };
+        // adding search filter 
+        if (search) {
+            matchQuery["name"] = {
+                $regex: search,
+                $options: "i"
+            }
+        }
+
+        if (req.user.role.name !== 'brand' && req.user.role.name !== 'superAdmin') {
+            return res.status(403).json({
+                message: "Access Denied!"
+            })
+        }
+
+        outlets
+            .countDocuments(matchQuery)
+            .then(function (availableOutlets) {
+                totalOutlets = availableOutlets;
+                return users.aggregate([
+                    {
+                        $match: {
+                            "role.name": "outlet",
+                            "role.subRoles": {
+                                $elemMatch: {
+                                    $eq: "admin"
+                                }
+                            }
+                        }
+                    },
+                    {
+                        $sort: {
+                            createdAt: 1
+                        }
+                    },
+                    {
+                        $unwind: "$outlets"
+                    },
+                    {
+                        $group: {
+                            _id: "$outlets.id",
+                            name: {
+                                $first: "$name"
+                            },
+                            email: {
+                                $first: "$email"
+                            },
+                            outletData: {
+                                $first: "$outlets"
+                            },
+                            role: {
+                                $first: "$role"
+                            },
+                            permissions: {
+                                $first: "$permissions"
+                            }
+                        }
+                    },
+                    {
+                        $skip: skip
+                    },
+                    {
+                        $limit: limit
+                    }
+                ])
+            })
+            .then(function (outlets) {
+                return res.status(200).json({
+                    message: "outlets fetched successfully",
+                    outlets: outlets,
+                    totalOutlets: totalOutlets
+                })
+            })
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
+    } catch (error) {
+        console.log(error);
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+exports.getOutletUsers = function (req, res, next) {
+    try {
+        var outletId = req.query.outletId;
+        var userId = req.user.userId;
+        var page = parseInt(req.query.page || 1);
+        var limit = parseInt(req.query.limit || 9);
+        var skip = (page - 1) * limit;
+        var outletUsersCount;
+
+        var query = {
+            "role.name": "outlet",
+            outlets: {
+                $elemMatch: {
+                    id: outletId
+                }
+            },
+            _id: {
+                $ne: userId
+            }
+        };
+        users
+            .countDocuments(query)
+            .then(function (totalOutletUsers) {
+                outletUsersCount = totalOutletUsers;
+                return users
+                    .find(query)
+                    .skip(skip)
+                    .limit(limit)
+            })
+            .then(function (outletUsers) {
+                return res.status(200).json({
+                    message: "outlets users fetched successfully",
+                    outletUsers: outletUsers,
+                    outletUsersCount: outletUsersCount
                 })
             })
             .catch(function (error) {

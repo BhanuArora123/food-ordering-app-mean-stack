@@ -109,7 +109,9 @@ exports.login = function (req, res, next) {
                     throwError("customer doesn't exist!", 404);
                 }
                 var token = jwt.sign({
-                    phoneNumber: phoneNumber
+                    phoneNumber: phoneNumber,
+                    role:"customer",
+                    userId:customerData._id
                 }, process.env.AUTH_SECRET, {
                     expiresIn: "15h"
                 })

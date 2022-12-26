@@ -1,7 +1,7 @@
 
 var async = require("async");
 var socket = require("socket.io").Server;
-// var socketAuth = require("../../middleware/socket.authentication");
+
 var socketInstance;
 
 exports.connectSocket = function (app) {
