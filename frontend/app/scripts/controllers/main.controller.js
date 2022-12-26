@@ -1,8 +1,7 @@
 
 
 // home controller
-appModule.controller("homeController", function ($scope,$rootScope, adminService,outletService,brandService , $uibModal,utility,permission) {
-
+appModule.controller("homeController", function ($scope,$rootScope, userService,outletService,brandService , $uibModal,utility,permission) {
     // order creation progress bar 
     $rootScope.max = 100;
     $rootScope.progress = 0;
@@ -23,6 +22,7 @@ appModule.controller("homeController", function ($scope,$rootScope, adminService
     }
 
     $scope.logoutHandler = function () {
+        $rootScope.userRole = undefined;
         utility.logout();
     }
 
@@ -61,14 +61,13 @@ appModule.controller("homeController", function ($scope,$rootScope, adminService
     }
 
     $scope.isAuthorized = function (requiredPermissionId,allowedRoles) {
-        var userData = (adminService.getServiceData().adminData || brandService.getServiceData().brandData || outletService.getServiceData().outletData);
+        var userData = (userService.userData());
         if(!userData){
             return false;
         }
         var userPermissions = userData.permissions;
-        var role = localStorage.getItem("role");
+        var role = userData.role.name;
         return permission.isAuthorized(userPermissions,requiredPermissionId,allowedRoles,role);
     }
-
 
 });

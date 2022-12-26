@@ -1,6 +1,6 @@
 
 
-appModule.controller("outletController",function ($scope,NgTableParams,outletData,tablesData,outletService,utility,orderService) {
+appModule.controller("outletController",function ($scope,NgTableParams,outletData,tablesData,outletService,utility,orderService,userService,outletUsers) {
     
 
     $scope.tablesTable = new NgTableParams({},{
@@ -9,6 +9,9 @@ appModule.controller("outletController",function ($scope,NgTableParams,outletDat
 
     $scope.tablesData = tablesData.tablesData;
     $scope.totalTables = tablesData.totalTables;
+
+    $scope.outletUsers = outletUsers.outletUsers;
+    $scope.totalOutletUsers = outletUsers.totalOutletUsers;
 
     $scope.outletData = outletData;
 
@@ -24,7 +27,7 @@ appModule.controller("outletController",function ($scope,NgTableParams,outletDat
         if(currentPassword === newPassword){
             return alert("new password and current password must be different");
         }
-        outletService
+        userService
         .updatePassword(currentPassword,newPassword)
         .then(function (data) {
             alert(data.message);
@@ -39,7 +42,7 @@ appModule.controller("outletController",function ($scope,NgTableParams,outletDat
         outletService
         .getTables(page,9)
         .then(function (data) {
-            $scope.tableData = data.tables;
+            $scope.tablesData = data.tables;
             $scope.totalTables = data.totalTables;
         })
         .catch(function (error) {
@@ -47,13 +50,25 @@ appModule.controller("outletController",function ($scope,NgTableParams,outletDat
         })
     }
 
-    $scope.openAddTableModal = function () {
+    $scope.getOutletUsers = function (page) {
+        var outletId = userService.userData().outlets[0].id;
+        return outletService.getOutletUsers(page, 9, outletId)
+            .then(function (data) {
+                $scope.outletUsers = data.outletUsers;
+                $scope.totalOutletUsers = data.outletUsersCount;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+    }
+
+    $scope.addTableModal = function (page = 1) {
         outletService
         .addTable({
-            tableId:$scope.tablesData.length + 1
+            tableId:$scope.totalTables + 1
         })
         .then(function (data) {
-            return $scope.getTables($scope.tables.currentPage,9);
+            return $scope.getTables(page,9);
         })
         .catch(function (error) {
             console.log(error);

@@ -1,5 +1,5 @@
 
-appModule.controller("cartController", function ($scope, $rootScope, orderService, outletService, customerService, utility, permission, socketService,$location) {
+appModule.controller("cartController", function ($scope, $rootScope, orderService, outletService, customerService, utility, permission, socketService,$location,userService) {
 
 
     (function () {
@@ -42,18 +42,16 @@ appModule.controller("cartController", function ($scope, $rootScope, orderServic
 
     // place order 
     $scope.placeOrder = function () {
-        var outletData = outletService.getServiceData().outletData;
-        var brandData = outletData ? outletData.brand : {};
+        var userData = userService.userData();
+        var brandData = userData.brands ? userData.brands[0] : userData.outlets[0];
+        var outletData = userData.outlets ? userData.outlets[0] : undefined;
         var cart = Object.values($scope.getCart());
         return orderService.placeOrder($scope.customer, outletData, brandData, $scope.orderType, $scope.assignedTable,cart)
             .then(function (data) {
                 $rootScope.progressBarText = data.message;
                 $rootScope.displayProgressBar = true;
-                return data.orderData;
-            })
-            .then(function () {
                 $scope.$parent.cartModal.close();
-                return outletService.getOutletData();
+                return data.orderData;
             })
             .catch(function (error) {
                 console.log(error);

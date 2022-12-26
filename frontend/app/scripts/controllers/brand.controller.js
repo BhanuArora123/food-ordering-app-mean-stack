@@ -1,7 +1,7 @@
 
 
 
-appModule.controller("brandsController", function ($scope, brandData, brandService, NgTableParams, outletsData, utility, outletService, customersData, permission, customerService) {
+appModule.controller("brandsController", function ($scope, brandData, brandService, brandUsers, outletsData, utility, outletService, customersData, permission, customerService, userService) {
     var allCustomers = customersData.allCustomers;
     $scope.brandData = brandData;
 
@@ -10,6 +10,9 @@ appModule.controller("brandsController", function ($scope, brandData, brandServi
 
     $scope.allOutlets = outletsData.allOutlets;
     $scope.totalOutlets = outletsData.totalOutlets;
+
+    $scope.brandUsers = brandUsers.brandUsers;
+    $scope.totalBrandUsers = brandUsers.totalBrandUsers;
 
     $scope.allowEdit = function () {
         $scope.isEditClicked = true;
@@ -23,7 +26,7 @@ appModule.controller("brandsController", function ($scope, brandData, brandServi
         if (currentPassword === newPassword) {
             return alert("new password and current password must be different");
         }
-        brandService
+        userService
             .updatePassword(currentPassword, newPassword)
             .then(function (data) {
                 alert(data.message);
@@ -45,14 +48,26 @@ appModule.controller("brandsController", function ($scope, brandData, brandServi
 
     $scope.getOutlets = function (page) {
         brandService
-        .getAllOutlets(page,9)
-        .then(function (data) {
-            $scope.allOutlets = data.outlets;
-            $scope.totalOutlets = data.totalOutlets;
-        })
-        .catch(function (error) {
-            console.log(error);
-        })
+            .getAllOutlets(page, 9)
+            .then(function (data) {
+                $scope.allOutlets = data.outlets;
+                $scope.totalOutlets = data.totalOutlets;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+    }
+
+    $scope.getBrandUsers = function (page) {
+        var brandId = userService.userData().brands[0].id;
+        return brandService.getBrandUsers(page, 9, brandId)
+            .then(function (data) {
+                $scope.brandUsers = data.brandUsers;
+                $scope.totalBrandUsers = data.brandUsersCount;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
     }
     $scope.updateOutlet = function (outlet) {
         return brandService
@@ -84,14 +99,14 @@ appModule.controller("brandsController", function ($scope, brandData, brandServi
 
     $scope.getCustomers = function (page) {
         customerService
-        .getAllCustomers(page,9)
-        .then(function (data) {
-            $scope.allCustomers = data.customers;
-            $scope.totalCustomers = data.totalCustomers;
-        })
-        .catch(function (error) {
-            console.log(error);
-        })
+            .getAllCustomers(page, 9)
+            .then(function (data) {
+                $scope.allCustomers = data.customers;
+                $scope.totalCustomers = data.totalCustomers;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
     }
 
     $scope.sendInstruction = function (title, content) {
@@ -100,12 +115,13 @@ appModule.controller("brandsController", function ($scope, brandData, brandServi
     }
 
     $scope.isAuthorized = function (requiredPermissionId, allowedRoles) {
-        var userData = brandData;
-        if (!userData) {
+        var userData = userService.userData();
+        if (!userData.brands) {
             return false;
         }
-        var userPermissions = userData.permissions;
-        var role = localStorage.getItem("role");
+        var brandData = userData.brands[0];
+        var userPermissions = brandData.permissions;
+        var role = utility.getRole();
         return permission.isAuthorized(userPermissions, requiredPermissionId, allowedRoles, role);
     }
 })

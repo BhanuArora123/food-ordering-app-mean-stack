@@ -1,52 +1,53 @@
 
 
 appModule
-    .service("orderService", function ($http, brandService, outletService, blockUI) {
-        this.placeOrder = function (customer, outletData, brandData, orderType, assignedTable,cart) {
+    .service("orderService", function ($http, brandService, userService, blockUI) {
+        this.placeOrder = function (customer, outletData, brandData, orderType, assignedTable, cart) {
             blockUI.start({
                 message: "Placing Order..."
             })
             return $http.post("http://localhost:8080/orders/placeOrder", {
-                cart:cart,
+                cart: cart,
                 customer: {
-                    customer:{
-                        name:customer.name,
-                        phoneNumber:customer.phoneNumber,
-                        outletId:outletData._id,
-                        brandId:brandData.id
+                    customer: {
+                        name: customer.name,
+                        phoneNumber: customer.phoneNumber,
+                        outletId: outletData.id,
+                        brandId: brandData.id
                     },
-                    paidVia:customer.paidVia
+                    paidVia: customer.paidVia
                 },
                 brand: {
                     id: brandData.id,
                     name: brandData.name
                 },
                 outlet: {
-                    id: outletData._id,
+                    id: outletData.id,
                     name: outletData.name
                 },
                 orderType: orderType,
-                assignedTable: (assignedTable === 'None'?undefined:assignedTable)
+                assignedTable: (assignedTable === 'None' ? undefined : assignedTable)
             })
                 .then(function (res) {
                     blockUI.stop();
-                    localStorage.setItem("cart",JSON.stringify(new Map()));
+                    localStorage.setItem("cart", JSON.stringify(new Map()));
                     return res.data;
                 })
                 .catch(function (error) {
                     blockUI.stop();
-                    localStorage.setItem("cart",JSON.stringify(new Map()));
+                    localStorage.setItem("cart", JSON.stringify(new Map()));
                     console.log(error);
                 })
         };
-        this.getAllOrders = function (status, type, customerId,page,limit) {
+        this.getAllOrders = function (status, type, customerId, page, limit) {
             blockUI.start({
                 message: "Loading..."
             })
             console.log(arguments);
             var brand;
-            var brandData = brandService.getServiceData().brandData;
-            var outletData = outletService.getServiceData().outletData;
+            var userData = userService.userData();
+            var brandData = userData.brands ? userData.brands[0] : undefined;
+            var outletData = userData.outlets ? userData.outlets[0] : undefined;
             var queryParam = {
                 page: page,
                 limit: limit

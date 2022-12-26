@@ -37,6 +37,7 @@
         </div>
         <!-- tables - outlets Management  -->
         <div class="w-100 d-flex justify-content-around flex-column">
+            <h3>Outlets Admin</h3>
             <table ng-table="allOutlets" class="table table-striped">
 
                 <tr ng-show="allOutlets.length" ng-repeat="outlet in allOutlets">
@@ -83,8 +84,48 @@
             </table>
             <ul ng-show="totalOutlets" class="w-100" uib-pagination max-size="5" items-per-page="9" total-items="totalOutlets" ng-model="outlets.currentPage" ng-change="getOutlets(outlets.currentPage)"></ul>
         </div>
+
+        <div class="w-100 d-flex justify-content-around flex-column">
+            <h3>Brand Users</h3>
+            <table ng-table="brandUsers" class="table table-striped">
+
+                <tr ng-show="brandUsers.length" ng-repeat="brandUser in brandUsers">
+    
+                    <td class="text-center" data-title="'Brand Name'">{{brandUser.brands[0].name}}</td>
+    
+                    <td class="text-center" data-title="'User Name'">{{brandUser.name}}</td>
+    
+                    <td class="text-center" data-title="'User Email'">{{brandUser.email}}</td>
+    
+                    <td class="w-50 dark-theme" data-title="'Roles'">
+                        <oi-select
+                            placeholder="Select Roles"
+                            oi-options="role for role in brandUser.role.subRoles"
+                            ng-model="brandUser.role.subRoles" ng-change="updatePermissions(outlet._id,outlet.permissions)" multiple ng-required="true" >
+    
+                        </oi-select>
+                    </td>
+    
+                    <td class="w-50 dark-theme" data-title="'Permissions'">
+                        <oi-select
+                            placeholder="Select Permissions"
+                            oi-options="permission.permissionName for permission in getPermissions(brandUser.role.subRoles)"
+                            ng-model="brandUser.permissions" ng-change="updatePermissions(outlet._id,outlet.permissions)" multiple ng-required="true" >
+    
+                        </oi-select>
+                    </td>
+                </tr>
+    
+                <tr ng-hide="brandUsers.length">
+                    <td>No Brand Users added yet</td>
+                </tr>
+            </table>
+            <ul ng-show="totalBrandUsers" class="w-100" items-per-page="9" max-size="5" uib-pagination total-items="totalBrandUsers" ng-model="brandUser.currentPage" ng-change="getOutletUsers(brandUser.currentPage)"></ul>
+        </div>
+
         <!-- <input type="text" placeholder="{{dataName}}" ng-model="brandData.dataName"> -->
         <div class="w-100 d-flex justify-content-around flex-column">
+            <h3>Brand Customers</h3>
             <table ng-show="isAuthorized(1,['brand'])" ng-table="allCustomers" class="table table-striped">
 
                 <tr ng-show="allCustomers.length" ng-repeat="customer in allCustomers">
@@ -111,7 +152,7 @@
         </div>
 
         <!-- send instructions to outlets  -->
-        <form ng-show="isAuthorized(2,['brand'])" class="w-75 d-flex justify-content-around align-items-center flex-column h-75"
+        <!-- <form ng-show="isAuthorized(2,['brand'])" class="w-75 d-flex justify-content-around align-items-center flex-column h-75"
             name="instructionsForm" novalidate>
             <h1>Send Instructions To Outlets</h1>
             <div class="w-75 d-flex justify-content-around align-items-start flex-column m-3">
@@ -130,7 +171,7 @@
                     class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (instructionsForm.title.$invalid || instructionsForm.content.$invalid)?'disabled':'' }}"
                     ng-click="sendInstruction(instruction.title,instruction.content)" ng-disabled="instructionsForm.title.$invalid || instructionsForm.content.$invalid">Send Instructions</button>
             </div>
-        </form>
+        </form> -->
 
     </div>
 

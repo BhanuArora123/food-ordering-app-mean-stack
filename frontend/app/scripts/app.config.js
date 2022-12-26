@@ -1,6 +1,6 @@
 
 
-appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, blockUIConfig,oiSelectProvider) {
+appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, blockUIConfig, oiSelectProvider) {
 
   oiSelectProvider.options.debounce = 500;
   // spinner config 
@@ -10,32 +10,26 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
       name: "home",
       url: "",
       abstract: true,
-      resolve: {
-        userData: function (adminService, outletService, brandService) {
-          var role = localStorage.getItem("role");
-          if (!role) {
+      resolve:{
+        userData: function (userService,$rootScope) {
+          var userData = localStorage.getItem("userData");
+          console.log(userData);
+          if(!userData ){
             return;
           }
-          if (role === "brand") {
-            return brandService
-              .getBrandData()
-          }
-          else if (role === "outlet") {
-            return outletService
-              .getOutletData();
-          }
-          else {
-            return adminService
-              .getAdminData()
-          }
+          return userService
+            .getUserData()
+            .then(function (data) {
+              $rootScope.userRole = data.userData.role.name;
+              $rootScope.$watch("userRole",function (newValue,oldValue) {
+                console.log("variable update - ",newValue,oldValue);
+              })
+              return data.userData;
+            })
+            .catch(function (error) {
+              console.log(error);
+            })
         },
-        profilePath: function (utility) {
-          var role = utility.getRole();
-          if (role !== 'brand' && role !== 'outlet') {
-            role = 'admin';
-          }
-          return `home.${role}.display`;
-        }
       },
       views: {
         "header": {
@@ -76,7 +70,17 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
       resolve: {
         role: function () {
           return '';
-        }
+        },
+        // adminCount:function (userService) {
+        //   return userService
+        //   .adminCount()
+        //   .then(function (data) {
+        //     return data.totalAdmins
+        //   })
+        //   .catch(function (error) {
+        //     console.log(error);
+        //   })
+        // }
       }
     })
     .state({
@@ -111,12 +115,12 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
               console.log(error);
             })
         },
-        availableCategories:function (foodService) {
+        availableCategories: function (foodService) {
           return foodService
-          .getAvailableCategories()
-          .then(function (data) {
-            return data.categories
-          })
+            .getAvailableCategories()
+            .then(function (data) {
+              return data.categories
+            })
         }
       }
     })
@@ -147,29 +151,42 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
       controller: "adminController",
       templateUrl: "views/admin/profile.html",
       resolve: {
-        adminData: function (adminService) {
-          return adminService
-            .getAdminData()
+        adminData: function (userService) {
+          return userService
+            .getUserData()
             .then(function (data) {
-              console.log("admin data - ", data.adminData);
-              return data.adminData;
+              console.log("admin data - ", data.userData);
+              return data.userData;
             })
             .catch(function (error) {
               console.log(error);
             })
         },
-        brandsData: function (adminService) {
-          return adminService
-            .getBrands(1,9)
+        brandsData: function (brandService) {
+          return brandService
+            .getBrands(1, 9)
             .then(function (data) {
               return {
-                allBrands:data.brands,
-                totalBrands:data.totalBrands
+                allBrands: data.brands,
+                totalBrands: data.totalBrands
               };
             })
             .catch(function (error) {
               console.log(error);
             })
+        },
+        allAdmins: function (userService) {
+          return userService
+          .getAllAdmins(1,9)
+          .then(function (data) {
+            return {
+              admins:data.admins,
+              totalAdmins:data.totalAdmins
+            }
+          })
+          .catch(function (error) {
+            console.log(error);
+          })
         }
       }
     })
@@ -191,18 +208,13 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
       controller: "ordersController",
       templateUrl: "views/orders/display.html",
       resolve: {
-        outletOrders: function (orderService, brandService, outletService) {
-          var brandData = brandService.getServiceData().brandData;
-          var outletData = outletService.getServiceData().outletData;
-          console.log(brandData, outletData);
-          var brandId = brandData ? brandData._id : outletData.brand.id;
-          var outletId = outletData ? outletData._id : undefined;
+        outletOrders: function (orderService, brandService, outletService, userService) {
           return orderService
-            .getAllOrders(undefined,"Dine In",undefined,1,9)
+            .getAllOrders(undefined, "Dine In", undefined, 1, 9)
             .then(function (data) {
               return {
-                orders:data.orders,
-                totalOrders:data.totalOrders
+                orders: data.orders,
+                totalOrders: data.totalOrders
               };
             })
             .catch(function (error) {
@@ -228,11 +240,11 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
       controller: "outletController",
       templateUrl: "views/outlet/profile.html",
       resolve: {
-        outletData: function (outletService) {
-          return outletService
-            .getOutletData()
+        outletData: function (userService) {
+          return userService
+            .getUserData()
             .then(function (data) {
-              return data.outletData
+              return data.userData;
             })
             .catch(function (error) {
               console.log(error);
@@ -243,13 +255,27 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
             .getTables(1, 9)
             .then(function (data) {
               return {
-                tablesData:data.tables,
-                totalTables:data.totalTables
+                tablesData: data.tables,
+                totalTables: data.totalTables
               };
             })
             .catch(function (error) {
               console.log(error);
             })
+        },
+        outletUsers: function (outletService,userService) {
+          var outletId = userService.userData().outlets[0].id;
+          return outletService
+          .getOutletUsers(1,9,outletId)
+          .then(function (data) {
+            return {
+              outletUsers:data.outletUsers,
+              totalOutletUsers:data.outletUsersCount
+            };
+          })
+          .catch(function (error) {
+            console.log(error);
+          })
         }
       }
     })
@@ -269,41 +295,59 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
       url: "/profile",
       controller: "brandsController",
       resolve: {
-        brandData: function (brandService) {
-          return brandService
-            .getBrandData()
+        brandData: function (userService) {
+          return userService
+            .getUserData()
             .then(function (data) {
-              return data.brandData
+              return data.userData;
             })
             .catch(function (error) {
               console.log(error);
             })
         },
-        outletsData: function (brandService) {
-          return brandService
-            .getAllOutlets(1, 9)
+        outletsData: function (outletService,userService) {
+          var userData = userService.userData();
+          if(!userData.brands){
+            return [];
+          }
+          var brandData = userData.brands[0];
+          return outletService
+            .getAllOutlets(1, 9, brandData.id)
             .then(function (data) {
               return {
-                allOutlets:data.outlets,
-                totalOutlets:data.totalOutlets
+                allOutlets: data.outlets,
+                totalOutlets: data.totalOutlets
               };
             })
             .catch(function (error) {
               console.log(error);
-            })
+            });
         },
         customersData: function (customerService) {
           return customerService
-            .getAllCustomers(1,9)
+            .getAllCustomers(1, 9)
             .then(function (data) {
               return {
-                allCustomers : data.customers,
-                totalCustomers:data.totalCustomers
+                allCustomers: data.customers,
+                totalCustomers: data.totalCustomers
               };
             })
             .catch(function (error) {
               console.log(error);
             })
+        },
+        brandUsers: function (brandService,userService) {
+          var brandId = userService.userData().brands[0].id;
+          return brandService.getBrandUsers(1,9,brandId)
+          .then(function (data) {
+            return {
+              brandUsers:data.brandUsers,
+              totalBrandUsers:data.brandUsersCount
+            };
+          })
+          .catch(function (error) {
+            console.log(error);
+          })
         }
       }
     })
@@ -318,7 +362,41 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
         },
         role: function ($stateParams) {
           return $stateParams.role;
-        }
+        },
+        // adminCount:function (userService) {
+        //   return userService
+        //   .adminCount()
+        //   .then(function (data) {
+        //     return data.totalAdmins
+        //   })
+        //   .catch(function (error) {
+        //     console.log(error);
+        //   })
+        // }
+      }
+    })
+    .state({
+      name: "home.addUser",
+      url: "/user/add/:role",
+      controller: "loginSignupController",
+      templateUrl: "views/addUsers.html",
+      resolve: {
+        authenticate: function (auth) {
+          return auth.isAuthenticated();
+        },
+        role: function ($stateParams) {
+          return $stateParams.role;
+        },
+        // adminCount:function (userService) {
+        //   return userService
+        //   .adminCount()
+        //   .then(function (data) {
+        //     return data.totalAdmins
+        //   })
+        //   .catch(function (error) {
+        //     console.log(error);
+        //   })
+        // }
       }
     })
     .state({
@@ -335,8 +413,8 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
     .state({
       name: "home.customer",
       url: "/customer",
-      abstract:true,
-      templateUrl:"views/customer/index.html"
+      abstract: true,
+      templateUrl: "views/customer/index.html"
     })
     .state({
       name: "home.customer.dashboard",
@@ -347,11 +425,11 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
         authenticate: function (auth) {
           return auth.isAuthenticated();
         },
-        customerData: function (customerService,socketService) {
+        customerData: function (customerService, socketService) {
           return customerService
             .getCustomerByPhone()
             .then(function (data) {
-              socketService.emitEvent("customerJoined",data.customerData._id);
+              socketService.emitEvent("customerJoined", data.customerData._id);
               return data.customerData;
             })
             .catch(function (error) {
@@ -388,6 +466,7 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
 
     var token = localStorage.getItem("token");
     $state.defaultErrorHandler(function (error) {
+      console.log(error);
       // This is a naive example of how to silence the default error handler.
       $state.go("home.login")
     });

@@ -150,6 +150,16 @@ appModule
                     console.log(error);
                 })
             };
+            this.getAdminCount = function () {
+                return $http
+                .get("http://localhost:8080/admin/get/count",)
+                .then(function (response) {
+                    return response.data;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
+            }
             this.getServiceData = function () {
                 return {
                     adminData: JSON.parse(localStorage.getItem("adminData")),

@@ -66,7 +66,7 @@
         </div>
         <div class="w-75" ng-include="'views/taxes/taxBreakdown.html'" ng-init="items = selectedOrder.orderedItems">
         </div>
-        <div ng-show="getRole() === 'outlet' && selectedOrder.orderType === 'Dine In'" class="d-flex justify-content-center w-100 align-items-start text-dark">
+        <div ng-show="userRole === 'outlet' && selectedOrder.orderType === 'Dine In'" class="d-flex justify-content-center w-100 align-items-start text-dark">
             <button ng-hide="isEditClicked" class="btn btn-primary" ng-click="makeOrderEditable()">Edit Order</button>
             <button ng-show="isEditClicked" class="btn btn-primary" ng-click="cancelEdit()">Cancel</button>
             <button ng-show="isEditClicked" class="btn btn-primary" ng-click="updateOrder(selectedOrder._id,orderedFoodItems,selectedOrder.assignedTable)">Update</button>

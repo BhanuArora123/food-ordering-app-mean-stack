@@ -1,17 +1,19 @@
 <div class="login-wrapper">
-    <div class="d-flex w-50 justify-content-around flex-column align-items-center h-600p">
-        <div class="w-100 h-25 d-flex justify-content-center align-items-center" ng-show="!role">
+    <div class="d-flex w-50 justify-content-around flex-column align-items-center">
+        <div class="w-100 h-25 d-flex justify-content-center align-items-center" ng-show="!role && adminCount">
             <a class="w-25 d-flex justify-content-center fw-bold {{ getActiveCssClass('login') }}"
                 ng-click="setActivePath('login')">Login</a>
-            <div class="text-secondary">or</div>
+        </div>
+        <div class="w-100 h-25 d-flex justify-content-center align-items-center" ng-show="!role && !adminCount">
             <a class="w-40 d-flex justify-content-center fw-bold {{ getActiveCssClass('signup') }}"
                 ng-click="setActivePath('signup')">Admin Sign Up</a>
         </div>
         <div class="w-100 h-25 d-flex justify-content-center align-items-center" ng-show="role">
-            <a class="w-25 d-flex justify-content-center fw-bold {{ getActiveCssClass('login') }}"
-                ng-click="setActivePath('login')">Signup</a>
+            <a class="w-50 d-flex justify-content-center fw-bold {{ getActiveCssClass('login') }}">
+                {{capitalize(role)}} Signup
+            </a>
         </div>
-        <form ng-show="!role && onActivePath('login')" class="w-75 d-flex justify-content-around align-items-center flex-column h-75"
+        <form ng-show="!role && adminCount" class="w-75 d-flex justify-content-around align-items-center flex-column h-75 mb-2"
             name="loginForm" novalidate>
             <div class="w-75 d-flex justify-content-around align-items-start flex-column">
                 <label>Email Address*</label>
@@ -20,25 +22,17 @@
             </div>
             <div class="w-75 d-flex justify-content-around align-items-start flex-column">
                 <label>Password</label>
-                <input valid-password class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded"
+                <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded"
                     type="password" placeholder="Enter Password" name="password" ng-model="login.password"
                     ng-required="true">
             </div>
             <div class="d-flex w-75 justify-content-between">
                 <button type="button"
                     class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (loginForm.email.$invalid || loginForm.password.$invalid)?'btn-disabled':'' }}"
-                    ng-click="loginHandler(login.email,login.password,login.userRole)" ng-disabled="loginForm.email.$invalid || loginForm.password.$invalid">Login</button>
-                <div class="w-65 d-flex justify-content-around align-items-start">
-                    <label>Select Your Role</label>
-                    <select class="bg-theme-light text-white" value="User" ng-model="login.userRole">
-                        <option selected value="Outlet">Outlet</option>
-                        <option value="Admin">Admin</option>
-                        <option value="Brand">Brand</option>
-                    </select>
-                </div>
+                    ng-click="loginHandler(login.email,login.password)" >Login</button>
             </div>
         </form>
-        <form class="w-75 d-flex justify-content-around align-items-center flex-column h-75" ng-show="!role && onActivePath('signup')"
+        <form class="w-75 d-flex justify-content-around align-items-center flex-column h-75 mb-2" ng-show="!role && !adminCount"
             name="signupForm" novalidate>
             <div class="w-75 d-flex justify-content-around align-items-start flex-column">
                 <label>Name</label>
@@ -49,30 +43,14 @@
                 <label>Email Address</label>
                 <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="email"
                     placeholder="Enter Email" name="email" ng-model="signup.email" ng-required="true">
-            </div>
-            <div ng-show="role && signup.userRole === 'Admin'" class="w-75 d-flex justify-content-around align-items-start flex-column user-role dark-theme">
-                <label>Select Role</label>
-                <oi-select placeholder="Select Role" oi-options="role for role in roles | filter:$viewValue | limitTo:8"
-                    ng-model="signup.role" ng-required="true">
-
-                </oi-select>
             </div>
             <div class="d-flex w-75 justify-content-between">
                 <button type="button" class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (signupForm.email.$invalid || signupForm.name.$invalid)?'btn-disabled':'' }}"
-                ng-disabled="signupForm.email.$invalid || signupForm.name.$invalid"    ng-click="signupHandler(signup.name,signup.email,signup.userRole)">Sign Up</button>
-                <div class="w-65 d-flex justify-content-end align-items-center">
-                    <label class="me-3">Select Type of User :</label>
-                    <select value="User" ng-model="signup.userRole" class="me-3 bg-theme-light text-white">
-                        <!-- <option ng-show="getRole() === 'superAdmin'" value="Brand">Brand</option>
-                        <option ng-show="getRole() === 'superAdmin'" value="Admin">Admin</option> -->
-                        <option ng-show="getRole()" value="superAdmin">SuperAdmin</option>
-                        <!-- <option ng-show="getRole() === 'brand'" value="Outlet">Outlet</option> -->
-                    </select>
-                </div>
+                ng-disabled="signupForm.email.$invalid || signupForm.name.$invalid" ng-click="signupHandler(signup.name,signup.email,'superAdmin',[],[])">Sign Up</button>
             </div>
         </form>
-        <form class="w-75 d-flex justify-content-around align-items-center flex-column h-75" ng-show="role"
-            name="signupForm" novalidate>
+        <form class="w-75 d-flex justify-content-around align-items-center flex-column h-75 mb-2" ng-show="role"
+            name="signupForm" ng-init="getUserPermissions(['admin'])" novalidate>
             <div class="w-75 d-flex justify-content-around align-items-start flex-column">
                 <label>Name</label>
                 <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="text"
@@ -83,48 +61,29 @@
                 <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="email"
                     placeholder="Enter Email" name="email" ng-model="signup.email" ng-required="true">
             </div>
-            <div ng-show="role && signup.userRole === 'Admin'" class="w-75 d-flex justify-content-around align-items-start flex-column user-role dark-theme">
-                <label>Select Role</label>
-                <oi-select placeholder="Select Role" oi-options="role for role in roles | filter:$viewValue | limitTo:8"
-                    ng-model="signup.role" ng-required="true">
-
-                </oi-select>
-            </div>
             <div ng-show="role" class="w-75 d-flex justify-content-around align-items-start flex-column dark-theme mb-2">
                 <label>Select Permissions</label>
-                <oi-select ng-disabled="!signup.role && signup.userRole === 'Admin'" class="{{(signup.role || signup.userRole !== 'Admin')?'':'disabled'}}" placeholder="Select Permission"
-                    oi-options="permission.permissionName for permission in getUserPermissions(signup.userRole) track by permission.permissionId"
+                <oi-select placeholder="Select Permission"
+                    oi-options="permission.permissionName for permission in permissions track by permission.permissionId"
                     ng-model="signup.permissions" multiple ng-required="true">
 
                 </oi-select>
             </div>
             <div class="d-flex w-75 justify-content-between">
-                <button type="button" class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (signupForm.email.$invalid || signupForm.name.$invalid)?'btn-disabled':'' }}"
-                ng-disabled="signupForm.email.$invalid || signupForm.name.$invalid"    ng-click="signupHandler(signup.name,signup.email,signup.userRole)">Sign Up</button>
-                <div class="w-65 d-flex justify-content-end align-items-center">
-                    <label class="me-3">Select Type of User :</label>
-                    <select value="User" ng-model="signup.userRole" class="me-3 bg-theme-light text-white">
-                        <option ng-show="getRole() === 'superAdmin'" value="Brand">Brand</option>
-                        <option ng-show="getRole() === 'superAdmin'" value="Admin">Admin</option>
-                        <!-- <option ng-show="getRole()" value="superAdmin">SuperAdmin</option> -->
-                        <option ng-show="getRole() === 'brand'" value="Outlet">Outlet</option>
-                    </select>
-                </div>
+                <button type="button" class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (signupForm.email.$invalid || signupForm.name.$invalid)?'disabled':'' }}"
+                ng-disabled="signupForm.email.$invalid || signupForm.name.$invalid" ng-click="signupHandler(signup.name,signup.email,role,['admin'],signup.permissions)">Sign Up</button>
             </div>
         </form>
-        <div ng-hide="role" class="w-100 p-5 d-flex justify-content-end align-items-center p-5">
+        <div ng-hide="role || !adminCount" class="w-100 d-flex justify-content-end align-items-center p-3">
             <a ui-sref="home.customer.login" class="w-50 d-flex justify-content-center fw-bold text-white">
                 Customer Login
             </a>
         </div>
-        
-        <!-- <div ng-hide="role" class="w-50 h-25 d-flex justify-content-end align-items-center">
-            <a ng-hide="isCustomerLogin" class="p-2 d-flex justify-content-center align-items-center cursor-pointer" ng-click="isCustomerLogin = true">
-                Login as Customer
-            </a>
-            <a ng-hide="isCustomerLogin" class="p-2 d-flex justify-content-center align-items-center cursor-pointer" ng-click="isCustomerLogin = false">
-                Login as Admin/Brand/Outlet
-            </a>
-        </div>  -->
     </div>
 </div>
+
+
+<!-- // permissions based on user 
+// category and sub category 
+// use cases of elastic search 
+ -->

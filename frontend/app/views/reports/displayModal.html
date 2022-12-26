@@ -40,28 +40,29 @@
 
     <!-- report 1 - get brand/outlet item sold count  -->
     <div ng-show="selectedReport.id === 1" class="w-100 d-flex justify-content-around align-items-center flex-column">
-        <div class="w-100 mb-3">
-            <oi-select oi-options="food.name for food in getFoodItems($query,reportData.selectedBrands._id)" ng-model="reportData.selectedFoodItems"
-                multiple placeholder="Select Food" class="no-oi-style" ng-disabled="!reportData.selectedBrand"
-                ng-change="updateFoodList(reportData.selectedFoodItems)">
-            </oi-select>
-        </div>
-        <div class="w-100 d-flex justify-content-around align-items-center mb-3">
-            <div class="w-40">
-                <oi-select oi-options="outlet.name for outlet in getOutlets($query,reportData.selectedBrand._id)" ng-model="reportData.selectedOutlet"
-                    placeholder="Select Outlet" class="h-50p" ng-disabled="!reportData.selectedBrand">
+        <form class="w-100 justify-content-around flex-column" name="report1">
+            <div class="w-100 mb-3">
+                <oi-select oi-options="food.name for food in getFoodItems($query,reportData.selectedBrands._id)" ng-model="reportData.selectedFoodItems"
+                    multiple placeholder="Select Food" class="no-oi-style" ng-disabled="!reportData.selectedBrand"
+                    ng-change="updateFoodList(reportData.selectedFoodItems)" ng-required="true" name="food">
                 </oi-select>
             </div>
-            <div class="text-dark">value is {{a}}</div>
-            <div class="w-40">
-                <oi-select oi-options="brand.name for brand in getBrands($query)" ng-model="reportData.selectedBrand"
-                    placeholder="Select Brand" class="h-50p" ng-change="">
-                </oi-select>
+            <div class="w-100 d-flex justify-content-around align-items-center mb-3">
+                <div class="w-40">
+                    <oi-select oi-options="outlet.name for outlet in getOutlets($query,reportData.selectedBrand._id)" ng-model="reportData.selectedOutlet"
+                        placeholder="Select Outlet(optional)" class="h-50p" ng-disabled="!reportData.selectedBrand" name="outlet">
+                    </oi-select>
+                </div>
+                <div class="w-40">
+                    <oi-select oi-options="brand.name for brand in getBrands($query)" ng-model="reportData.selectedBrand"
+                        placeholder="Select Brand" class="h-50p" ng-required="true" name="brand">
+                    </oi-select>
+                </div>
             </div>
-        </div>
-        <div class="w-100 d-flex justify-content-around align-items-center mb-3">
-            <button class="btn btn-primary" ng-click="soldItemCountReport(reportData)">Generate Report</button>
-        </div>
+            <div class="w-100 d-flex justify-content-around align-items-center mb-3">
+                <button class="btn btn-primary {{(report1.brand.$invalid || report1.outlet.$invalid || report1.food.$invalid)?'disabled':''}}" ng-disabled="report1.brand.$invalid || report1.outlet.$invalid || report1.food.$invalid" ng-click="soldItemCountReport(reportData)">Generate Report</button>
+            </div>
+        </form>
         <div class="w-100 d-flex justify-content-around align-items-center mb-3">
             <canvas id="line" class="chart chart-line" chart-data="chartData" chart-labels="chartLabels"
                 chart-series="chartSeries">
@@ -70,14 +71,16 @@
     </div>
     <!-- report 2 - get brand total revenue  -->
     <div ng-show="selectedReport.id === 2" class="w-100 d-flex justify-content-around align-items-center flex-column">
-        <div class="w-100 mb-3">
-            <oi-select oi-options="brand.name for brand in getBrands($query)" ng-model="reportData.selectedBrands"
-                placeholder="Select Brand" class="h-50p" multiple>
-            </oi-select>
-        </div>
-        <div class="w-100 d-flex justify-content-around align-items-center mb-3">
-            <button class="btn btn-primary" ng-click="brandRevenueReport(reportData)">Generate Report</button>
-        </div>
+        <form class="w-100 justify-content-around flex-column" name="report2">
+            <div class="w-100 mb-3">
+                <oi-select oi-options="brand.name for brand in getBrands($query)" ng-model="reportData.selectedBrands"
+                    placeholder="Select Brand" class="h-50p" multiple ng-required="true" name="brand">
+                </oi-select>
+            </div>
+            <div class="w-100 d-flex justify-content-around align-items-center mb-3">
+                <button class="btn btn-primary {{report2.brand.$invalid?'disabled':''}}" ng-disabled="report2.brand.$invalid" ng-click="brandRevenueReport(reportData)">Generate Report</button>
+            </div>
+        </form>
         <div class="w-100 d-flex justify-content-around align-items-center mb-3">
             <canvas id="bar" class="chart chart-bar" chart-data="chartData" chart-labels="chartLabels"
                 chart-series="chartSeries">
@@ -86,21 +89,23 @@
     </div>
     <!-- report 3 - get brand max sold items  -->
     <div ng-show="selectedReport.id === 3" class="w-100 d-flex justify-content-around align-items-center flex-column">
-        <div class="w-100 mb-3">
-            <oi-select oi-options="brand.name for brand in getBrands($query)" ng-model="reportData.brandSelected"
-                placeholder="Select Brand" class="h-50p">
-            </oi-select>
-        </div>
-        <div class="w-100 d-flex justify-content-around align-items-center mb-3">
-            <div class="w-40">
-                <oi-select oi-options="timeSlot for timeSlot in timeSlots" ng-model="reportData.startHour"
-                    placeholder="Select Time Slot" class="h-50p">
+        <form class="w-100 justify-content-around flex-column" name="report3">
+            <div class="w-100 mb-3">
+                <oi-select oi-options="brand.name for brand in getBrands($query)" ng-model="reportData.brandSelected"
+                    placeholder="Select Brand" class="h-50p" ng-required="true" name="brand">
                 </oi-select>
             </div>
-        </div>
-        <div class="w-100 d-flex justify-content-around align-items-center mb-3">
-            <button class="btn btn-primary" ng-click="getMaxSoldItems(reportData)">Generate Report</button>
-        </div>
+            <div class="w-100 d-flex justify-content-around align-items-center mb-3">
+                <div class="w-40">
+                    <oi-select oi-options="timeSlot for timeSlot in timeSlots" ng-model="reportData.startHour"
+                        placeholder="Select Time Slot" class="h-50p" ng-required="true" name="hour">
+                    </oi-select>
+                </div>
+            </div>
+            <div class="w-100 d-flex justify-content-around align-items-center mb-3">
+                <button class="btn btn-primary {{(report3.hour.$invalid || report3.brand.$invalid)?'disabled':''}}" ng-disabled="report3.hour.$invalid || report3.brand.$invalid" ng-click="getMaxSoldItems(reportData)">Generate Report</button>
+            </div>
+        </form>
         <div class="w-100 d-flex justify-content-around align-items-center mb-3">
             <table ng-table="maxSoldItems" class="table table-striped w-100 max-sold-items">
 

@@ -123,7 +123,9 @@ appModule.controller("reportModalController", function ($scope, adminService, br
         return foodService
             .getFoodItems({
                 brandId: brandId,
-                foodName:query
+                foodName:query,
+                page:1,
+                limit:9
             })
             .then(function (data) {
                 return data.matchedFoodItems;
@@ -136,7 +138,7 @@ appModule.controller("reportModalController", function ($scope, adminService, br
     $scope.updateFoodList = function (foodItems) {
         var updateFoodListDebounce = utility.debounce(1000, function () {
             $scope.foodList = foodItems.map(function (food) {
-                return food.id;
+                return food._id;
             })
         })
         updateFoodListDebounce();
@@ -230,3 +232,4 @@ appModule.controller("reportModalController", function ($scope, adminService, br
             })
     }
 })
+

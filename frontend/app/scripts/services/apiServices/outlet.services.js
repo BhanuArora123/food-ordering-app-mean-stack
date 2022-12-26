@@ -2,52 +2,7 @@
 
 // user service
 appModule
-    .service("outletService", function ($http, $state,blockUI,brandService) {
-        this.signup = function (name, email,permissions) {
-            var brandData = brandService.getServiceData().brandData;
-            return $http
-                .post("http://localhost:8080/outlet/register", {
-                    email: email,
-                    name: name,
-                    brand: {
-                        id: brandData._id,
-                        name: brandData.name
-                    },
-                    permissions:permissions
-                })
-                .then(function (response) {
-                    alert(response.data.message);
-                    $state.go("home.dashboard");
-                    return response.data;
-                })
-                .catch(function (error) {
-                    console.log(error);
-                    $state.go("home.signup");
-                    alert(error.message);
-                })
-        };
-        this.login = function (email, password) {
-            blockUI.start({
-                message:"Login In Progress..."
-            })
-            return $http
-                .post("http://localhost:8080/outlet/login", {
-                    email: email,
-                    password: password
-                })
-                .then(function (response) {
-                    blockUI.stop();
-                    localStorage.setItem("outletData", JSON.stringify(response.data.outletData));
-                    localStorage.setItem("role", "outlet");
-                    $state.go("home.dashboard");
-                    return response.data;
-                })
-                .catch(function (error) {
-                    blockUI.stop();
-                    console.log(error);
-                    $state.go("home.login");
-                })
-        }
+    .service("outletService", function ($http, $state,blockUI,userService) {
         this.getOutletData = function () {
             return $http
                 .get("http://localhost:8080/outlet/outletData")
@@ -61,11 +16,32 @@ appModule
                     alert(error.message);
                 })
         }
-        this.updatePassword = function (currentPassword, newPassword) {
+        this.getAllOutlets = function (page, limit,brandId,query) {
             return $http
-                .put("http://localhost:8080/outlet/updatePassword", {
-                    currentPassword: currentPassword,
-                    newPassword: newPassword
+                .get("http://localhost:8080/outlet/getAll",{
+                    params:{
+                        brandId:brandId,
+                        page:page,
+                        limit:limit,
+                        search:query
+                    }
+                })
+                .then(function (res) {
+                    return res.data;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
+        }
+        this.getOutletUsers = function (page, limit,outletId,query) {
+            return $http
+                .get("http://localhost:8080/outlet/users/get",{
+                    params:{
+                        outletId:outletId,
+                        page:page,
+                        limit:limit,
+                        search:query
+                    }
                 })
                 .then(function (res) {
                     return res.data;
@@ -110,12 +86,14 @@ appModule
             return cartMap;
         }
         this.getTables = function (page, limit, isAssigned) {
+            var userData = userService.userData();
             return $http
                 .get("http://localhost:8080/outlet/table/get", {
                     params: {
                         page: page,
                         limit: limit,
-                        isAssigned: isAssigned
+                        isAssigned: isAssigned,
+                        outletId:userData.outlets[0].id
                     }
                 })
                 .then(function (res) {
@@ -126,14 +104,20 @@ appModule
                 })
         }
         this.addTable = function (table) {
+            blockUI.start({
+                message:"Creating Table"
+            })
             return $http
                 .post("http://localhost:8080/outlet/table/add", {
-                    tableId: table.tableId
+                    tableId: table.tableId,
+                    outletId:userService.userData().outlets[0].id
                 })
                 .then(function (res) {
+                    blockUI.stop();
                     return res.data;
                 })
                 .catch(function (error) {
+                    blockUI.stop();
                     console.log(error);
                 })
         };

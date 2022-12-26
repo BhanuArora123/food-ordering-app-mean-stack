@@ -108,7 +108,7 @@ body{
 /*
 displaying invalid input 
 */
-input.ng-invalid.ng-touched{
+input.ng-invalid.ng-touched, oi-select.ng-invalid.ng-touched, select.ng-invalid.ng-touched{
   border: 1px solid red !important;
 }
 
@@ -200,6 +200,9 @@ oi-select .select-dropdown-optgroup-option.active:not(.disabled){
   background-color: rgb(45,50,63);
   border:0px;
 } 
-.max-sold-items .ng-table-header span, .food-items .ng-table-header span{
+.max-sold-items .ng-table-header span{
   color: black;
+}
+.h-700p{
+  height: 700px;
 }

@@ -34,13 +34,13 @@
                                     type="number" ng-model="food.price" ng-required="true">
                             </td>
 
-                            <td class="w-50 dark-theme d-flex justify-content-around align-items-center" data-title="'Actions'">
-                                <a class="btn btn-primary" ng-show="!presentInCart(food._id) && getRole() === 'outlet'"
+                            <td class="dark-theme text-center" data-title="'Actions'">
+                                <a class="btn btn-primary" ng-show="!presentInCart(food._id) && userRole === 'outlet'"
                                     ng-click="addToCart(food.name, food.price,food.subCategory,food.category,food.taxes,food._id)">Add
                                     To Cart</a>
                                 <!-- inc/dec button  -->
-                                <div class="input-group w-10"
-                                    ng-show="presentInCart(food._id) && getRole() === 'outlet'">
+                                <div class="input-group w-25"
+                                    ng-show="presentInCart(food._id) && userRole === 'outlet'">
                                     <span class="input-group-btn">
                                         <button type="button" class="quantity-right-plus btn btn-primary btn-number"
                                             data-type="plus" data-field="" ng-click="removeFromCart(food._id)">
@@ -58,7 +58,7 @@
                                     </span>
                                 </div>
                                 <!-- edit/delete actions for brand  -->
-                                <div ng-show="getRole() === 'brand' || isAuthorized(1,['outlet'])">
+                                <div ng-show="userRole === 'brand'">
                                     <!-- edit -->
                                     <button ng-hide="editClicked && itemToEdit === $index" class="btn btn-primary"
                                         ng-click="setItemsForEditing($index)">

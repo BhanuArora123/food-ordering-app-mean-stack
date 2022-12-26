@@ -1,56 +1,19 @@
 
 
-appModule.controller("adminController", function ($scope, outletService, adminService, brandService, adminData, brandsData, blockUI, NgTableParams, utility,permission) {
+appModule.controller("adminController", function ($scope,$rootScope, userService, allAdmins, adminService, brandService, adminData, brandsData, blockUI, NgTableParams, utility,permission) {
     // setting value for default value
     var allBrands = brandsData.allBrands;
-    
-    $scope.signup = {
-        userRole: "Brand"
-    }
-
-    $scope.signupHandler = function (name, email, password, userRole = "Outlet") {
-        if (userRole === "Outlet") {
-
-            var brandData = brandService.getServiceData().brandData;
-
-            outletService
-                .signup(name, email, password, brandData)
-                .then(function (response) {
-                    console.log(response);
-                })
-                .catch(function (error) {
-                    console.log(error)
-                })
-        }
-        else if (userRole === "Brand") {
-            brandService
-                .signup(name, email, password)
-                .then(function (response) {
-                    console.log(response);
-                })
-                .catch(function (error) {
-                    console.log(error)
-                })
-        }
-        else {
-            adminService
-                .signup(name, email, password, "admin")
-                .then(function (response) {
-                    console.log(response);
-                })
-                .catch(function (error) {
-                    console.log(error)
-                })
-        }
-    }
+    console.log($rootScope.userRole);
 
     // displaying admin profile 
     $scope.adminData = adminData;
 
     // all brands
     $scope.allBrands = allBrands;
-
     $scope.totalBrands = brandsData.totalBrands;
+
+    $scope.allAdmins = allAdmins.admins;
+    $scope.totalAdmins = allAdmins.totalAdmins;
 
     $scope.allBrandsData = new NgTableParams({}, {
         dataset: allBrands,
@@ -80,7 +43,7 @@ appModule.controller("adminController", function ($scope, outletService, adminSe
         if (currentPassword === newPassword) {
             return alert("new password and current password must be different!");
         }
-        adminService
+        userService
             .updatePassword(currentPassword, newPassword)
             .then(function (data) {
                 alert(data.message);
@@ -157,7 +120,7 @@ appModule.controller("adminController", function ($scope, outletService, adminSe
         blockUI.start({
             message: "fetching admins"
         })
-        adminService
+        userService
             .getAllAdmins(page,9)
             .then(function (data) {
                 $scope.allAdmins = data.admins;

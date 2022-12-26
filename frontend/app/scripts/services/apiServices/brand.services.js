@@ -76,9 +76,24 @@ appModule
                     console.log(error);
                 })
         };
-        this.getAllOutlets = function (page, limit,brandId,query) {
+        this.getBrands = function (page,limit,search) {
+            return $http.get("http://localhost:8080/brand/getAll", {
+                params:{
+                    page: page,
+                    limit: limit,
+                    search:search
+                }
+            })
+                .then(function (res) {
+                    return res.data;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
+        };
+        this.getBrandUsers = function (page, limit,brandId,query) {
             return $http
-                .get("http://localhost:8080/brand/outlet/getAll",{
+                .get("http://localhost:8080/brand/users/get",{
                     params:{
                         brandId:brandId,
                         page:page,
@@ -92,7 +107,7 @@ appModule
                 .catch(function (error) {
                     console.log(error);
                 })
-        };
+        }
         this.editOutlet = function (outlet) {
             blockUI.start({
                 message: "Editing Outlet..."

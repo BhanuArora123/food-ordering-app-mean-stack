@@ -1,13 +1,14 @@
 
 
-appModule.controller("foodController", function ($scope, foodService, outletService, brandService, allCategories, utility, blockUI, availableTaxes, permission, availableCategories) {
+appModule.controller("foodController", function ($scope,$state, foodService, outletService, allCategories, utility, blockUI, availableTaxes, permission, availableCategories, userService) {
 
     $scope.foodItemsToDisplay = [];
     $scope.availableCategories = availableCategories;
     $scope.categories = allCategories;
 
     // getting user cart 
-    var outletData = outletService.getServiceData().outletData;
+    var userData = userService.userData();
+    var outletData = userData.outlets?userData.outlets[0]:undefined;
     $scope.userCart = outletService.getCart();
 
     // display active category
@@ -26,40 +27,38 @@ appModule.controller("foodController", function ($scope, foodService, outletServ
 
     $scope.getActiveClass = function (index, type) {
         if (type === 'category') {
-            return ($scope.activeCategory === index) ? 'text-white bg-primary border-0' : 'text-dark';
+            return ($scope.activeCategory === index) ? 'text-dark bg-light border-0' : 'text-white';
         }
         else {
-            return ($scope.activeSubcategory === index) ? 'text-white bg-primary border-0' : 'text-dark';
+            return ($scope.activeSubcategory === index) ? 'text-dark bg-light border-0' : 'text-white';
         }
     }
 
     $scope.addFoodItems = function (food) {
         // attaching outlet id 
-        var brandData = brandService.getServiceData().brandData;
-        if (brandData) {
+        var userData = userService.userData();
+        if (userData.brands) {
             food.brand = {
-                id: brandData._id,
-                name: brandData.name
+                id: userData.brands[0]._id,
+                name: userData.brands[0].name
             }
         }
         foodService
             .addFoodItem(food)
             .then(function (response) {
-                alert("food item added successfully");
+                $state.go("home.dashboard");
                 return response;
             })
     }
 
     $scope.getFoodItems = function (category,subCategory,index,type) {
         console.log(category,subCategory,index,type);
-        var brandData = brandService.getServiceData().brandData;
         $scope.setActiveClass(index,type);
         if(type === 'category'){
             $scope.foodPagination = Array(availableCategories[index].length).fill(1);
         }
         return foodService
             .getFoodItems({
-                brandId: brandData?brandData._id:outletData.brand.id,
                 category:category,
                 subCategory:subCategory,
                 page:(type === 'category'?1:$scope.foodPagination[index]),

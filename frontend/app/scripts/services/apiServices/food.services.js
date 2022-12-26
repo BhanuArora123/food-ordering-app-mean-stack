@@ -1,25 +1,32 @@
 
 
 appModule
-    .service("foodService", function ($http, blockUI,outletService) {
+    .service("foodService", function ($http, blockUI, outletService, userService) {
         this.getFoodItems = function (data) {
             // blockUI.start({
             //     message: "Loading..."
             // })
-            return $http({
-                url: "http://localhost:8080/food/getFoodItems",
-                method: "GET",
+            var userData = userService.userData();
+            var brandData, outletData;
+            if (userData && userData.brands) {
+                brandData = userData.brands[0];
+            }
+            else if (userData && userData.outlets) {
+                outletData = userData.outlets[0];
+            }
+            console.log(brandData?brandData._id:outletData.brand.id);
+            return $http.get("http://localhost:8080/food/getFoodItems",{
                 params: {
-                    brandId: data.brandId,
+                    brandId: brandData?brandData._id:outletData.brand.id,
                     minPrice: data.minPrice,
                     maxPrice: data.maxPrice,
                     minRating: data.minRating,
                     isVeg: data.isVeg,
                     foodName: data.foodName,
-                    category:data.category,
-                    subCategory:data.subCategory,
-                    page:data.page,
-                    limit:data.limit
+                    category: data.category,
+                    subCategory: data.subCategory,
+                    page: data.page,
+                    limit: data.limit
                 }
             })
                 .then(function (response) {
@@ -37,11 +44,11 @@ appModule
             })
             var taxes = data.taxes.map(function (tax) {
                 return {
-                    tax:{
-                        name:tax.name,
-                        percentageRange:tax.percentageRange
+                    tax: {
+                        name: tax.name,
+                        percentageRange: tax.percentageRange
                     },
-                    percentage:tax.percentage
+                    percentage: tax.percentage
                 };
             });
             var foodData = new FormData();
@@ -55,8 +62,8 @@ appModule
             foodData.append("subCategory", data.subCategory);
             foodData.append("category", data.category);
             foodData.append("brand", JSON.stringify(data.brand));
-            foodData.append("taxes",JSON.stringify(taxes));
-            console.log("fooddata - ",foodData);
+            foodData.append("taxes", JSON.stringify(taxes));
+            console.log("fooddata - ", foodData);
             return $http({
                 url: "http://localhost:8080/food/addFoodItem",
                 method: "POST",
@@ -156,11 +163,18 @@ appModule
                 })
         }
         this.getAvailableCategories = function () {
-            var outletData = outletService.getServiceData().outletData;
+            var userData = userService.userData();
+            var brandData, outletDetails;
+            if (userData && userData.brands) {
+                brandData = userData.brands[0];
+            }
+            else if (userData && userData.outlets) {
+                outletDetails = userData.outlets[0];
+            }
             return $http
                 .get("http://localhost:8080/category/availableCategories", {
                     params: {
-                        brandId:outletData?outletData.brand.id:undefined
+                        brandId: outletDetails ? outletDetails.brand.id : brandData.id
                     }
                 })
                 .then(function (res) {

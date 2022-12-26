@@ -9,13 +9,13 @@
         </div>
         <div class="h-90 w-100 border-0">
             <uib-tabset class="w-100 category" active="activeCategory" justified="true" classes="w-50">
-                <uib-tab heading="Dine In" classes="fw-bold border-1 border-dark {{getActiveClass($index,'category')}}" select="getOrders(currentOrderStatus,'Dine In',1,9)">
+                <uib-tab heading="Dine In" classes="fw-bold border-1 border-dark {{getActiveClass($index,'category')}}" ng-click="getOrders(currentOrderStatus,'Dine In',1,9)">
                     <div ng-include="'views/orders/ordersList.html'" ng-init="getAllOutletOrders" class="mt-2 w-100">
 
                     </div>
                     <ul ng-show="totalOrders" class="w-100" items-per-page="9" uib-pagination max-size="5" items-per-page="9" total-items="totalOrders" ng-model="dineIn.currentPage" ng-change="getOrders(currentOrderStatus,'Dine In',dineIn.currentPage,9)"></ul>
                 </uib-tab>
-                <uib-tab heading="Take Away" classes="fw-bold border-1 border-dark {{getActiveClass($index,'category')}}" select="getOrders(currentOrderStatus,'Take Away',1,9)">
+                <uib-tab heading="Take Away" classes="fw-bold border-1 border-dark {{getActiveClass($index,'category')}}" ng-click="getOrders(currentOrderStatus,'Take Away',1,9)">
                     <div ng-include="'views/orders/ordersList.html'" ng-init="getAllOutletOrders" class="mt-2 w-100">
 
                     </div>

@@ -1,7 +1,7 @@
 
 
 appModule
-    .factory("utility", function ($uibModal, $state) {
+    .factory("utility", function ($uibModal, $state, userService, $rootScope) {
         return {
             categorizeItems: function (data) {
                 // categorize by sub category 
@@ -49,7 +49,8 @@ appModule
                 return categorizedItemsArray;
             },
             getRole: function () {
-                return localStorage.getItem("role");
+                var userData = userService.userData();
+                $rootScope.userRole = userData?userData.role.name:undefined;
             },
             getPermissions : function (role) {
                 if(role === 'Admin'){
@@ -134,6 +135,8 @@ appModule
             },
             logout: function () {
                 localStorage.clear();
+                $rootScope.userRole = undefined;
+                console.log($rootScope.userRole);
                 $state.go("home.login");
             },
             calculateAmount: function (items) {
