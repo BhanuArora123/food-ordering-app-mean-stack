@@ -8,6 +8,18 @@ var utils = require("../utils/utils");
 
 exports.getAllItemsSoldCountHourly = function (req, res, next) {
     try {
+        var role = req.user.role;
+        var permissions = req.user.permissions;
+
+        var isUserAuthorized = utils.isUserAuthorized(role,permissions,{
+            name:"outlet"
+        },"View Analytics");
+
+        if (!isUserAuthorized) {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
         var startDate = utils.setTimeInDate(req.query.startDate,"UTC","Asia/Calcutta",0);
         var endDate = utils.setTimeInDate(req.query.endDate,"UTC","Asia/Calcutta",24);
         var timezone = req.query.timezone;
@@ -91,6 +103,19 @@ exports.getAllItemsSoldCountHourly = function (req, res, next) {
 
 exports.getBrandRevenue = function (req, res, next) {
     try {
+        var role = req.user.role;
+        var permissions = req.user.permissions;
+
+        var isUserAuthorized = utils.isUserAuthorized(role,permissions,{
+            name:"outlet"
+        },"View Analytics");
+
+        if (!isUserAuthorized) {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
+
         var brandIds = JSON.parse(req.query.brandIds).map(function (brandId) {
             return ObjectId(brandId);
         });
@@ -145,6 +170,18 @@ exports.getBrandRevenue = function (req, res, next) {
 
 exports.getMaxSoldItem = function (req, res, next) {
     try {
+        var role = req.user.role;
+        var permissions = req.user.permissions;
+
+        var isUserAuthorized = utils.isUserAuthorized(role,permissions,{
+            name:"outlet"
+        },"View Analytics");
+
+        if (!isUserAuthorized) {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
         var brandId = req.query.brandId;
         var timezone = req.query.timezone;
         var startHour = req.query.startHour;

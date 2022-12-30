@@ -4,16 +4,28 @@ var outlets = require("../models/outlets.model");
 
 var throwError = require("../utils/errors");
 var orderUtils = require("../utils/orders.utils");
+var utils = require("../utils/utils");
 
 const sqsUtils = require("../utils/aws/sqs/utils");
 const getSocketInstance = require("../utils/socket/socket.utils").getSocketInstance;
 
 var ObjectId = require("mongoose").Types.ObjectId;
 
-var customerModel = require("../models/customer.model").model
-
 exports.placeOrder = function (req, res, next) {
     try {
+
+        var role = req.user.role;
+        var permissions = req.user.permissions;
+
+        var isUserAuthorized = utils.isUserAuthorized(role,permissions,{
+            name:"outlet"
+        },"Create Orders");
+
+        if (!isUserAuthorized) {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
         var customer = req.body.customer;
         var brand = req.body.brand;
         var outlet = req.body.outlet;
@@ -61,15 +73,21 @@ exports.placeOrder = function (req, res, next) {
 exports.getAllOrders = function (req, res, next) {
     try {
 
+        var role = req.user.role;
+        var permissions = req.user.permissions;
+
+        var isUserAuthorized = utils.isUserAuthorized(role,permissions,{
+            name:"outlet"
+        },"Manage Orders");
+
+        if (!isUserAuthorized) {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
+
         var brandId = req.query.brandId;
         var customerId = req.query.customerId;
-
-        // authorizing
-        // if (req.user.role.name !== "superAdmin" && req.user.role.name !== "admin" && req.user.role.name !== "brand") {
-        //     return res.status(401).json({
-        //         message: "Access Denied!"
-        //     })
-        // }
         var status = req.query.status;
         var orderType = req.query.orderType;
         var limit = parseInt(req.query.limit);
@@ -129,9 +147,22 @@ exports.getAllOrders = function (req, res, next) {
 
 exports.changeStatus = function (req, res, next) {
     try {
+        var role = req.user.role;
+        var permissions = req.user.permissions;
+
+        var isUserAuthorized = utils.isUserAuthorized(role,permissions,{
+            name:"outlet"
+        },"Manage Orders");
+
+        if (!isUserAuthorized) {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
+
         var status = req.body.status;
         var orderId = req.body.orderId;
-        var outletId = req.user.userId;
+        var outletId = req.body.outletId;
         var currentOrderData;
 
         orders
@@ -190,6 +221,19 @@ exports.changeStatus = function (req, res, next) {
 
 exports.editOrder = function (req, res, next) {
     try {
+        var role = req.user.role;
+        var permissions = req.user.permissions;
+
+        var isUserAuthorized = utils.isUserAuthorized(role,permissions,{
+            name:"outlet"
+        },"Manage Orders");
+
+        if (!isUserAuthorized) {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
+        
         var outletId = req.user.userId;
         var orderId = req.body.orderId;
         var orderedItems = req.body.orderedItems;

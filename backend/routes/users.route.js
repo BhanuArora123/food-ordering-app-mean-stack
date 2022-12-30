@@ -9,6 +9,7 @@ var validate = require("../middleware/validation.middleware").validate;
 
 router
     .post("/register",
+        passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),
         [
             body("name").notEmpty().isString(),
             body("password").optional().isLength({
@@ -61,18 +62,26 @@ router.put("/updatePassword",
     validate,
     usersController.updatePassword);
 
-router.put("/permissions/edit",
+router.put("/edit",
     passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),
     [
-        body("adminId").notEmpty().isString(),
-        body("permissions").notEmpty().isArray(),
+        body("userId").notEmpty().isString(),
+        body("permissions").optional().isArray(),
         body("currentUserRole.name").notEmpty().isString(),
         body("currentUserRole.subRole.*").notEmpty().isString(),
-        body("role.name").notEmpty().isString(),
-        body("role.subRole.*").notEmpty().isString(),
-        body("permission.*.permissionId").notEmpty().isString(),
-        body("permissions.*.permissionName").notEmpty().isString()
+        body("role.name").optional().isString(),
+        body("role.subRole.*").optional().isString(),
+        body("permission.*.permissionId").optional().isString(),
+        body("permissions.*.permissionName").optional().isString(),
+        body("userEmail").optional().isString(),
+        body("userName").optional().isString(),
+        body("brandsToAllot.*.id").optional().isString(),
+        body("brandsToAllot.*.name").optional().isString(),
+        body("outletsToAllot.*.id").optional().isString(),
+        body("outletsToAllot.*.name").optional().isString(),
+        body("outletsToAllot.*.brand.id").optional().isString(),
+        body("outletsToAllot.*.brand.name").optional().isString()
     ],
-    usersController.editPermissions
+    usersController.editUser
 )
 module.exports = router;

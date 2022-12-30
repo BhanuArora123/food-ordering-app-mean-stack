@@ -10,6 +10,16 @@ var outletSchema = new schema({
         type:String,
         required:true
     },
+    admin:{
+        name:{
+            type:String,
+            required:true
+        },
+        email:{
+            type:String,
+            required:true
+        }
+    },
     brand:{
         id:{
             type:ObjectId,

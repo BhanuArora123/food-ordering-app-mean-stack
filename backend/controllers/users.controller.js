@@ -1,5 +1,9 @@
 var users = require("../models/users.model");
 
+var brands = require("../models/brands.model");
+
+var outlets = require("../models/outlets.model");
+
 var throwError = require("../utils/errors");
 
 require("dotenv").config("../.env");
@@ -13,21 +17,29 @@ var addTaskToQueue = require("../utils/aws/sqs/utils").addTaskToQueue;
 var jwt = require("jsonwebtoken");
 
 var redisUtils = require("../utils/redis/redis.utils");
-var brandsModel = require("../models/brands.model");
+
+var ObjectId = require("mongoose").Types.ObjectId;
 
 exports.registerUser = function (req, res, next) {
     try {
-        // if (req.user.role !== "superAdmin") {
-        //     throwError("Access Denied!", 403);
-        // }
+        var createrRole = req.user.role;
+        var createrPermissions = req.user.permissions;
         var name = req.body.name;
         var email = req.body.email;
         var password = req.body.password || utils.genRandomPassword();
-        var permissions = req.body.permissions;
-        var role = req.body.role;
         var brand = req.body.brand;
         var outlet = req.body.outlet;
+        var role = req.body.role;
+        var permissions = req.body.permissions;
+        var brandAuthorization = utils.isUserAuthorized(createrRole, createrPermissions, role, "Manage Outlets");
+        var adminAuthorization = utils.isUserAuthorized(createrRole, createrPermissions, role, "Manage Brands");
         var encryptedPassword;
+
+        if (!brandAuthorization && !adminAuthorization && createrRole.name !== "superAdmin") {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
 
         var emailContent = `Hi ${name} , Your ${role.name} Registration is successful, please use below creds to access the portal!
             Email:${email}
@@ -48,20 +60,21 @@ exports.registerUser = function (req, res, next) {
             })
             .then(function (hashedPassword) {
                 encryptedPassword = hashedPassword;
-                if(role.name !== "outlet" && role.name !== "brand"){
-                    return ;
+                if (role.name !== "outlet" && role.name !== "brand") {
+                    return;
                 }
-                return utils.registerBrandOrOutlet(role.name,brand,outlet);
+                return utils.registerBrandOrOutlet(role.name, brand, outlet, name, email);
             })
             .then(function (registeredEntity) {
+                console.log(registeredEntity);
                 var newUser = new users({
                     name: name,
                     email: email,
                     password: encryptedPassword,
                     role: role,
                     permissions: permissions,
-                    brands:(role.name === "brand"?[registeredEntity]:undefined),
-                    outlets:(role.name === "outlet"?[registeredEntity]:undefined),
+                    brands: (role.name === "brand" ? [registeredEntity] : undefined),
+                    outlets: (role.name === "outlet" ? [registeredEntity] : undefined),
                 });
                 return newUser.save();
             })
@@ -227,49 +240,6 @@ exports.getUserData = function (req, res, next) {
     }
 }
 
-exports.editPermissions = function (req, res, next) {
-    try {
-        var permissions = req.body.permissions;
-        var role = req.body.role;
-        var userId = req.body.userId;
-        var currentUserRole = req.body.currentUserRole;
-        var userPermissions = req.user.permissions;
-
-        // check if user has permissions
-        var isUserAuthorized = utils.isUserAuthorized(role,userPermissions,currentUserRole,"Manage Users"); 
-        if (!isUserAuthorized) {
-            return res.status(401).json({
-                message: "Access Denied!"
-            })
-        }
-        
-        users.updateOne({
-            _id: userId
-        }, {
-            $set: {
-                permissions: permissions,
-                role:role
-            }
-        })
-            .then(function (data) {
-                console.log(data);
-                return res.status(200).json({
-                    message: "user permission updated successfully"
-                })
-            })
-            .catch(function (error) {
-                var statusCode = error.cause ? error.cause.statusCode : 500;
-                return res.status(statusCode).json({
-                    message: error.message
-                })
-            })
-    } catch (error) {
-        return res.status(500).json({
-            message: error.message
-        })
-    }
-}
-
 exports.getAllAdmins = function (req, res, next) {
     try {
         var userId = req.user.userId;
@@ -280,16 +250,16 @@ exports.getAllAdmins = function (req, res, next) {
         var totalAdmins;
 
         var userPermissions = req.user.permissions;
-        var isUserAuthorized = utils.isUserAuthorized(role,userPermissions,{
-            name:"admin"
-        },"Manage Users")
+        var isUserAuthorized = utils.isUserAuthorized(role, userPermissions, {
+            name: "admin"
+        }, "Manage Admin");
 
         if (!isUserAuthorized) {
             return res.status(401).json({
                 message: "Access Denied!"
             });
         }
-        var rolesToFetch = (role === "superAdmin") ? ["admin"] : ["superAdmin","admin"];
+        var rolesToFetch = (role === "superAdmin") ? ["admin"] : ["superAdmin", "admin"];
         users.countDocuments({
             _id: {
                 $ne: userId
@@ -304,8 +274,8 @@ exports.getAllAdmins = function (req, res, next) {
                     _id: {
                         $ne: userId
                     },
-                    "role.name":{
-                        $in:rolesToFetch
+                    "role.name": {
+                        $in: rolesToFetch
                     }
                 })
                     .skip(skip)
@@ -336,8 +306,8 @@ exports.getAdminCount = function (req, res, next) {
     try {
         users
             .countDocuments({
-                "role.name":{
-                    $in :["admin","superAdmin"]
+                "role.name": {
+                    $in: ["admin", "superAdmin"]
                 }
             })
             .then(function (adminCount) {
@@ -357,3 +327,137 @@ exports.getAdminCount = function (req, res, next) {
         })
     }
 }
+
+exports.editUser = function (req, res, next) {
+    try {
+        // authorization 
+        var editUserRole = req.user.role;
+        var editUserPermissions = req.user.permissions;
+
+        var isBrandAuthorized = utils.isUserAuthorized(editUserRole, editUserPermissions, {
+            name: "brand"
+        }, 'Manage Brand Users');
+
+        var isOutletAuthorized = utils.isUserAuthorized(editUserRole, editUserPermissions, {
+            name: "outlet"
+        }, "Manage Outlet Users");
+
+        var isAdminAuthorized = utils.isUserAuthorized(editUserRole, editUserPermissions, {
+            name: "admin"
+        }, "Manage Brands");
+
+        var brandsToAllot = req.body.brandsToAllot;
+        var outletsToAllot = req.body.outletsToAllot;
+        var userId = req.body.userId;
+        var userEmail = req.body.userEmail;
+        var userName = req.body.userName;
+        var userRole = req.body.role;
+        var userPermissions = req.body.permissions;
+
+        if ((brandsToAllot && !isBrandAuthorized && !isAdminAuthorized) || (outletsToAllot && !isOutletAuthorized)) {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
+
+        users.findOne({
+            _id: userId
+        })
+            .then(function (userData) {
+                if(!userData){
+                    throwError("user doesn't exists",404);
+                }
+                if(brandsToAllot){
+                    userData.brands = brandsToAllot;
+                }
+                if(outletsToAllot){
+                    userData.outlets = outletsToAllot;
+                }
+                userData.email = userEmail;
+                userData.name = userName;
+                userData.role = userRole;
+                userData.permissions = userPermissions;
+                return userData.save();
+            })
+            .then(function (userData) {
+                if(userData.role.subRoles.includes("admin")){
+                    var entityToUpdate = brandsToAllot || outletsToAllot;
+                    var modelToUpdate = brandsToAllot?brands:outlets;
+                    var entityIds = entityToUpdate.map(function (entity) {
+                        return ObjectId(entity.id);
+                    })
+                    return modelToUpdate.updateMany({
+                        _id:{
+                            $in:entityIds
+                        }
+                    },{
+                        $set:{
+                            admin:{
+                                name:userName,
+                                email:userEmail
+                            }
+                        }
+                    })
+                }
+            })
+            .then(function () {
+                return res.status(200).json({
+                    message: "brands/outlets alloted successfully!"
+                })
+            })
+            .catch(function (error) {
+                var statusCode = error.cause ? error.cause.statusCode : 500;
+                return res.status(statusCode).json({
+                    message: error.message
+                })
+            })
+    } catch (error) {
+        return res.status(500).json({
+            message: error.message
+        })
+    }
+}
+
+// exports.editPermissions = function (req, res, next) {
+//     try {
+//         var permissions = req.user.permissions;
+//         var role = req.user.role;
+//         var userId = req.body.userId;
+        
+
+//         // check if user has permissions
+//         var brandAuthorization = utils.isUserAuthorized(role, permissions, currentUserRole, "Manage Outlets");
+//         var adminAuthorization = utils.isUserAuthorized(role, permissions, currentUserRole, "Manage Brands");
+//         if (!brandAuthorization && !adminAuthorization) {
+//             return res.status(401).json({
+//                 message: "Access Denied!"
+//             })
+//         }
+
+//         users.updateOne({
+//             _id: userId
+//         }, {
+//             $set: {
+//                 permissions: permissions,
+//                 role: role
+//             }
+//         })
+//             .then(function (data) {
+//                 console.log(data);
+//                 redisUtils.deleteValue(userId);
+//                 return res.status(200).json({
+//                     message: "user permission updated successfully"
+//                 })
+//             })
+//             .catch(function (error) {
+//                 var statusCode = error.cause ? error.cause.statusCode : 500;
+//                 return res.status(statusCode).json({
+//                     message: error.message
+//                 })
+//             })
+//     } catch (error) {
+//         return res.status(500).json({
+//             message: error.message
+//         })
+//     }
+// }

@@ -24,7 +24,7 @@ exports.connectSocket = function (app) {
 
         socket.on("connectOutlet",function (data) {
             socket.join(data.brandId);
-            console.log(data.brandId);
+            console.log("client id - ",data.brandId);
         })
 
         socket.on("customerJoined",function (customerId) {

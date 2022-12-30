@@ -64,7 +64,6 @@ exports.getAllCategories = function (req, res, next) {
 }
 
 
-
 exports.createSubCategory = function (req, res, next) {
     try {
         var subCategoryName = req.body.subCategoryName;
@@ -107,10 +106,10 @@ exports.createSubCategory = function (req, res, next) {
 
 exports.getSubCategories = function (req, res, next) {
     try {
-        var category = req.query.category;
+        var categoryId = req.query.categoryId;
 
         subCategoryModel.find({
-            parentCategory: category
+            "parentCategory.id": categoryId
         })
             .then(function (subCategories) {
                 return res.status(200).json({
@@ -146,19 +145,22 @@ exports.getCategoriesForBrand = function (req, res, next) {
             {
                 $group: {
                     _id: {
-                        category: "$category",
-                        subCategory: "$subCategory"
+                        category: "$category.id",
+                        subCategory: "$category.subCategory.id"
+                    },
+                    category:{
+                        $first:"$category"
                     }
                 }
             },
             {
                 $group: {
-                    _id: "$_id.category",
+                    _id: "$category.id",
                     category: {
-                        $first: "$_id.category"
+                        $first: "$category"
                     },
                     subCategories: {
-                        $push: "$_id.subCategory"
+                        $push: "$category.subCategory"
                     }
                 }
             }
@@ -181,3 +183,31 @@ exports.getCategoriesForBrand = function (req, res, next) {
         })
     }
 } 
+
+// async function b() {
+//     var data = [];
+//     var subdata = [];
+//     for (let i = 0; i < 5; i++) {
+//         data.push({
+//             name:`category${i+1}`
+//         })
+//         for (let j = 0; j < 5; j++) {
+//             subdata.push({
+//                 name:`subCategory${(i*5) + j + 1}`,
+//                 parentCategory:`category${i+1}`
+//             })
+//         }
+//     }
+//     await categoryModel.insertMany(data);
+//     await subCategoryModel.insertMany(subdata);
+//     console.log("done");
+    // await categoryModel.deleteMany({
+    //     name:{
+    //         $regex:"category",
+    //         $options:"i"
+    //     }
+    // })
+    
+// }
+
+// b();

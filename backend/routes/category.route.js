@@ -22,7 +22,8 @@ router.post("/sub/create",
     body("subCategoryName").notEmpty().isLength({
         min: 3
     }).isString(),
-    body("category").notEmpty().isString()
+    body("category.name").notEmpty().isString(),
+    body("category.id").notEmpty().isString()
 ],
     validate,
     categoryController.createSubCategory);

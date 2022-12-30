@@ -7,6 +7,16 @@ var brandsSchema = new schema({
         type:String,
         required:true
     },
+    admin:{
+        name:{
+            type:String,
+            required:true
+        },
+        email:{
+            type:String,
+            required:true
+        }
+    },
     isDisabled:{
         type:Boolean,
         default:false

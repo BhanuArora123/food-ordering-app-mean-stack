@@ -1,12 +1,8 @@
 var brands = require("../models/brands.model");
 var users = require("../models/users.model");
 
-var foodModel = require("../models/food.model");
-
 var throwError = require("../utils/errors");
 var outletsModel = require("../models/outlets.model");
-
-var addTaskToQueue = require("../utils/aws/sqs/utils").addTaskToQueue;
 
 var brandUtils = require("../utils/brands.utils");
 
@@ -17,8 +13,9 @@ require("dotenv").config("./.env");
 var utils = require("../utils/utils");
 
 var orderModel = require("../models/order.model");
+const usersModel = require("../models/users.model");
 
-var objectId = require("mongoose").Types.ObjectId;
+var ObjectId = require("mongoose").Types.ObjectId;
 
 exports.getAllBrands = function (req, res, next) {
     try {
@@ -34,15 +31,15 @@ exports.getAllBrands = function (req, res, next) {
 
         var skip = (page - 1) * limit;
 
-        // var isUserAuthorized = utils.isUserAuthorized(role,permissions,{
-        //     name:"brand"
-        // },"Manage Brands")
+        var isUserAuthorized = utils.isUserAuthorized(role,permissions,{
+            name:"brand"
+        },"Manage Brands");
 
-        // if (!isUserAuthorized) {
-        //     return res.status(401).json({
-        //         message: "Access Denied!"
-        //     })
-        // }
+        if (!isUserAuthorized) {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
         // search filter 
         var matchQuery = {};
 
@@ -58,49 +55,8 @@ exports.getAllBrands = function (req, res, next) {
             .countDocuments(matchQuery)
             .then(function (availableBrandsCount) {
                 totalBrands = availableBrandsCount;
-                return users
-                    .aggregate([
-                        {
-                            $match: {
-                                "role.name": "brand",
-                                "role.subRoles": {
-                                    $elemMatch: {
-                                        $eq: "admin"
-                                    }
-                                },
-                                // "brands.brandName": {
-                                //     $elemMatch: {
-                                //         $eq: (matchQuery.name || "")
-                                //     }
-                                // }
-                            }
-                        },
-                        {
-                            $unwind: "$brands"
-                        },
-                        {
-                            $sort: {
-                                createdAt: 1
-                            }
-                        },
-                        {
-                            $group: {
-                                _id: "$brands.id",
-                                brandData: {
-                                    $first: "$brands"
-                                },
-                                email: {
-                                    $first: "$email"
-                                },
-                                role: {
-                                    $first: "$role"
-                                },
-                                permissions: {
-                                    $first: "$permissions"
-                                }
-                            }
-                        }
-                    ])
+                return brands
+                    .find(matchQuery)
                     .skip(skip)
                     .limit(limit)
             })
@@ -121,74 +77,6 @@ exports.getAllBrands = function (req, res, next) {
     } catch (error) {
         var statusCode = 500;
         return res.status(statusCode).json({
-            message: error.message
-        })
-    }
-}
-
-exports.editOutlet = function (req, res, next) {
-    try {
-        var role = req.user.role;
-        var permissions = req.user.permissions;
-        var brandId = req.user.userId;
-        var outletId = req.body.outletId;
-        var name = req.body.name;
-        var email = req.body.email;
-
-        var isUserAuthorized = utils.isUserAuthorized(role, permissions, {
-            name: "outlet"
-        }, "Manage Brands");
-        if (!isUserAuthorized) {
-            return res.status(401).json({
-                message: "Access Denied!"
-            })
-        }
-
-        var dataToUpdate = {};
-
-        if (name) {
-            dataToUpdate["name"] = name;
-        }
-        if (email) {
-            dataToUpdate["email"] = email;
-        }
-
-        outletsModel.updateOne({
-            _id: outletId,
-            "brand.id": brandId
-        }, {
-            $set: dataToUpdate
-        })
-            .then(function (outletData) {
-                if (!outletData) {
-                    throwError("outlet doesn't exist", 404);
-                }
-                // reset redis cache 
-                redisUtils.deleteValue();
-                if (name) {
-                    return foodModel.updateMany({
-                        "outlet.id": outletId
-                    }, {
-                        $set: {
-                            "outlet.name": outletData.name
-                        }
-                    })
-                }
-            })
-            .then(function () {
-                return res.status(200).json({
-                    message: "outlet updated successfully"
-                })
-            })
-            .catch(function (error) {
-                var statusCode = error.cause ? error.cause.statusCode : 500;
-                return res.status(statusCode).json({
-                    message: error.message
-                })
-            })
-
-    } catch (error) {
-        return res.status(500).json({
             message: error.message
         })
     }
@@ -259,22 +147,26 @@ exports.sendInstructionsToOutlet = function (req, res, next) {
 
 exports.editBrand = function (req, res, next) {
     try {
-        if (req.user.role !== "superAdmin") {
-            throwError("Access Denied!", 403);
+        var role = req.user.role;
+        var permissions = req.user.permissions;
+        var isUserAuthorized = utils.isUserAuthorized(role,permissions,{
+            name:"brand"
+        },"Manage Brands");
+
+        if(!isUserAuthorized){
+            return res.status(401).json({
+                message: "Access Denied!"
+            });
         }
 
         var brandId = req.body.brandId;
         var isDisabled = req.body.isDisabled;
         var name = req.body.name;
-        var email = req.body.email;
 
         var dataToUpdate = {};
 
         if (name) {
             dataToUpdate["name"] = name;
-        }
-        if (email) {
-            dataToUpdate["email"] = email;
         }
         if (isDisabled !== undefined) {
             dataToUpdate["isDisabled"] = isDisabled;
@@ -291,14 +183,14 @@ exports.editBrand = function (req, res, next) {
                 // update in order and outlet collections 
                 if (name) {
                     outletsModel.updateMany({
-                        "brand.id": objectId(brandId)
+                        "brand.id": ObjectId(brandId)
                     }, {
                         $set: {
                             "brand.name": name
                         }
                     })
                     orderModel.updateMany({
-                        "brand.id": objectId(brandId)
+                        "brand.id": ObjectId(brandId)
                     }, {
                         $set: {
                             "brand.name": name
@@ -327,6 +219,7 @@ exports.getBrandUsers = function (req,res,next) {
     try {
         var brandId = req.query.brandId;
         var userId = req.user.userId;
+        var userSubRole = req.query.subRole;
         var page = parseInt(req.query.page || 1);
         var limit = parseInt(req.query.limit || 9);
         var skip = (page - 1)*limit;
@@ -334,15 +227,27 @@ exports.getBrandUsers = function (req,res,next) {
 
         var query = {
             "role.name":"brand",
-            brands:{
-                $elemMatch:{
-                    id:brandId
-                }
-            },
             _id:{
                 $ne:userId
             }
         };
+
+        if(brandId){
+            query["brands"] = {
+                $elemMatch:{
+                    id:brandId
+                }
+            }
+        }
+
+        if(userSubRole){
+            query["role.subRoles"] = {
+                $elemMatch:{
+                    $eq:userSubRole
+                }
+            }
+        }
+        console.log(query);
         users
         .countDocuments(query)
         .then(function (totalBrandUsers) {
@@ -363,3 +268,77 @@ exports.getBrandUsers = function (req,res,next) {
         console.log(error);
     }
 }
+
+// adding brands 
+
+// const b = async () => {
+//     var data = [];
+//     const availableOutlets = await outletsModel.find();
+//     const outletMap = {};
+//     availableOutlets.forEach((brand) => {
+//         outletMap[brand.name] = brand;
+//     })
+//     for(let i = 5003;i<10003;i++){
+        // var outletData = {
+        //     name : `outlet${i}`,
+        //     admin:{
+        //         name:`user${i}`,
+        //         email:`user${i}@gmail.com`
+        //     },
+        //     brand:{
+        //         id:brandMap[`brand${i - 5001}`]._id,
+        //         name:brandMap[`brand${i - 5001}`].name
+        //     },
+        //     tables:[]
+        // }
+        // data.push(brandData);
+        // var userData = {
+        //     name:`user${i}`,
+        //     email:`user${i}@gmail.com`,
+        //     password:"$2a$12$xX4k5hs7JSedS1I2t1LgDuv8t3Kz6Qk5WlH8eK4iE/ynNGwbUr9Mq",
+        //     outlets:[
+        //         {
+        //             id:outletMap[`outlet${i}`]._id,
+        //             name:outletMap[`outlet${i}`].name,
+        //             brand:outletMap[`outlet${i}`].brand,
+        //         }
+        //     ],
+        //     role:{
+        //         name:"outlet",
+        //         subRoles:['admin']
+        //     },
+        //     permissions:[
+        //         {
+        //             permissionId: 1,
+        //             permissionName: 'Manage Orders'
+        //         },
+        //         {
+        //             permissionId: 2,
+        //             permissionName: 'Allow Take Away Orders'
+        //         },
+        //         {
+        //             permissionId: 3,
+        //             permissionName: 'View Analytics'
+        //         },
+        //         {
+        //             permissionId: 4,
+        //             permissionName: 'Create Orders'
+        //         },
+        //         {
+        //             permissionId: 5,
+        //             permissionName: 'Manage Dishes'
+        //         },
+        //         {
+        //             permissionId: 6,
+        //             permissionName:'Manage Outlet Users'
+        //         }
+        //     ]
+        // }
+        // data.push(userData);
+    // }
+    // await usersModel.insertMany(data);
+    // await outletsModel.insertMany(data);
+//     console.log("done");
+// }
+
+// b();

@@ -8,6 +8,8 @@ var jwt = require("jsonwebtoken");
 
 var redisUtils = require("../utils/redis/redis.utils");
 
+var utils = require("../utils/utils");
+
 exports.getCustomerData = function (req, res, next) {
     try {
         var phoneNumber =req.query.phoneNumber?req.query.phoneNumber:req.user.phoneNumber;
@@ -50,23 +52,24 @@ exports.getCustomerData = function (req, res, next) {
 
 exports.getAllCustomers = function (req, res, next) {
     try {
-        var brandId = req.user.userId;
         var role = req.user.role;
-        var page = parseInt(req.query.page);
-        var limit = parseInt(req.query.limit);
-        var skip = (page - 1) * limit;
-        var totalCustomers;
+        var permissions = req.user.permissions;
 
+        var isUserAuthorized = utils.isUserAuthorized(role,permissions,{
+            name:"customer"
+        },"Manage Brands");
 
-        var isBrandAuthorized = req.user.permissions.find(function (permission) {
-            return permission.permissionName === 'Manage Customers';
-        })
-
-        if (!isBrandAuthorized && role !== 'superAdmin') {
+        if (!isUserAuthorized && role !== "customer") {
             return res.status(401).json({
                 message: "Access Denied!"
             })
         }
+        var brandId = req.query.userId;
+        var page = parseInt(req.query.page);
+        var limit = parseInt(req.query.limit);
+        var skip = (page - 1) * limit;
+        var totalCustomers;
+        
         customerModel
             .countDocuments({
                 brandId: brandId

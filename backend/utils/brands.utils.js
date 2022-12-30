@@ -48,7 +48,7 @@ exports.sendOrderCreationEmail = function name(brandId, outletName) {
                 // send message to brand regarding an order 
                 addTaskToQueue("SEND_EMAIL", {
                     MessageBody: {
-                        email: brandData.email,
+                        email: brandData.admin.email,
                         subject: "Order Creation Message",
                         content: `An new order has been recieved by ${outletName} recently`
                     }

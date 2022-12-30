@@ -20,6 +20,38 @@ exports.applyJwtStrategy = function () {
         var userId = jwtPayload.userId;
         var isRedisResponse;
 
+        // customer authentication
+        if(role === 'customer'){
+            return redisUtils
+                .getValue(userId)
+                .then(function (customerData) {
+                    if(!customerData){
+                        return customerModel
+                        .findOne({
+                            _id:userId
+                        })
+                    }
+                    isRedisResponse = true;
+                    return JSON.parse(customerData);
+                })
+                .then(function (customerData) {
+                    if(customerData){
+                        if(!isRedisResponse){
+                            redisUtils.setValue(customerData._id, JSON.stringify(customerData._doc));
+                        }
+                        return done(null,{
+                            phoneNumber:phoneNumber,
+                            userId:customerData._id
+                        })
+                    }
+                    done(null,false);
+                })
+                .catch(function (error) {
+                    console.log(error);
+                    done(error,false);
+                })
+        }
+
         redisUtils
             .getValue(userId)
             .then(function (data) {

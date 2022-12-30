@@ -95,16 +95,18 @@ exports.isUserAuthorized = function (role, permissions, userRole, requiredPermis
             }
         }
 
-        // permission check 
-        var permissionAuthorization = permissions.find(function (permission) {
-            return permission.permissionName === requiredPermission;
-        })
-
-        if (!permissionAuthorization) {
-            return {
-                isAuthorized: false,
-                message: "unauthorised!"
-            };
+        if(requiredPermission){
+            // permission check 
+            var permissionAuthorization = permissions.find(function (permission) {
+                return permission.permissionName === requiredPermission;
+            })
+    
+            if (!permissionAuthorization) {
+                return {
+                    isAuthorized: false,
+                    message: "unauthorised!"
+                };
+            }
         }
 
         return {
@@ -115,13 +117,13 @@ exports.isUserAuthorized = function (role, permissions, userRole, requiredPermis
     }
 }
 
-exports.registerBrandOrOutlet = function (role, brand, outlet) {
+exports.registerBrandOrOutlet = function (role, brand, outlet,adminName,adminEmail) {
     try {
         if (role === "brand") {
             return brandsModel.findOne({
-                _id: brand._id
+                _id: brand.id
             }, {
-                _id: 1,
+                id: "$_id",
                 name: 1
             })
                 .then(function (brandData) {
@@ -129,7 +131,11 @@ exports.registerBrandOrOutlet = function (role, brand, outlet) {
                         return brandData;
                     }
                     var newBrand = new brandsModel({
-                        name: brand.brandName
+                        name: brand.brandName,
+                        admin:{
+                            name:adminName,
+                            email:adminEmail
+                        }
                     });
                     return newBrand
                         .save()
@@ -158,7 +164,11 @@ exports.registerBrandOrOutlet = function (role, brand, outlet) {
                     }
                     var newOutlet = new outletsModel({
                         name: outlet.name,
-                        brand: outlet.brand
+                        brand: outlet.brand,
+                        admin:{
+                            name:adminName,
+                            email:adminEmail
+                        }
                     });
                     return newOutlet
                         .save()

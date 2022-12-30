@@ -58,12 +58,24 @@ var ordersSchema = new schema({
                 default:1
             },
             category:{
-                type:String,
-                required:true
-            },
-            subCategory:{
-                type:String,
-                required:true
+                name:{
+                    type:String,
+                    required:true
+                },
+                id:{
+                    type:ObjectId,
+                    required:true
+                },
+                subCategory:{
+                    name:{
+                        type:String,
+                        required:true
+                    },
+                    id:{
+                        type:ObjectId,
+                        required:true
+                    }
+                }
             },
             taxes:[]
         }

@@ -4,17 +4,15 @@ var throwError = require("../utils/errors");
 
 exports.addTax = function (req, res, next) {
     try {
+        var role = req.user.role;
+        if (role.name !== "brand") {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
         var taxName = req.body.taxName;
         var taxPercentageRange = req.body.percentageRange;
         console.log(req.body);
-
-        var role = req.user.role;
-
-        if (role !== 'superAdmin' && role !== 'brand') {
-            return res.status(401).json({
-                message: "tax added successfully"
-            })
-        }
 
         taxesModel.findOne({
             name: {
@@ -52,7 +50,6 @@ exports.addTax = function (req, res, next) {
 
 exports.getAllTaxes = function (req, res, next) {
     try {
-
         taxesModel
             .find()
             .then(function (taxes) {

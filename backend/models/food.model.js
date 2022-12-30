@@ -33,12 +33,24 @@ var foodSchema = new schema({
         required:true
     },
     category:{
-        type:String,
-        required:true
-    },
-    subCategory:{
-        type:String,
-        required:true
+        name:{
+            type:String,
+            required:true
+        },
+        id:{
+            type:ObjectId,
+            required:true
+        },
+        subCategory:{
+            name:{
+                type:String,
+                required:true
+            },
+            id:{
+                type:ObjectId,
+                required:true
+            }
+        }
     },
     isVeg:{
         type:Boolean,
