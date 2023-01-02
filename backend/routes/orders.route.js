@@ -30,7 +30,8 @@ validate
 router.put("/changeStatus",passport.authenticate("jwt",{session:false}),
 [
     body("orderId").notEmpty().isString(),
-    body("status").notEmpty().isString()
+    body("status").notEmpty().isString(),
+    body("outletId").notEmpty().isString()
 ],
 validate,
 ordersController.changeStatus);

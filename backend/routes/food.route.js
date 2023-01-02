@@ -7,8 +7,6 @@ var foodController = require("../controllers/food.controller");
 
 var body = require("express-validator").body;
 
-var path = require("path");
-
 var fileUpload = require("express-fileupload");
 var validate = require("../middleware/validation.middleware").validate;
 

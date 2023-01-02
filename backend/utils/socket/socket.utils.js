@@ -1,5 +1,4 @@
 
-var async = require("async");
 var socket = require("socket.io").Server;
 
 var socketInstance;

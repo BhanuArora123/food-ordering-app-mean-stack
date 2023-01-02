@@ -11,9 +11,6 @@ var s3Utils = require("../utils/aws/s3/utils");
 var utils = require("../utils/utils");
 
 var brandUtils = require("../utils/brands.utils");
-const categoryModel = require("../models/category.model");
-const subCategoryModel = require("../models/subCategory.model");
-const orderModel = require("../models/order.model");
 
 exports.addFoodItem = function (req, res, next) {
     try {
@@ -135,8 +132,7 @@ exports.displayFoodItem = function (req, res, next) {
         var page = parseInt(req.query.page);
         var limit = parseInt(req.query.limit);
         var skip = (page - 1) * limit;
-        var totalFoodItems;
-
+        
         var matchQuery = {
             $and: [],
             isDeleted: false
@@ -185,28 +181,42 @@ exports.displayFoodItem = function (req, res, next) {
             delete matchQuery["$and"];
         }
         // display food items based on match query! 
-        foodModel
-            .countDocuments(matchQuery)
-            .then(function (totalItems) {
-                totalFoodItems = totalItems;
+        async.parallel([
+            function (cb) {
+                foodModel
+                    .countDocuments(matchQuery)
+                    .then(function (totalFoodItems) {
+                        cb(null, totalFoodItems);
+                    })
+                    .catch(function (error) {
+                        cb(error);
+                    })
+            },
+            function (cb) {
                 return foodModel
                     .find(matchQuery)
                     .skip(skip)
                     .limit(limit)
-            })
-            .then(function (matchedFoodItems) {
-                return res.status(200).json({
-                    matchedFoodItems: matchedFoodItems,
-                    message: "success!",
-                    totalFoodItems: totalFoodItems
-                })
-            })
-            .catch(function (error) {
+                    .then(function (matchedFoodItems) {
+                        cb(null, matchedFoodItems);
+                    })
+                    .catch(function (error) {
+                        cb(error);
+                    })
+            }
+        ], function (error, foodItemsData) {
+            if (error) {
+                console.log(error);
                 var statusCode = error.cause ? error.cause.statusCode : 500;
                 return res.status(statusCode).json({
                     message: error.message
                 })
+            }
+            return res.status(200).json({
+                matchedFoodItems: foodItemsData[1],
+                totalFoodItems: foodItemsData[0]
             })
+        })
     } catch (error) {
         return res.status(500).json({
             message: error.message
@@ -326,284 +336,3 @@ exports.deleteFoodItem = function (req, res, next) {
         })
     }
 }
-// var ObjectId = require("mongoose").Types.ObjectId;
-// console.log([ObjectId("63711a74e11197253c3dff7f"),ObjectId("63a01a8fa467e68022aca2ca"),ObjectId("63a01a8fa467e68022aca2cb"),ObjectId("63a01a8fa467e68022aca2cc"),ObjectId("63a01a8fa467e68022aca2cd")].at(3));
-
-// const a = async () => {
-//     // const data = [];
-//     // const categories = await categoryModel.find();
-//     // const subcategories = await subCategoryModel.find();
-//     // const categoryMap = {};
-//     // const subCategoryMap = {};
-//     // categories.forEach((category) => {
-//     //     categoryMap[category.name] = category;
-//     // })
-
-//     // subcategories.forEach((category) => {
-//     //     subCategoryMap[category.name] = category;
-//     // })
-
-//     // const subCategories = await subCategoryModel.find();
-
-//     // for (let i = 0; i < subCategories.length; i++) {
-//     //     const ele = subCategories[i];
-//     //     const category = categoryMap[ele._doc.parentCategory]
-//     //     data.push()
-//     // }
-
-//     // const allOrders = await orderModel.find();
-
-//     // for (let i = 0; i < allOrders.length; i++) {
-//     //     const order = allOrders[i];
-//     //     var arr = order._doc.orderedItems.map(item => {
-//     //         if(!item.subCategory){
-//     //             return undefined;
-//     //         }
-//     //         return {
-//     //             ...item,
-//     //             category:{
-//     //                 name:item.category,
-//     //                 id:categoryMap[item.category]._id,
-//     //                 subCategory:{
-//     //                     name:item.subCategory,
-//     //                     id:subCategoryMap[item.subCategory]._id
-//     //             },
-//     //             subCategory:null
-//     //         }
-//     //     }
-//     // }).filter((data) => {
-//     //     if(!data){
-//     //         return false;
-//     //     }
-//     //     return data;
-//     // })
-//     // data.push({
-//     //     ...order._doc,
-//     //     orderedItems:arr,
-//     //     _id:null
-//     // })
-//     // }
-
-
-//     // await subCategoryModel.insertMany(data);
-//     // await subCategoryModel.deleteMany({
-//     //     "parentCategory.id":null
-//     // })
-//     // const foods = await foodModel.find();
-//     //     for (let i = 0; i < foods.length; i++) {
-//     //         const foodItem = foods[i];
-//     //         if(foodItem._doc.category.subCategory && foodItem._doc.category.subCategory.name){
-//     //             continue;
-//     //         }
-//     //         // console.log(category,foodItem._doc.subCategory);f
-//     //         const category = categoryMap[foodItem.category];
-//     //         const subCategory = subCategoryMap[foodItem._doc.subCategory];
-//     //         if(!subCategory || !category){
-//     //             console.log(i,"blocked");
-//     //             continue;
-//     //         }
-//     //         foodItem.category = {
-//     //             id:category._id,
-//     //             name:category.name,
-//     //             subCategory:{
-//     //                 id:subCategory._id,
-//     //                 name:subCategory.name
-//     //             }
-//     //         }
-//     //         foodItem._doc.subCategory = null;
-//     //         foodItem._id = null;
-//     //         console.log(i,"allowed");
-//     //         data.push(foodItem);
-//     //         // await foodItem.save();
-//     //     }
-//     //     console.log(data);
-//         // await orderModel.deleteMany({
-//         //     "orderedItems":{
-//         //         $elemMatch:{
-//         //             "category.id":null
-//         //         }
-//         //     }
-//         // });
-//     //     await foodModel.deleteMany({
-//     //         "category.id":null
-//     //     });
-//         console.log("done");
-//     }
-// var execute = async function () {
-//     var outletDocs = [];
-//     const categories = await categoryModel.find();
-//     const subcategories = await subCategoryModel.find();
-//     const categoryMap = {};
-//     const subCategoryMap = {};
-//     categories.forEach((category) => {
-//         categoryMap[category.name] = category;
-//     })
-
-//     subcategories.forEach((category) => {
-//         subCategoryMap[category.name] = category;
-//     })
-
-//     // const subCategories = await subCategoryModel.find();
-
-//     // for (let i = 0; i < subCategories.length; i++) {
-//     //     const ele = subCategories[i];
-//     //     const category = categoryMap[ele._doc.parentCategory]
-//     //     data.push()
-//     // }
-//     for (let i = 0; i < 5000; i++) {
-//         console.log(i);
-//         var newFood = {
-//             createdAt: new Date(),
-//             orderedItems: [
-//                 {
-//                     foodItemId: new ObjectId("63ac079dc44f5af2198580d1"),
-//                     foodName: 'pizza 234',
-//                     foodPrice: 23,
-//                     quantity: 1,
-//                     category: {
-//                         id:categoryMap['fast food']._id,
-//                         name:categoryMap['fast food'].name,
-//                         subCategory:{
-//                             id:subCategoryMap['non veg']._id,
-//                             name:subCategoryMap['non veg'].name
-//                         }
-//                     },
-//                     taxes: [{
-//                         percentage:6,
-//                         tax:{
-//                             name:"GST",
-//                             percentageRange:{
-//                                 lowerBound:5,
-//                                 upperBound:18
-//                             }
-//                         }
-//                     }],
-//                 },
-//                 {
-//                     foodItemId: new ObjectId("63ac079dc44f5af2198580dc"),
-//                     foodName: 'noodles123467',
-//                     foodPrice: 12,
-//                     quantity: 2,
-//                     category: {
-//                         id:categoryMap['fast food']._id,
-//                         name:categoryMap['fast food'].name,
-//                         subCategory:{
-//                             id:subCategoryMap['veg']._id,
-//                             name:subCategoryMap['veg'].name
-//                         }
-//                     },
-//                     taxes: [{
-//                         percentage:6,
-//                         tax:{
-//                             name:"GST",
-//                             percentageRange:{
-//                                 lowerBound:5,
-//                                 upperBound:18
-//                             }
-//                         }
-//                     }]
-//                 },
-//                 {
-//                     foodItemId: new ObjectId("63ac079dc44f5af2198580da"),
-//                     foodName: 'noodles',
-//                     foodPrice: 12,
-//                     quantity: 2,
-//                     category: {
-//                         id:categoryMap['fast food']._id,
-//                         name:categoryMap['fast food'].name,
-//                         subCategory:{
-//                             id:subCategoryMap['veg']._id,
-//                             name:subCategoryMap['veg'].name
-//                         }
-//                     },
-//                     taxes: [{
-//                         percentage:6,
-//                         tax:{
-//                             name:"GST",
-//                             percentageRange:{
-//                                 lowerBound:5,
-//                                 upperBound:18
-//                             }
-//                         }
-//                     }],
-//                     _id: new ObjectId("639c081bab4e83b4bd2659f2")
-//                 },
-//                 {
-//                     foodItemId: new ObjectId("63ac079dc44f5af2198580ce"),
-//                     foodName: 'dish99',
-//                     foodPrice: 9,
-//                     quantity: 2,
-//                     category: {
-//                         id:categoryMap['italian']._id,
-//                         name:categoryMap['italian'].name,
-//                         subCategory:{
-//                             id:subCategoryMap['subitalian']._id,
-//                             name:subCategoryMap['subitalian'].name
-//                         }
-//                     },
-//                     taxes: [{
-//                         percentage:6,
-//                         tax:{
-//                             name:"GST",
-//                             percentageRange:{
-//                                 lowerBound:5,
-//                                 upperBound:18
-//                             }
-//                         }
-//                     }],
-//                     _id: new ObjectId("639c081bab4e83b4bd2659f3")
-//                 },
-//                 {
-//                     foodItemId: new ObjectId("63ac079dc44f5af2198580cd"),
-//                     foodName: 'dish12',
-//                     foodPrice: 15,
-//                     quantity: 1,
-//                     category: {
-//                         id:categoryMap['Indian']._id,
-//                         name:categoryMap['Indian'].name,
-//                         subCategory:{
-//                             id:subCategoryMap['South Indian']._id,
-//                             name:subCategoryMap['South Indian'].name
-//                         }
-//                     },
-//                     taxes: [
-//                         {
-//                             percentage:6,
-//                             tax:{
-//                                 name:"GST",
-//                                 percentageRange:{
-//                                     lowerBound:5,
-//                                     upperBound:18
-//                                 }
-//                             }
-//                         }
-//                     ],
-//                     _id: new ObjectId("639c081bab4e83b4bd2659f4")
-//                 }
-//             ],
-//             amountPaid: 104,
-//             outlet: { id: ObjectId("6371291b0f6d4932bc863cbe"), name: 'outlet2' },
-//             customer: {
-//                 customer: {
-//                     name: 'Bhanu Arora',
-//                     phoneNumber: '9213311703',
-//                     brandId: new ObjectId("63711a74e11197253c3dff7f"),
-//                     outletId: new ObjectId("6371291b0f6d4932bc863cbe"),
-//                     _id: new ObjectId("63907fa140c40653c9e4d559")
-//                 },
-//                 paidVia: 'Card'
-//             },
-//             brand: { id: ObjectId("63711a74e11197253c3dff7f"), name: 'brand1' },
-//             orderType: i > 2500 ? 'Dine In' : 'Take Away',
-//             assignedTable: i > 2500 ? `${((i % 10) + 1)}` : null,
-//             status:"Closed"
-//         };
-
-//         outletDocs.push(newFood);
-//     }
-//     console.log(outletDocs);
-//     await orderModel.insertMany(outletDocs);
-//     console.log("done");
-// }
-
-// execute();

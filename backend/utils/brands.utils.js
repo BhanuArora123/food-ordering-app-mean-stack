@@ -41,7 +41,7 @@ exports.sendOrderCreationEmail = function name(brandId, outletName) {
         brands.findOne({
             _id: brandId,
             isDisabled: {
-                $in: [false, null]
+                $ne:true
             }
         })
             .then(function (brandData) {

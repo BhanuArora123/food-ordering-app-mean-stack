@@ -10,6 +10,8 @@ require("dotenv").config("../.env");
 
 var bcrypt = require("bcryptjs");
 
+var async = require("async");
+
 var utils = require("../utils/utils");
 
 var addTaskToQueue = require("../utils/aws/sqs/utils").addTaskToQueue;
@@ -88,7 +90,7 @@ exports.registerUser = function (req, res, next) {
                     }
                 });
                 return res.status(201).json({
-                    message: "user registered successfully",
+                    message: "user registered successfully! Please Check Your inbox for creds",
                     userData: userData
                 })
             })
@@ -115,8 +117,8 @@ exports.loginUser = function (req, res, next) {
             email: email
         })
             .then(function (userData) {
-                if (!userData) {
-                    throwError("user doesn't exist", 404);
+                if (!userData || !utils.blockDisabledBrands(userData)) {
+                    throwError(userData ? "none of your brands is enabled" : "user doesn't exist", userData ? 403 : 404);
                 }
                 userDetails = userData;
                 return bcrypt.compare(password, userData.password);
@@ -208,7 +210,14 @@ exports.getUserData = function (req, res, next) {
                 if (!data) {
                     return users.findOne({
                         _id: userId
-                    })
+                    }, {
+                        name: 1,
+                        email: 1,
+                        role: 1,
+                        permissions: 1,
+                        outlets: 1,
+                        brands: 1
+                    });
                 }
                 req.isRedisResponse = true;
                 return JSON.parse(data);
@@ -247,8 +256,6 @@ exports.getAllAdmins = function (req, res, next) {
         var page = parseInt(req.query.page);
         var limit = parseInt(req.query.limit);
         var skip = (page - 1) * limit;
-        var totalAdmins;
-
         var userPermissions = req.user.permissions;
         var isUserAuthorized = utils.isUserAuthorized(role, userPermissions, {
             name: "admin"
@@ -260,17 +267,9 @@ exports.getAllAdmins = function (req, res, next) {
             });
         }
         var rolesToFetch = (role === "superAdmin") ? ["admin"] : ["superAdmin", "admin"];
-        users.countDocuments({
-            _id: {
-                $ne: userId
-            },
-            "role.name": {
-                $in: rolesToFetch
-            }
-        })
-            .then(function (availableAdmins) {
-                totalAdmins = availableAdmins;
-                return users.find({
+        async.parallel([
+            function (cb) {
+                return users.countDocuments({
                     _id: {
                         $ne: userId
                     },
@@ -278,23 +277,50 @@ exports.getAllAdmins = function (req, res, next) {
                         $in: rolesToFetch
                     }
                 })
+                    .then(function (availableAdmins) {
+                        cb(null, availableAdmins);
+                    })
+                    .catch(function (error) {
+                        cb(error);
+                    })
+            },
+            function (cb) {
+                return users.find({
+                    _id: {
+                        $ne: userId
+                    },
+                    "role.name": {
+                        $in: rolesToFetch
+                    }
+                }, {
+                    name: 1,
+                    email: 1,
+                    permissions: 1,
+                    role: 1,
+                    _id: 0
+                })
                     .skip(skip)
                     .limit(limit)
-            })
-
-            .then(function (admins) {
-                return res.status(200).json({
-                    message: "admins fetched successfully",
-                    admins: admins,
-                    totalAdmins: totalAdmins
-                });
-            })
-            .catch(function (error) {
+                    .then(function (admins) {
+                        cb(null,admins);
+                    })
+                    .catch(function (error) {
+                        cb(error);
+                    })
+            }
+        ],function (error,adminsData) {
+            if(error){
                 var statusCode = error.cause ? error.cause.statusCode : 500;
                 return res.status(statusCode).json({
                     message: error.message
                 })
-            })
+            }
+            return res.status(200).json({
+                message: "admins fetched successfully",
+                admins: adminsData[1],
+                totalAdmins: adminsData[0]
+            });
+        })
     } catch (error) {
         return res.status(500).json({
             message: error.message
@@ -333,6 +359,13 @@ exports.editUser = function (req, res, next) {
         // authorization 
         var editUserRole = req.user.role;
         var editUserPermissions = req.user.permissions;
+        var brandsToAllot = req.body.brandsToAllot;
+        var outletsToAllot = req.body.outletsToAllot;
+        var userId = req.body.userId;
+        var userEmail = req.body.userEmail;
+        var userName = req.body.userName;
+        var userRole = req.body.role;
+        var userPermissions = req.body.permissions;
 
         var isBrandAuthorized = utils.isUserAuthorized(editUserRole, editUserPermissions, {
             name: "brand"
@@ -346,14 +379,6 @@ exports.editUser = function (req, res, next) {
             name: "admin"
         }, "Manage Brands");
 
-        var brandsToAllot = req.body.brandsToAllot;
-        var outletsToAllot = req.body.outletsToAllot;
-        var userId = req.body.userId;
-        var userEmail = req.body.userEmail;
-        var userName = req.body.userName;
-        var userRole = req.body.role;
-        var userPermissions = req.body.permissions;
-
         if ((brandsToAllot && !isBrandAuthorized && !isAdminAuthorized) || (outletsToAllot && !isOutletAuthorized)) {
             return res.status(401).json({
                 message: "Access Denied!"
@@ -362,15 +387,17 @@ exports.editUser = function (req, res, next) {
 
         users.findOne({
             _id: userId
+        }, {
+            email: 1
         })
             .then(function (userData) {
-                if(!userData){
-                    throwError("user doesn't exists",404);
+                if (!userData) {
+                    throwError("user doesn't exists", 404);
                 }
-                if(brandsToAllot){
+                if (brandsToAllot) {
                     userData.brands = brandsToAllot;
                 }
-                if(outletsToAllot){
+                if (outletsToAllot) {
                     userData.outlets = outletsToAllot;
                 }
                 userData.email = userEmail;
@@ -380,21 +407,22 @@ exports.editUser = function (req, res, next) {
                 return userData.save();
             })
             .then(function (userData) {
-                if(userData.role.subRoles.includes("admin")){
+                redisUtils.deleteValue(userId);
+                if (userData.role.subRoles.includes("admin")) {
                     var entityToUpdate = brandsToAllot || outletsToAllot;
-                    var modelToUpdate = brandsToAllot?brands:outlets;
+                    var modelToUpdate = brandsToAllot ? brands : outlets;
                     var entityIds = entityToUpdate.map(function (entity) {
                         return ObjectId(entity.id);
                     })
                     return modelToUpdate.updateMany({
-                        _id:{
-                            $in:entityIds
+                        _id: {
+                            $in: entityIds
                         }
-                    },{
-                        $set:{
-                            admin:{
-                                name:userName,
-                                email:userEmail
+                    }, {
+                        $set: {
+                            admin: {
+                                name: userName,
+                                email: userEmail
                             }
                         }
                     })
@@ -417,47 +445,3 @@ exports.editUser = function (req, res, next) {
         })
     }
 }
-
-// exports.editPermissions = function (req, res, next) {
-//     try {
-//         var permissions = req.user.permissions;
-//         var role = req.user.role;
-//         var userId = req.body.userId;
-        
-
-//         // check if user has permissions
-//         var brandAuthorization = utils.isUserAuthorized(role, permissions, currentUserRole, "Manage Outlets");
-//         var adminAuthorization = utils.isUserAuthorized(role, permissions, currentUserRole, "Manage Brands");
-//         if (!brandAuthorization && !adminAuthorization) {
-//             return res.status(401).json({
-//                 message: "Access Denied!"
-//             })
-//         }
-
-//         users.updateOne({
-//             _id: userId
-//         }, {
-//             $set: {
-//                 permissions: permissions,
-//                 role: role
-//             }
-//         })
-//             .then(function (data) {
-//                 console.log(data);
-//                 redisUtils.deleteValue(userId);
-//                 return res.status(200).json({
-//                     message: "user permission updated successfully"
-//                 })
-//             })
-//             .catch(function (error) {
-//                 var statusCode = error.cause ? error.cause.statusCode : 500;
-//                 return res.status(statusCode).json({
-//                     message: error.message
-//                 })
-//             })
-//     } catch (error) {
-//         return res.status(500).json({
-//             message: error.message
-//         })
-//     }
-// }

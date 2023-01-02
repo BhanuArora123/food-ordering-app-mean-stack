@@ -28,6 +28,10 @@ var outletSchema = new schema({
         name:{
             type:String,
             required:true
+        },
+        isDisabled:{
+            type:Boolean,
+            default:false
         }
     },
     tables:[

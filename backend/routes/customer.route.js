@@ -15,6 +15,7 @@ router.post("/login",
     [
         body("phoneNumber").isNumeric().notEmpty()
     ],
+    validate,
     customerController.login
 );
 

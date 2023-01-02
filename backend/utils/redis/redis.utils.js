@@ -50,7 +50,7 @@ exports.getValue = function (key) {
 
 exports.deleteValue = function (key) {
     try {
-        redisConnection.DEL(key);
+        return redisConnection.DEL(key);
     } catch (error) {
         console.log(error);
     }

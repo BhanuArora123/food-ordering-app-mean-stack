@@ -45,6 +45,7 @@ exports.getAllCategories = function (req, res, next) {
     try {
         categoryModel
             .find()
+            .limit(9)
             .then(function (categories) {
                 return res.status(200).json({
                     message: "categories fetched successfully :)",
@@ -62,7 +63,6 @@ exports.getAllCategories = function (req, res, next) {
         })
     }
 }
-
 
 exports.createSubCategory = function (req, res, next) {
     try {
@@ -110,6 +110,9 @@ exports.getSubCategories = function (req, res, next) {
 
         subCategoryModel.find({
             "parentCategory.id": categoryId
+        },{
+            name:1,
+            _id:1
         })
             .then(function (subCategories) {
                 return res.status(200).json({
@@ -138,7 +141,7 @@ exports.getCategoriesForBrand = function (req, res, next) {
                 $match: {
                     "brand.id": ObjectId(brandId),
                     isDeleted: {
-                        $in: [null, false]
+                        $ne:true
                     }
                 }
             },
@@ -183,31 +186,3 @@ exports.getCategoriesForBrand = function (req, res, next) {
         })
     }
 } 
-
-// async function b() {
-//     var data = [];
-//     var subdata = [];
-//     for (let i = 0; i < 5; i++) {
-//         data.push({
-//             name:`category${i+1}`
-//         })
-//         for (let j = 0; j < 5; j++) {
-//             subdata.push({
-//                 name:`subCategory${(i*5) + j + 1}`,
-//                 parentCategory:`category${i+1}`
-//             })
-//         }
-//     }
-//     await categoryModel.insertMany(data);
-//     await subCategoryModel.insertMany(subdata);
-//     console.log("done");
-    // await categoryModel.deleteMany({
-    //     name:{
-    //         $regex:"category",
-    //         $options:"i"
-    //     }
-    // })
-    
-// }
-
-// b();

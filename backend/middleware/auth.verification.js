@@ -3,6 +3,7 @@ var passportJwt = require("passport-jwt");
 var users = require("../models/users.model");
 var customerModel = require("../models/customer.model").model;
 var redisUtils = require("../utils/redis/redis.utils");
+var utils = require("../utils/utils");
 
 var JwtStrategy = passportJwt.Strategy;
 
@@ -21,34 +22,36 @@ exports.applyJwtStrategy = function () {
         var isRedisResponse;
 
         // customer authentication
-        if(role === 'customer'){
+        if (role === 'customer') {
             return redisUtils
                 .getValue(userId)
                 .then(function (customerData) {
-                    if(!customerData){
+                    if (!customerData) {
                         return customerModel
-                        .findOne({
-                            _id:userId
-                        })
+                            .findOne({
+                                _id: userId
+                            })
                     }
                     isRedisResponse = true;
                     return JSON.parse(customerData);
                 })
                 .then(function (customerData) {
-                    if(customerData){
-                        if(!isRedisResponse){
-                            redisUtils.setValue(customerData._id, JSON.stringify(customerData._doc));
+                    if (customerData) {
+                        if (!isRedisResponse) {
+                            console.log("customerData", customerData);
+                            redisUtils.setValue(customerData._id.toString(), JSON.stringify(customerData._doc));
                         }
-                        return done(null,{
-                            phoneNumber:phoneNumber,
-                            userId:customerData._id
+                        return done(null, {
+                            phoneNumber: phoneNumber,
+                            userId: customerData._id,
+                            role:"customer"
                         })
                     }
-                    done(null,false);
+                    done(null, false);
                 })
                 .catch(function (error) {
                     console.log(error);
-                    done(error,false);
+                    done(error, false);
                 })
         }
 
@@ -64,7 +67,17 @@ exports.applyJwtStrategy = function () {
                 return JSON.parse(data);
             })
             .then(function (userData) {
-                if (userData) {
+                if (userData && utils.blockDisabledBrands(userData)) {
+                    if (!isRedisResponse) {
+                        redisUtils.setValue(userData._id, JSON.stringify(userData._doc));
+                    }
+                    console.log(userData);
+                    console.log("hey!",{
+                        email: email,
+                        userId: userData._id,
+                        role: userData.role,
+                        permissions: userData.permissions
+                    });
                     return done(null, {
                         email: email,
                         userId: userData._id,
@@ -72,41 +85,11 @@ exports.applyJwtStrategy = function () {
                         permissions: userData.permissions
                     });
                 }
-                if (!isRedisResponse) {
-                    redisUtils.setValue(userData._id, JSON.stringify(userData._doc));
-                }
                 done(null, false);
             })
             .catch(function (error) {
-                done(error, false);
+                done("user is unauthorised or brand is disabled", false);
             })
-
-        // redisUtils
-        //     .getValue(`customer-${phoneNumber}`)
-        //     .then(function (customerData) {
-        //         if (!customerData) {
-        //             return customerModel.findOne({
-        //                 phoneNumber: phoneNumber
-        //             })
-        //         }
-        //         isRedisResponse = true;
-        //         return JSON.parse(customerData);
-        //     })
-        //     .then(function (customerData) {
-        //         if (customerData) {
-        //             if(!isRedisResponse){
-        //                 redisUtils.setValue(`customer-${phoneNumber}`,JSON.stringify(customerData));
-        //             }
-        //             return done(null, {
-        //                 phoneNumber: phoneNumber,
-        //                 userId: customerData._id
-        //             })
-        //         }
-        //         done(null, false);
-        //     })
-        //     .catch(function (error) {
-        //         done(error, false);
-        //     })
     })
 }
 

@@ -189,3 +189,27 @@ exports.registerBrandOrOutlet = function (role, brand, outlet,adminName,adminEma
         console.log(error);
     }
 }
+
+exports.blockDisabledBrands = function (userData) {
+    try {
+        if(!userData){
+            return false;
+        }
+        // allowing login only if user has atleast one enabled brand or outlet or is admin
+        var enabledBrands , enabledOutlets;
+        if(userData && userData.brands){
+            enabledBrands = userData.brands.filter(function (brand) {
+                return !(brand.isDisabled);
+            })
+        }
+        else if(userData && userData.outlets){
+            enabledOutlets = userData.outlets.filter(function (outlet) {
+                return !(outlet.brand.isDisabled);
+            })
+        }
+        return (enabledBrands?.length || enabledOutlets?.length || userData.role.name === 'admin' || userData.role.name === 'superAdmin');
+    } catch (error) {
+        console.log(error);
+        return false;
+    }
+}

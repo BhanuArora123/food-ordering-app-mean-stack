@@ -1,6 +1,6 @@
 var outlets = require("../models/outlets.model");
 
-var foodModel = require("../models/food.model");
+var orders = require("../models/order.model");
 
 var throwError = require("../utils/errors");
 
@@ -8,7 +8,9 @@ var users = require("../models/users.model");
 
 var utils = require("../utils/utils");
 
-var redisUtils = require("../utils/redis/redis.utils");
+var async = require("async");
+
+var ObjectId = require("mongoose").Types.ObjectId;
 
 require("dotenv").config("./.env");
 
@@ -17,16 +19,6 @@ exports.getTables = function (req, res, next) {
 
         var role = req.user.role;
         var permissions = req.user.permissions;
-
-        var isUserAuthorized = utils.isUserAuthorized(role,permissions,{
-            name:"outlet"
-        },"Manage Tables");
-
-        if (!isUserAuthorized) {
-            return res.status(401).json({
-                message: "Access Denied!"
-            })
-        }
 
         var isAssigned = req.query.isAssigned;
         var page = req.query.page ? parseInt(req.query.page) : 1;
@@ -38,6 +30,15 @@ exports.getTables = function (req, res, next) {
 
         var outletId = req.query.outletId || req.user.userId;
 
+        var isUserAuthorized = utils.isUserAuthorized(role, permissions, {
+            name: "outlet"
+        }, "Manage Tables");
+
+        if (!isUserAuthorized) {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
         outlets
             .findOne({
                 _id: outletId
@@ -89,21 +90,20 @@ exports.addTable = function (req, res, next) {
     try {
         var role = req.user.role;
         var permissions = req.user.permissions;
+        var tableId = req.body.tableId;
+        var assignedOrderId = req.body.assignedOrderId;
+        var outletId = req.body.outletId || req.user.userId;
 
-        var isUserAuthorized = utils.isUserAuthorized(role,permissions,{
-            name:"outlet"
-        },"Manage Tables");
+
+        var isUserAuthorized = utils.isUserAuthorized(role, permissions, {
+            name: "outlet"
+        }, "Manage Tables");
 
         if (!isUserAuthorized) {
             return res.status(401).json({
                 message: "Access Denied!"
             })
         }
-
-        var tableId = req.body.tableId;
-        var assignedOrderId = req.body.assignedOrderId;
-
-        var outletId = req.body.outletId || req.user.userId;
 
         outlets.findOne({
             _id: outletId
@@ -145,9 +145,10 @@ exports.editOutlet = function (req, res, next) {
     try {
         var role = req.user.role;
         var permissions = req.user.permissions;
-        var brandId = req.user.userId;
+        var brandId = req.body.brandId;
         var outletId = req.body.outletId;
         var name = req.body.name;
+        var isDisabled = req.body.isDisabled;
 
         var isUserAuthorized = utils.isUserAuthorized(role, permissions, {
             name: "outlet"
@@ -157,47 +158,80 @@ exports.editOutlet = function (req, res, next) {
                 message: "Access Denied!"
             })
         }
-
-        var dataToUpdate = {};
-
-        if (name) {
-            dataToUpdate["name"] = name;
-        }
-
-        outlets.updateOne({
-            _id: outletId,
-            "brand.id": brandId
-        }, {
-            $set: dataToUpdate
-        })
-            .then(function (outletData) {
-                if (!outletData) {
-                    throwError("outlet doesn't exist", 404);
-                }
-                // reset redis cache 
-                redisUtils.deleteValue();
+        async.parallel([
+            function (cb) {
+                outlets.updateOne({
+                    _id: outletId,
+                    "brand.id": brandId
+                }, {
+                    $set: {
+                        name: name,
+                        isDeleted: (isDisabled ? true : false)
+                    }
+                }, function (error, outletData) {
+                    if (error) {
+                        cb(error);
+                    }
+                    if (!outletData) {
+                        return cb(new Error("outlet doesn't exist", {
+                            cause: {
+                                statusCode: 404
+                            }
+                        }));
+                    }
+                    return cb(null);
+                })
+            },
+            function (cb) {
+                return users.updateMany({
+                    outlets: {
+                        $elemMatch: {
+                            id: ObjectId(outletId)
+                        }
+                    }
+                }, {
+                    "outlets.$[outlet].isDeleted": (!isDisabled) ? false : true,
+                    "outlets.$[outlet].name": name
+                }, {
+                    arrayFilters: [
+                        {
+                            "outlet.id": ObjectId(outletId)
+                        }
+                    ]
+                }, function (err) {
+                    if (err) {
+                        return cb(err);
+                    }
+                    return cb(null);
+                })
+            },
+            function (cb) {
                 if (name) {
-                    return foodModel.updateMany({
+                    orders.updateMany({
                         "outlet.id": outletId
                     }, {
                         $set: {
-                            "outlet.name": outletData.name
+                            "outlet.name": name
                         }
+                    }, function (err) {
+                        if (err) {
+                            return cb(err);
+                        }
+                        return cb(null);
                     })
                 }
-            })
-            .then(function () {
-                return res.status(200).json({
-                    message: "outlet updated successfully"
-                })
-            })
-            .catch(function (error) {
+            }
+        ], function (error, results) {
+            if (error) {
                 var statusCode = error.cause ? error.cause.statusCode : 500;
                 return res.status(statusCode).json({
                     message: error.message
                 })
+            }
+            return res.status(200).json({
+                message: "outlet updated successfully"
             })
-
+        })
     } catch (error) {
         return res.status(500).json({
             message: error.message
@@ -205,61 +239,26 @@ exports.editOutlet = function (req, res, next) {
     }
 }
 
-exports.removeOutlet = function (req,res,next) {
-    try {
-        var role = req.user.role;
-        var permissions = req.user.permissions;
-        var outletId = req.query.outletId;
-        var brandId = req.query.brandId;
-
-        var isUserAuthorized = utils.isUserAuthorized(role, permissions, {
-            name: "outlet"
-        }, "Manage Outlets");
-        if (!isUserAuthorized) {
-            return res.status(401).json({
-                message: "Access Denied!"
-            })
-        }
-
-        outlets.updateOne({
-            _id:outletId,
-            "brand.id":brandId
-        },{
-            $set:{
-                isDeleted:true
-            }
-        })
-        .then(function () {
-            return res.status(200).json({
-                message:"outlet deleted successfully"
-            })
-        })
-
-    } catch (error) {
-        
-    }
-}
-
 exports.getAllOutlets = function (req, res, next) {
     try {
         var role = req.user.role;
         var permissions = req.user.permissions;
-
-        var isUserAuthorized = utils.isUserAuthorized(role,permissions,{
-            name:"brand"
-        },"Manage Outlets");
-
-        if (!isUserAuthorized) {
-            return res.status(401).json({
-                message: "Access Denied!"
-            })
-        }
         var brandId = req.query.brandId || req.user.userId;
         var search = req.query.search;
         var page = parseInt(req.query.page);
         var limit = parseInt(req.query.limit);
         var skip = (page - 1) * limit;
         var totalOutlets;
+
+        var isUserAuthorized = utils.isUserAuthorized(role, permissions, {
+            name: "brand"
+        }, "Manage Outlets");
+
+        if (!isUserAuthorized) {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
         var matchQuery = {
             "brand.id": brandId
         };
@@ -277,28 +276,46 @@ exports.getAllOutlets = function (req, res, next) {
             })
         }
 
-        outlets
-            .countDocuments(matchQuery)
-            .then(function (availableOutlets) {
-                totalOutlets = availableOutlets;
-                return outlets
-                    .find(matchQuery)
+        async.parallel([
+            function (cb) {
+                return outlets.countDocuments(matchQuery)
+                    .then(function (availableOutlets) {
+                        cb(null, availableOutlets)
+                    })
+                    .catch(function (error) {
+                        cb(error);
+                    })
+            },
+            function (cb) {
+                return outlets.find(matchQuery, {
+                    admin: 1,
+                    name: 1,
+                    brand: 1,
+                    isDeleted: 1
+                })
                     .skip(skip)
                     .limit(limit)
-            })
-            .then(function (outlets) {
-                return res.status(200).json({
-                    message: "outlets fetched successfully",
-                    outlets: outlets,
-                    totalOutlets: totalOutlets
-                })
-            })
-            .catch(function (error) {
+                    .then(function (outlets) {
+                        cb(null, outlets)
+                    })
+                    .catch(function (error) {
+                        cb(error);
+                    })
+            }
+        ], function (error, outletsData) {
+            if (error) {
+                console.log(error);
                 var statusCode = error.cause ? error.cause.statusCode : 500;
                 return res.status(statusCode).json({
                     message: error.message
                 })
+            }
+            return res.status(200).json({
+                message: "outlets fetched successfully",
+                outlets: outletsData[1],
+                totalOutlets: outletsData[0]
             })
+        })
     } catch (error) {
         console.log(error);
         return res.status(500).json({
@@ -311,17 +328,6 @@ exports.getOutletUsers = function (req, res, next) {
     try {
         var role = req.user.role;
         var permissions = req.user.permissions;
-
-        var isUserAuthorized = utils.isUserAuthorized(role,permissions,{
-            name:"outlet"
-        },"Manage Outlets");
-
-        if (!isUserAuthorized) {
-            return res.status(401).json({
-                message: "Access Denied!"
-            })
-        }
-
         var outletId = req.query.outletId;
         var brandId = req.query.brandId;
         var userId = req.user.userId;
@@ -329,58 +335,87 @@ exports.getOutletUsers = function (req, res, next) {
         var page = parseInt(req.query.page || 1);
         var limit = parseInt(req.query.limit || 9);
         var skip = (page - 1) * limit;
-        var outletUsersCount;
+        var isUserAuthorized = utils.isUserAuthorized(role, permissions, {
+            name: "outlet"
+        }, "Manage Outlets");
 
+        if (!isUserAuthorized) {
+            return res.status(401).json({
+                message: "Access Denied!"
+            })
+        }
         var query = {
-            "role.name": "outlet",
             _id: {
                 $ne: userId
             },
-            outlets:{
-                $elemMatch:{
-                    "brand.id":brandId
+            "role.name": "outlet",
+            outlets: {
+                $elemMatch: {
+                    "brand.id": brandId
                 }
             }
         };
 
-        if(outletId){
+        if (outletId) {
             query["outlets"] = {
-                $elemMatch:{
-                    id:outletId,
-                    "brand.id":brandId
+                $elemMatch: {
+                    id: outletId,
+                    "brand.id": brandId
                 }
             }
         }
 
-        if(userSubRole){
+        if (userSubRole) {
             query["role.subRoles"] = {
-                $elemMatch:{
-                    $eq:userSubRole
+                $elemMatch: {
+                    $eq: userSubRole
                 }
             }
         }
-        users
-            .countDocuments(query)
-            .then(function (totalOutletUsers) {
-                outletUsersCount = totalOutletUsers;
+        async.parallel([
+            function (cb) {
                 return users
-                    .find(query)
+                    .countDocuments(query)
+                    .then(function (totalOutletUsers) {
+                        cb(null, totalOutletUsers);
+                    })
+                    .catch(function (error) {
+                        cb(error);
+                    })
+            },
+            function (cb) {
+                return users
+                    .find(query, {
+                        brands: 1,
+                        email: 1,
+                        name: 1,
+                        outlets: 1,
+                        permissions: 1,
+                        role: 1
+                    })
                     .skip(skip)
                     .limit(limit)
-            })
-            .then(function (outletUsers) {
-                return res.status(200).json({
-                    message: "outlets users fetched successfully",
-                    outletUsers: outletUsers,
-                    outletUsersCount: outletUsersCount
-                })
-            })
-            .catch(function (error) {
+                    .then(function (outletUsers) {
+                        cb(null, outletUsers);
+                    })
+                    .catch(function (error) {
+                        cb(error);
+                    })
+            }
+        ], function (error, outletUsersData) {
+            if (error) {
+                console.log(error);
                 var statusCode = error.cause ? error.cause.statusCode : 500;
                 return res.status(statusCode).json({
                     message: error.message
                 })
+            }
+            return res.status(200).json({
+                message: "outlets users fetched successfully",
+                outletUsers: outletUsersData[1],
+                outletUsersCount: outletUsersData[0]
             })
+        })
     } catch (error) {
         return res.status(500).json({
             message: error.message

@@ -82,6 +82,7 @@ router.put("/edit",
         body("outletsToAllot.*.brand.id").optional().isString(),
         body("outletsToAllot.*.brand.name").optional().isString()
     ],
+    validate,
     usersController.editUser
 )
 module.exports = router;

@@ -22,6 +22,10 @@ var outletSchema = schema({
             type: String,
             required: true
         }
+    },
+    isDeleted:{
+        type:Boolean,
+        default:false
     }
 })
 
@@ -33,6 +37,10 @@ var brandSchema = schema({
     name: {
         type: String,
         required: true
+    },
+    isDisabled:{
+        type:Boolean,
+        default:false
     }
 });
 

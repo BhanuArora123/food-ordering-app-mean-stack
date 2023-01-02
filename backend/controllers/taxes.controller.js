@@ -5,13 +5,13 @@ var throwError = require("../utils/errors");
 exports.addTax = function (req, res, next) {
     try {
         var role = req.user.role;
+        var taxName = req.body.taxName;
+        var taxPercentageRange = req.body.percentageRange;
         if (role.name !== "brand") {
             return res.status(401).json({
                 message: "Access Denied!"
             })
         }
-        var taxName = req.body.taxName;
-        var taxPercentageRange = req.body.percentageRange;
         console.log(req.body);
 
         taxesModel.findOne({
