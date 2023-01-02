@@ -40,6 +40,7 @@ appModule.service("customerService", function ($http,blockUI) {
             phoneNumber:phoneNumber
         })
         .then(function (res) {
+            localStorage.setItem("role","customer");
             return res.data;
         })
         .catch(function (error) {

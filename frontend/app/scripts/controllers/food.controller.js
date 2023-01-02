@@ -1,14 +1,15 @@
 
 
-appModule.controller("foodController", function ($scope,$state, foodService, outletService, allCategories, utility, blockUI, availableTaxes, permission, availableCategories, userService) {
+appModule.controller("foodController", function ($scope, $rootScope,$state, foodService, outletService, allCategories, utility, blockUI, availableTaxes, permission, availableCategories, userService) {
 
     $scope.foodItemsToDisplay = [];
     $scope.availableCategories = availableCategories;
     $scope.categories = allCategories;
+    $scope.permissionAuthorizations = permission.getPermissionAuthorizations();
 
     // getting user cart 
     var userData = userService.userData();
-    var outletData = userData.outlets?userData.outlets[0]:undefined;
+    var outletData = userData.outlets?userData.outlets[$rootScope.currentOutletIndex]:undefined;
     $scope.userCart = outletService.getCart();
 
     // display active category
@@ -39,10 +40,11 @@ appModule.controller("foodController", function ($scope,$state, foodService, out
         var userData = userService.userData();
         if (userData.brands) {
             food.brand = {
-                id: userData.brands[0]._id,
-                name: userData.brands[0].name
+                id: userData.brands[$rootScope.currentBrandIndex].id,
+                name: userData.brands[$rootScope.currentBrandIndex].name
             }
         }
+        food.category = $scope.categorySelected;
         foodService
             .addFoodItem(food)
             .then(function (response) {
@@ -55,7 +57,7 @@ appModule.controller("foodController", function ($scope,$state, foodService, out
         console.log(category,subCategory,index,type);
         $scope.setActiveClass(index,type);
         if(type === 'category'){
-            $scope.foodPagination = Array(availableCategories[index].length).fill(1);
+            $scope.foodPagination = Array(availableCategories[index]?availableCategories[index].length:0).fill(1);
         }
         return foodService
             .getFoodItems({
@@ -107,7 +109,6 @@ appModule.controller("foodController", function ($scope,$state, foodService, out
                 foodPrice: foodPrice,
                 outletName: outletData.name,
                 category: category,
-                subCategory: subCategory,
                 taxes: taxes
             });
     }
@@ -140,7 +141,8 @@ appModule.controller("foodController", function ($scope,$state, foodService, out
         blockUI.start({
             message: "Fetching Sub Categories...."
         });
-        return foodService.getSubCategories(category)
+        $scope.selectedCategory = category;
+        return foodService.getSubCategories(category._id)
             .then(function (subCategories) {
                 blockUI.stop();
                 $scope.subCategories = subCategories;
@@ -148,6 +150,17 @@ appModule.controller("foodController", function ($scope,$state, foodService, out
             .catch(function (error) {
                 console.log(error);
             })
+    }
+
+    $scope.onSubcategorySelect = function (subcategory) {
+        $scope.categorySelected = {
+            name:$scope.selectedCategory.name,
+            id:$scope.selectedCategory._id,
+            subCategory:{
+                id:subcategory._id,
+                name:subcategory.name
+            }
+        }
     }
 
     $scope.createSubCategory = function (subCategory, category) {

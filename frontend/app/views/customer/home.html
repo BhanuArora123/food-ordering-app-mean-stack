@@ -1,4 +1,4 @@
-<section ng-init="getCustomerOrders()">
+<section ng-init="getCustomerOrders(1,9)">
     <!-- customer details  -->
     <div class="w-100 d-flex justify-content-around align-items-sm-center flex-column">
         <div class="w-100 d-flex justify-content-around align-items-start flex-column m-5">
@@ -35,4 +35,5 @@
             <td>No Orders created yet</td>
         </tr>
     </table>
+    <ul ng-show="totalOrders" class="w-100" items-per-page="9" uib-pagination max-size="5" items-per-page="9" total-items="totalOrders" ng-model="currentPage" ng-change="getCustomerOrders(currentPage,9)"></ul>
 </section>

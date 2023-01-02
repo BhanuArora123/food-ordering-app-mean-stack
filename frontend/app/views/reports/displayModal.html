@@ -42,7 +42,7 @@
     <div ng-show="selectedReport.id === 1" class="w-100 d-flex justify-content-around align-items-center flex-column">
         <form class="w-100 justify-content-around flex-column" name="report1">
             <div class="w-100 mb-3">
-                <oi-select oi-options="food.name for food in getFoodItems($query,reportData.selectedBrands._id)" ng-model="reportData.selectedFoodItems"
+                <oi-select oi-options="food.name for food in getFoodItems($query,reportData.selectedBrand._id)" ng-model="reportData.selectedFoodItems"
                     multiple placeholder="Select Food" class="no-oi-style" ng-disabled="!reportData.selectedBrand"
                     ng-change="updateFoodList(reportData.selectedFoodItems)" ng-required="true" name="food">
                 </oi-select>

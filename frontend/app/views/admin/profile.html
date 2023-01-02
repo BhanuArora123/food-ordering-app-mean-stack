@@ -6,129 +6,200 @@
             <span class="ml-3 mb-3">Email : {{adminData.email}}</span>
 
             <form class="m-3" name="brandEdit" novalidate>
-                <div ng-show="isEditClicked" class="m-3">
+                <div ng-if="isEditClicked" class="m-3">
                     <label>Current Password</label>
                     <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="password"
                         name="currentPassword" ng-required="true" ng-model="adminData.currentPassword"
                         ng-required="true">
                 </div>
-                <div ng-show="isEditClicked" class="m-3">
+                <div ng-if="isEditClicked" class="m-3">
                     <label>New Password</label>
                     <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="password"
                         name="newPassword" ng-required="true" ng-model="adminData.newPassword" ng-required="true">
                 </div>
                 <!-- edit Profile -->
                 <div class="mb-3">
-                    <button ng-hide="isEditClicked" class="btn btn-light text-dark mb-3" ng-click="allowEdit()">
+                    <button ng-if="!isEditClicked" class="btn btn-light text-dark mb-3" ng-click="allowEdit()">
                         Edit Password
                     </button>
-                    <button ng-show="isEditClicked" class="btn btn-light text-dark mb-3" ng-click="disableEdit()">
+                    <button ng-if="isEditClicked" class="btn btn-light text-dark mb-3" ng-click="disableEdit()">
                         Cancel
                     </button>
                     <button ng-disabled="{{brandEdit.currentPassword.$invalid || brandEdit.newPassword.$invalid}}"
-                        ng-show="isEditClicked"
+                        ng-if="isEditClicked"
                         class="btn btn-light text-dark mb-3 {{(brandEdit.currentPassword.$invalid || brandEdit.newPassword.$invalid)?'btn-disabled':''}}"
                         ng-click="updatePassword(adminData.currentPassword,adminData.newPassword)">
                         Update Password
                     </button>
                 </div>
             </form>
-
-            <!-- add brand -->
-            <div class="w-100 d-flex justify-content-end">
-                <button ui-sref="home.add({role:'brand'})" ng-hide="isEditClicked"
-                    class="d-flex justify-content-center btn btn-light text-dark m-3">
-                    Add Brand
-                </button>
-            </div>
         </div>
         <!-- tables - brand management -->
-        <div ng-show="isAuthorized(adminData.permissions,2,adminData.role.name)" class="w-100 d-flex justify-content-around flex-column">
-            <h3 class="m-3">Brand Admins</h3>
+        <!-- isAuthorized(adminData.permissions,2,adminData.role.name) -->
+        <div ng-if="permissionAuthorizations.manageBrands" class="w-100 d-flex justify-content-around flex-column mb-5">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="m-3 w-50">Brands</h3>
+                <!-- add table  -->
+                <div class="w-100 d-flex justify-content-end">
+                    <a ui-sref="home.add({role:'brand'})" class="d-flex justify-content-center btn btn-light text-dark m-3">
+                        Add Brand
+                    </a>
+                </div>
+            </div>
             <table ng-table="allBrandsData" class="table table-striped">
 
-                <tr ng-show="allBrands.length" ng-repeat="brand in allBrands">
+                <tr ng-if="allBrands.length" ng-repeat="brand in allBrands">
     
                     <td class="text-center" data-title="'Brand Name'">
-                        <div ng-hide="$index === editElementIndex">
-                            {{brand.brandData.name}}
+                        <div ng-if="$index !== brand.editElementIndex">
+                            {{brand.name}}
                         </div>
                         <!-- editing brand name  -->
-                        <input ng-show="$index === editElementIndex"
+                        <input ng-if="$index === brand.editElementIndex"
                             class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="text"
                             ng-model="brand.name" ng-required="true">
                     </td>
     
-                    <td class="text-center" data-title="'Email'">
-                        <div ng-hide="$index === editElementIndex">
-                            {{brand.email}}
+                    <td class="text-center" data-title="'Admin Email'">
+                        <div>
+                            {{brand.admin.email}}
                         </div>
-                        <!-- editing brand name  -->
-                        <input ng-show="$index === editElementIndex"
-                            class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="email"
-                            ng-model="brand.email" ng-required="true">
                     </td>
 
-                    <td class="dark-theme" data-title="'Roles'">
+                    <td class="dark-theme text-center" data-title="'Disabled'">
                         <div>
-                            {{brand.role.subRoles.toString()}}
+                            {{brand.isDisabled === true}}
                         </div>
-                    </td>
-    
-                    <td class="dark-theme" data-title="'Permissions'">
-                        <oi-select
-                            placeholder="Select Permission"
-                            oi-options="permission.permissionName for permission in getPermissions('Brand') track by permission.permissionId"
-                            ng-model="brand.permissions" ng-change="updatePermissions(brand._id,brand.permissions,'brand')" multiple ng-required="true">
-    
-                        </oi-select>
                     </td>
     
                     <td class="text-center" data-title="'Actions'">
-                        <button ng-hide="$index === editElementIndex" class="btn btn-primary mb-3"
-                            ng-click="makeEditable($index)">Edit</button>
-                        <button ng-show="$index === editElementIndex" class="btn btn-primary mb-3"
-                            ng-click="disableEditing()">Cancel</button>
-                        <button ng-show="$index === editElementIndex" class="btn btn-primary mb-3"
-                            ng-click="updateBrand(brand)">Update</button>
-                        <button ng-show="!brand.isDisabled" class="btn btn-primary mb-3"
+                        <button ng-if="$index !== brand.editElementIndex" class="btn btn-primary mb-3"
+                            ng-click="brand.editElementIndex = $index">Edit</button>
+                        <button ng-if="$index === brand.editElementIndex" class="btn btn-primary mb-3"
+                            ng-click="brand.editElementIndex = -1">Cancel</button>
+                        <button ng-if="$index === brand.editElementIndex" class="btn btn-primary mb-3"
+                            ng-click="updateBrand(brand);brand.editElementIndex = -1">Update</button>
+                        <button ng-if="!brand.isDisabled" class="btn btn-primary mb-3"
                             ng-click="toggleBrandAccess(brand)">Disable</button>
-                        <button ng-show="brand.isDisabled" class="btn btn-primary mb-3"
+                        <button ng-if="brand.isDisabled" class="btn btn-primary mb-3"
                             ng-click="toggleBrandAccess(brand)">Enable</button>
                     </td>
     
                 </tr>
     
-                <tr ng-hide="allBrands.length">
+                <tr ng-if="!allBrands.length">
                     <td>No Brands added yet</td>
                 </tr>
             </table>
-            <ul ng-show="totalBrands" class="w-100" uib-pagination max-size="5" items-per-page="9" total-items="totalBrands" ng-model="brands.currentPage" ng-change="getBrands(brands.currentPage)"></ul>
+            <ul ng-if="totalBrands" class="w-100" uib-pagination max-size="5" items-per-page="9" total-items="totalBrands" ng-model="brands.currentPage" ng-change="getBrands(brands.currentPage)"></ul>
+        </div>
+        <div ng-if="permissionAuthorizations.manageBrands" class="w-100 d-flex justify-content-around flex-column mt-5 mb-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="m-3 w-50">Brand Admins</h3>
+                <div class="dark-theme w-25">
+                    <oi-select class="w-100" placeholder="Search by Brand Name"
+                        oi-options="brand.name for brand in getBrands(1,$query)" ng-model="selectedBrand"
+                        ng-change="getBrandAdmins(brandAdmins.currentPage,selectedBrand._id)" ng-required="true">
+                    </oi-select>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <a ui-sref="home.addUser({role:'brand',subRole:'admin'})" class="d-flex justify-content-center btn btn-light text-dark m-3">
+                        Add Brand Admin
+                    </a>
+                </div>
+            </div>
+            <table ng-table="allBrandAdmins" class="table table-striped">
+
+                <tr ng-if="allBrandAdmins.length" ng-repeat="brandAdmin in allBrandAdmins">
+    
+                    <td class="text-center" data-title="'Admin Name'">
+                        <div ng-if="$index !== brandAdmin.editElementIndex">
+                            {{brandAdmin.name}}
+                        </div>
+                        <!-- editing brand name  -->
+                        <input ng-if="$index === brandAdmin.editElementIndex"
+                            class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="text"
+                            ng-model="brandAdmin.name" ng-required="true">
+                    </td>
+    
+                    <td class="text-center" data-title="'Admin Email'">
+                        <div ng-hide="$index === brandAdmin.editElementIndex">
+                            {{brandAdmin.email}}
+                        </div>
+                        <!-- editing brand name  -->
+                        <input ng-if="$index === brandAdmin.editElementIndex"
+                            class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="email"
+                            ng-model="brandAdmin.email" ng-required="true">
+                    </td>
+
+                    <td class="dark-theme" data-title="'Admin Brands'">
+                        <oi-select
+                            placeholder="Select Brands To Allot"
+                            oi-options="brand.name for brand in getBrands(1,$query)"
+                            ng-model="brandAdmin.brands" ng-change="updateAllotedBrands(brandAdmin)" multiple ng-required="true">
+    
+                        </oi-select>
+                    </td>
+
+                    <td class="dark-theme" data-title="'Admin Permissions'">
+                        <oi-select
+                            placeholder="Select Permission"
+                            oi-options="permission.permissionName for permission in getPermissions('brand',['admin'])"
+                            ng-model="brandAdmin.permissions" ng-change="updateUser(brandAdmin)" multiple ng-required="true">
+    
+                        </oi-select>
+                    </td>
+    
+                    <td class="text-center" data-title="'Actions'">
+                        <button ng-hide="$index === brandAdmin.editElementIndex" class="btn btn-primary mb-3"
+                            ng-click="brandAdmin.editElementIndex = $index">Edit</button>
+                        <button ng-if="$index === brandAdmin.editElementIndex" class="btn btn-primary mb-3"
+                            ng-click="brandAdmin.editElementIndex = -1">Cancel</button>
+                        <button ng-if="$index === brandAdmin.editElementIndex" class="btn btn-primary mb-3"
+                            ng-click="updateUser(brandAdmin)">Update</button>
+                    </td>
+    
+                </tr>
+    
+                <tr ng-hide="allBrandAdmins.length">
+                    <td>No Brand Admins added yet</td>
+                </tr>
+            </table>
+            <ul ng-if="totalBrandAdmins" class="w-100" uib-pagination max-size="5" items-per-page="9" total-items="totalBrandAdmins" ng-model="brandAdmins.currentPage" ng-change="getBrandAdmins(brandAdmins.currentPage)"></ul>
         </div>
         <!-- <input type="text" placeholder="{{dataName}}" ng-model="adminData.dataName"> -->
         <!-- tables - all admins -->
-        <div ng-show="isAuthorized(adminData.permissions,1,adminData.role.name)" class="w-100 d-flex justify-content-around flex-column">
-            <h3 class="m-3">Admins</h3>
+        <!-- isAuthorized(adminData.permissions,1,adminData.role.name) -->
+        <div ng-if="permissionAuthorizations.manageAdmins" class="w-100 d-flex justify-content-around flex-column mt-5 mb-5">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="m-3">Admins</h3>
+                <!-- add table  -->
+                <div class="w-100 d-flex justify-content-end">
+                    <a ui-sref="home.add({role:'admin'})" class="d-flex justify-content-center btn btn-light text-dark m-3">
+                        Add Admin
+                    </a>
+                </div>
+            </div>
             <table ng-table="allAdmins" class="table table-striped" ng-init="admins = getAllAdmins();">
 
-                <tr ng-show="allAdmins.length" ng-repeat="admin in allAdmins">
+                <tr ng-if="allAdmins.length" ng-repeat="admin in allAdmins">
     
                     <td class="text-center" data-title="'Admin Name'">
-                        <div ng-hide="$index === editElementIndex">
+                        <div ng-hide="$index === admin.editElementIndex">
                             {{admin.name}}
                         </div>
                         <!-- editing brand name  -->
-                        <input ng-show="$index === editElementIndex"
+                        <input ng-if="$index === admin.editElementIndex"
                             class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="text"
                             ng-model="admin.name" ng-required="true">
                     </td>
     
                     <td class="text-center" data-title="'Email'">
-                        <div ng-hide="$index === editElementIndex">
+                        <div ng-hide="$index === admin.editElementIndex">
                             {{admin.email}}
                         </div>
                         <!-- editing brand name  -->
-                        <input ng-show="$index === editElementIndex"
+                        <input ng-if="$index === admin.editElementIndex"
                             class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="email"
                             ng-model="admin.email" ng-required="true">
                     </td>
@@ -136,19 +207,19 @@
                     <td class="dark-theme" data-title="'Permissions'">
                         <oi-select
                             placeholder="Select Permission"
-                            oi-options="permission.permissionName for permission in getPermissions('Admin') track by permission.permissionId"
-                            ng-model="admin.permissions" ng-change="updatePermissions(admin._id,admin.permissions)" multiple ng-required="true">
+                            oi-options="permission.permissionName for permission in getPermissions('admin',['admin']) track by permission.permissionId"
+                            ng-model="admin.permissions" ng-change="updateUser(admin)" multiple ng-required="true">
     
                         </oi-select>
                     </td>
     
                     <td class="text-center h-100" data-title="'Actions'">
-                        <button ng-hide="$index === editElementIndex" class="btn btn-primary mb-3"
-                            ng-click="makeEditable($index)">Edit</button>
-                        <button ng-show="$index === editElementIndex" class="btn btn-primary mb-3"
-                            ng-click="disableEditing()">Cancel</button>
-                        <button ng-show="$index === editElementIndex" class="btn btn-primary mb-3"
-                            ng-click="updateBrand(brand)">Update</button>
+                        <button ng-hide="$index === admin.editElementIndex" class="btn btn-primary mb-3"
+                            ng-click="admin.editElementIndex = $index">Edit</button>
+                        <button ng-if="$index === admin.editElementIndex" class="btn btn-primary mb-3"
+                            ng-click="admin.editElementIndex = -1">Cancel</button>
+                        <button ng-if="$index === admin.editElementIndex" class="btn btn-primary mb-3"
+                            ng-click="updateUser(admin)">Update</button>
                     </td>
     
                 </tr>
@@ -157,7 +228,7 @@
                     <td>No other Admin(s) added yet</td>
                 </tr>
             </table>
-            <ul ng-show="totalAdmins" class="w-100" uib-pagination max-size="5" items-per-page="9" total-items="totalAdmins" ng-model="admins.currentPage" ng-change="getAllAdmins(admins.currentPage)"></ul>
+            <ul ng-if="totalAdmins" class="w-100" uib-pagination max-size="5" items-per-page="9" total-items="totalAdmins" ng-model="admins.currentPage" ng-change="getAllAdmins(admins.currentPage)"></ul>
         </div>
     </div>
 

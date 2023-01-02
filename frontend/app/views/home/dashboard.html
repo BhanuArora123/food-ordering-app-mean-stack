@@ -1,4 +1,4 @@
-<section ng-show="userRole"
+<section ng-show="permissionAuthorizations.userRole"
     class="w-100 h-550p position-relative d-flex justify-content-center align-items-center flex-column">
     <img src="images/food.webp" alt="pizza"
         class="z-index-settle-down opacity-low w-100 h-100 position-absolute top-0 start-0">
@@ -23,7 +23,7 @@
             Now</button>
     </div>
 </section> -->
-<!-- <section ng-show="userRole === 'outlet'" class="h-550p d-flex justify-content-around flex-column align-items-center"
+<!-- <section ng-show="permissionAuthorizations.userRole === 'outlet'" class="h-550p d-flex justify-content-around flex-column align-items-center"
     ng-init="onload()">
     <div class="d-flex justify-content-around align-items-center h-25 w-50">
         <div class="h3 fw-bold {{ getActiveClass(0) }}" ng-click="getFoodItems('burger',0)">Burgers</div>

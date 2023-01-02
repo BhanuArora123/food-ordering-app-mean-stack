@@ -2,19 +2,22 @@
     <!-- outlet details  -->
     <div class="w-100 d-flex justify-content-around align-items-sm-center flex-column">
         <div class="w-100 d-flex justify-content-around align-items-start flex-column m-5">
-            <span class="ml-3 mb-3">Name : {{outletData.name}}</span>
-            <span class="ml-3 mb-3">Email : {{outletData.email}}</span>
-            <span class="ml-3 mb-3">Brand : {{outletData.outlets[0].brand.name}}</span>
-            <span class="ml-3 mb-3">Outlet : {{outletData.outlets[0].name}}</span>
+            <span class="ml-3 mb-3">Name : {{userData.name}}</span>
+            <span class="ml-3 mb-3">Email : {{userData.email}}</span>
+            <span class="ml-3 mb-3">Brand : {{userData.outlets[$root.currentOutletIndex].brand.name}}</span>
+            <span class="ml-3 mb-3">Outlet : {{userData.outlets[$root.currentOutletIndex].name}}</span>
 
             <form class="m-3" name="outletEdit" novalidate>
                 <div ng-show="isEditClicked" class="m-3">
                     <label>Current Password</label>
-                    <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="password" name="currentPassword" ng-required="true" ng-model="outletData.currentPassword" ng-required="true">
+                    <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="password"
+                        name="currentPassword" ng-required="true" ng-model="userData.currentPassword"
+                        ng-required="true">
                 </div>
                 <div ng-show="isEditClicked" class="m-3">
                     <label>New Password</label>
-                    <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="password" name="newPassword" ng-required="true" ng-model="outletData.newPassword" ng-required="true">
+                    <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="password"
+                        name="newPassword" ng-required="true" ng-model="userData.newPassword" ng-required="true">
                 </div>
                 <!-- edit Profile -->
                 <div class="mb-3">
@@ -24,84 +27,152 @@
                     <button ng-show="isEditClicked" class="btn btn-light text-dark mb-3" ng-click="disableEdit()">
                         Cancel
                     </button>
-                    <button ng-disabled="{{outletEdit.currentPassword.$invalid || outletEdit.newPassword.$invalid}}" ng-show="isEditClicked" class="btn btn-light text-dark mb-3 {{(outletEdit.currentPassword.$invalid || outletEdit.newPassword.$invalid)?'btn-disabled':''}}" ng-click="updatePassword(outletData.currentPassword,outletData.newPassword)">
+                    <button ng-disabled="{{outletEdit.currentPassword.$invalid || outletEdit.newPassword.$invalid}}"
+                        ng-show="isEditClicked"
+                        class="btn btn-light text-dark mb-3 {{(outletEdit.currentPassword.$invalid || outletEdit.newPassword.$invalid)?'btn-disabled':''}}"
+                        ng-click="updatePassword(userData.currentPassword,userData.newPassword)">
                         Update Password
                     </button>
                 </div>
             </form>
-
-            <!-- add table  -->
-            <div class="w-100 d-flex justify-content-end">
-                <button ng-hide="isEditClicked" class="d-flex justify-content-center btn btn-light text-dark m-3" ng-click="addTableModal(tables.currentPage)">
-                    Add Table
-                </button>
-            </div>
         </div>
 
-        <div class="w-100 d-flex justify-content-around flex-column">
-            <h3>Outlet Users</h3>
+        <div class="w-100 d-flex justify-content-around flex-column mb-5">
+            <h3>Your Outlets</h3>
+            <table ng-table="userData.outlets" class="table table-striped">
+
+                <tr ng-show="userData.outlets.length" ng-repeat="outlet in userData.outlets">
+
+                    <td class="text-center" data-title="'Outlet No.'">
+                        <div>
+                            {{$index + 1}}
+                        </div>
+                    </td>
+                    <td class="text-center" data-title="'Outlet Name'">
+                        <div>
+                            {{outlet.name}}
+                        </div>
+                    </td>
+                    <td class="text-center" data-title="'Brand Name'">
+                        <div>
+                            {{outlet.brand.name}}
+                        </div>
+                    </td>
+                </tr>
+
+                <tr ng-hide="userData.outlets.length">
+                    <td>No Outlets Belong to You</td>
+                </tr>
+            </table>
+        </div>
+        <!-- isAuthorized(5,['outlets']) -->
+        <div ng-show="permissionAuthorizations.manageOutletUsers"
+            class="w-100 d-flex justify-content-around flex-column mb-5 mt-5">
+            <div class="d-flex justify-content-between align-items-center">
+                <h3 class="w-50">Outlet Users</h3>
+                <!-- add table  -->
+                <div class="w-100 d-flex justify-content-end">
+                    <a ui-sref="home.addUser({role:'outlet'})" class="d-flex justify-content-center btn btn-light text-dark m-3">
+                        Add Outlet Users
+                    </a>
+                </div>
+            </div>
             <table ng-table="outletUsers" class="table table-striped">
 
                 <tr ng-show="outletUsers.length" ng-repeat="outletUser in outletUsers">
-    
+
                     <td class="text-center" data-title="'Outlet Name'">{{outletUser.outlets[0].name}}</td>
-    
-                    <td class="text-center" data-title="'User Name'">{{outletUser.name}}</td>
-    
-                    <td class="text-center" data-title="'User Email'">{{outletUser.email}}</td>
-    
+
+                    <td class="text-center" data-title="'User Name'">
+                        <div ng-show="$index !== outletUser.editElementIndex">
+                            {{outletUser.name}}
+                        </div>
+                        <!-- editing outlet name  -->
+                        <input ng-show="$index === outletUser.editElementIndex"
+                            class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="text"
+                            ng-model="outletUser.name" ng-required="true">
+                    </td>
+
+                    <td class="text-center" data-title="'User Email'">
+                        <div ng-show="$index !== outletUser.editElementIndex">
+                            {{outletUser.email}}
+                        </div>
+                        <!-- editing outlet name  -->
+                        <input ng-show="$index === outletUser.editElementIndex"
+                            class="outline-none bg-theme-light border-0 w-75 h-50p p-2 rounded" type="text"
+                            ng-model="outletUser.email" ng-required="true">
+                    </td>
+
                     <td class="w-50 dark-theme" data-title="'Roles'">
-                        <oi-select
-                            placeholder="Select Roles"
-                            oi-options="role for role in outletUser.role.subRoles"
-                            ng-model="outletUser.role.subRoles" ng-change="updatePermissions(outlet._id,outlet.permissions)" multiple ng-required="true" >
-    
+                        <oi-select placeholder="Select Roles" oi-options="role for role in getRoles('outlet')"
+                            ng-model="outletUser.role.subRoles" ng-change="updatePermissions(outletUser,$index)"
+                            multiple ng-required="true">
+
                         </oi-select>
                     </td>
-    
+
                     <td class="w-50 dark-theme" data-title="'Permissions'">
-                        <oi-select
-                            placeholder="Select Permissions"
-                            oi-options="permission.permissionName for permission in getPermissions(outletUser.role.subRoles)"
-                            ng-model="outletUser.permissions" ng-change="updatePermissions(outlet._id,outlet.permissions)" multiple ng-required="true" >
-    
+                        <oi-select placeholder="Select Permissions"
+                            oi-options="permission.permissionName for permission in getPermissions('outlet',outletUser.role.subRoles)"
+                            ng-model="outletUser.permissions" ng-change="updatePermissions(outletUser)" multiple
+                            ng-required="true">
+
                         </oi-select>
+                    </td>
+                    <td class="text-center" data-title="'Actions'">
+                        <button ng-show="$index === outletUser.editElementIndex" class="btn btn-primary"
+                            ng-click="outletUser.editElementIndex = -1">Cancel</button>
+                        <button ng-show="$index === outletUser.editElementIndex" class="btn btn-primary"
+                            ng-click="updateUser(outletUser);outletUser.editElementIndex = -1">Update</button>
+                        <button ng-hide="$index === outletUser.editElementIndex" class="btn btn-primary"
+                            ng-click="outletUser.editElementIndex = $index">Edit</button>
                     </td>
                 </tr>
-    
+
                 <tr ng-hide="outletUsers.length">
                     <td>No Outlet Users added yet</td>
                 </tr>
             </table>
-            <ul ng-show="totalOutletUsers" class="w-100" items-per-page="9" max-size="5" uib-pagination total-items="totalOutletUsers" ng-model="outletUser.currentPage" ng-change="getOutletUsers(outletUser.currentPage)"></ul>
+            <ul ng-show="totalOutletUsers" class="w-100" items-per-page="9" max-size="5" uib-pagination
+                total-items="totalOutletUsers" ng-model="outletUser.currentPage"
+                ng-change="getOutletUsers(outletUser.currentPage)"></ul>
         </div>
         <!-- tables  -->
-        <div class="w-100 d-flex justify-content-around flex-column">
-            <h3>Tables</h3>
+        <div class="w-100 d-flex justify-content-around flex-column mb-5 mt-5">
+            <div class="d-flex justify-content-between align-items-center"">
+                <h3 class="w-50">Tables</h3>
+                <!-- add table  -->
+                <div class="w-100 d-flex justify-content-end">
+                    <button ng-hide="isEditClicked" class="d-flex justify-content-center btn btn-light text-dark m-3"
+                        ng-click="addTableModal(tables.currentPage)">
+                        Add Table
+                    </button>
+                </div>
+            </div>
             <table ng-table="tablesData" class="table table-striped">
 
                 <tr ng-show="tablesData.length" ng-repeat="table in tablesData">
-    
+
                     <td class="text-center" data-title="'TableId'">{{table.tableId}}</td>
-    
+
                     <td class="text-center" data-title="'Status'">{{table.isAssigned?'Assigned':'Vacant'}}</td>
-    
-                    <td class="text-center" data-title="'Assigned To'">{{table.assignedTo?table.assignedTo:'-'}}</td>
-    
-                    <td class="text-center" data-title="'Actions'">
-                        <button class="btn btn-primary" ng-click="openEditModal()">Remove</button>
+
+                    <td class="text-center" data-title="'Outlet'">{{userData.outlets[currentOutletIndex].name}}</td>
+
+                    <td class="text-center" data-title="'Brand'">{{userData.outlets[currentOutletIndex].brand.name}}
                     </td>
-    
+
                 </tr>
-    
+
                 <tr ng-hide="tablesData.length">
                     <td>No Table added yet</td>
                 </tr>
             </table>
-            <ul ng-show="totalTables" class="w-100" items-per-page="9" max-size="5" uib-pagination total-items="totalTables" ng-model="tables.currentPage" ng-change="getTables(tables.currentPage)"></ul>
+            <ul ng-show="totalTables" class="w-100" items-per-page="9" max-size="5" uib-pagination
+                total-items="totalTables" ng-model="tables.currentPage" ng-change="getTables(tables.currentPage)"></ul>
         </div>
-        
-        <!-- <input type="text" placeholder="{{dataName}}" ng-model="outletData.dataName"> -->
+
+        <!-- <input type="text" placeholder="{{dataName}}" ng-model="userData.dataName"> -->
     </div>
 
 </section>

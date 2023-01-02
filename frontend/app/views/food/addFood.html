@@ -20,15 +20,10 @@
         </div>
         <div class="w-75 d-flex justify-content-around align-items-start flex-column">
             <label>Select Category</label>
-            <!-- <select class="h-50p w-100" placeholder="Select Category" ng-model="food.category">
-                <option selected value="Indian">Indian</option>
-                <option value="Chinese">Chinese</option>
-                <option value="Italian">Italian</option>
-            </select> -->
             <input type="text" ng-model="food.category"
-                uib-typeahead="category for category in categories | filter:$viewValue | limitTo:8"
+                uib-typeahead="category.name for category in categories | filter:$viewValue | limitTo:8"
                 placeholder="Select Category" typeahead-no-results="noResults"
-                typeahead-on-select="getSubCategories(food.category)"
+                typeahead-on-select="getSubCategories($item)"
                 class="form-control bg-theme-light text-light h-50p outline-none rounded border-0 mb-2"
                 ng-required="true" typeahead-min-length="0">
             <div ng-show="noResults" class="w-100 h-50p">
@@ -41,10 +36,10 @@
             <label>Select Sub Category</label>
             <input ng-disabled="!food.category" type="text" placeholder="Select Sub Category"
                 ng-model="food.subCategory"
-                uib-typeahead="subCategory for subCategory in subCategories | filter:$viewValue | limitTo:8"
+                uib-typeahead="subCategory.name for subCategory in subCategories | filter:$viewValue | limitTo:8"
                 typeahead-no-results="noSubCategory"
                 class="form-control bg-theme-light text-light h-50p outline-none rounded border-0 mb-2 {{food.category?'':'disabled'}}"
-                ng-required="true" typeahead-min-length="0">
+                ng-required="true" typeahead-min-length="0" typeahead-on-select="onSubcategorySelect($item)">
             <div ng-show="noSubCategory" class="w-100 h-50p">
                 <button class="btn btn-primary" type="button"
                     ng-click="createSubCategory(food.subCategory,food.category)">Create Sub Category</button>

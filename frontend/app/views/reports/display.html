@@ -2,7 +2,7 @@
     <h3 class="w-100 d-flex justify-content-center align-items-center">Reports</h3>
     <table ng-table="availableReports" class="table table-striped">
 
-        <tr ng-repeat="report in availableReports" ng-show="availableReports.length && isRoleAllowed(report,userRole)">
+        <tr ng-repeat="report in availableReports" ng-show="availableReports.length && isRoleAllowed(report,permissionAuthorizations.userRole)">
             <td class="text-center" data-title="'Report No.'">
                 <div>
                     {{$index + 1}}.

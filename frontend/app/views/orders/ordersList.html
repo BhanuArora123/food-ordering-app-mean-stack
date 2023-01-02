@@ -10,7 +10,7 @@
                 <label class="w-100 text-center">View Details</label>
                 <button class="btn btn-primary w-90" ng-click="viewDetails($index,order.assignedTable)">View Details</button>
             </div>
-            <div ng-show="userRole === 'outlet'" class="w-50 h-75 d-flex justify-content-around align-items-center flex-column">
+            <div ng-show="permissionAuthorizations.userRole === 'outlet'" class="w-50 h-75 d-flex justify-content-around align-items-center flex-column">
                 <label class="w-100 text-center">Change Status</label>
                 <select ng-model="order.status" class="btn btn-primary w-90" ng-change="changeOrderStatus(order.status,order._id)">
                     <option class="text-light bg-theme-light w-100" ng-repeat="status in actualOrderStatuses" value="{{status}}">{{status}}</option>

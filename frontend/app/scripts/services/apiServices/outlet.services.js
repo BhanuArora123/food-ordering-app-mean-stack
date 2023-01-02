@@ -2,20 +2,7 @@
 
 // user service
 appModule
-    .service("outletService", function ($http, $state,blockUI,userService) {
-        this.getOutletData = function () {
-            return $http
-                .get("http://localhost:8080/outlet/outletData")
-                .then(function (response) {
-                    localStorage.setItem("outletData", JSON.stringify(response.data.outletData));
-                    localStorage.setItem("role", "outlet");
-                    return response.data;
-                })
-                .catch(function (error) {
-                    console.log(error);
-                    alert(error.message);
-                })
-        }
+    .service("outletService", function ($http,blockUI,userService,$rootScope) {
         this.getAllOutlets = function (page, limit,brandId,query) {
             return $http
                 .get("http://localhost:8080/outlet/getAll",{
@@ -33,14 +20,16 @@ appModule
                     console.log(error);
                 })
         }
-        this.getOutletUsers = function (page, limit,outletId,query) {
+        this.getOutletUsers = function (page, limit,outletId,subRole,brandId,query) {
             return $http
                 .get("http://localhost:8080/outlet/users/get",{
                     params:{
                         outletId:outletId,
                         page:page,
                         limit:limit,
-                        search:query
+                        search:query,
+                        subRole:subRole,
+                        brandId:brandId
                     }
                 })
                 .then(function (res) {
@@ -93,7 +82,7 @@ appModule
                         page: page,
                         limit: limit,
                         isAssigned: isAssigned,
-                        outletId:userData.outlets[0].id
+                        outletId:userData.outlets[$rootScope.currentOutletIndex].id
                     }
                 })
                 .then(function (res) {
@@ -110,7 +99,7 @@ appModule
             return $http
                 .post("http://localhost:8080/outlet/table/add", {
                     tableId: table.tableId,
-                    outletId:userService.userData().outlets[0].id
+                    outletId:userService.userData().outlets[$rootScope.currentOutletIndex].id
                 })
                 .then(function (res) {
                     blockUI.stop();
@@ -121,38 +110,46 @@ appModule
                     console.log(error);
                 })
         };
-        this.getPermissions = function () {
-            return $http
-            .get("http://localhost:8080/outlet/permissions/get")
-            .then(function (response) {
-                return response.data;
-            })
-            .catch(function (error) {
-                console.log(error);
-            })
-        };
-        this.editPermissions = function (data) {
+        this.editOutlet = function (outlet) {
             blockUI.start({
-                message:"Editing User Permissions..."
+                message: "Editing Outlet..."
             })
             return $http
-            .put("http://localhost:8080/outlet/permissions/edit",{
-                outletId:data.outletId,
-                permissions:(data.permissions?data.permissions:[])
-            })
-            .then(function (response) {
-                blockUI.stop();
-                return response.data;
-            })
-            .catch(function (error) {
-                blockUI.stop();
-                console.log(error);
-            })
+                .put("http://localhost:8080/outlet/edit",
+                    {
+                        outletId: outlet._id,
+                        name: outlet.name,
+                        brandId:outlet.brand.id,
+                        isDisabled:outlet.isDeleted
+                    })
+                .then(function (res) {
+                    blockUI.stop();
+                    return res.data;
+                })
+                .catch(function (error) {
+                    blockUI.stop();
+                    console.log(error);
+                })
         };
-        this.getServiceData = function () {
-            return {
-                outletData: JSON.parse(localStorage.getItem("outletData")),
-                role: localStorage.getItem("role")
-            };
-        }
+        this.deleteOutlet = function (outletId,brandId) {
+            blockUI.start({
+                message: "Deleting Outlet..."
+            })
+            return $http
+                .delete("http://localhost:8080/outlet/delete",
+                    {
+                        params:{
+                            outletId:outletId,
+                            brandId:brandId
+                        }
+                    })
+                .then(function (res) {
+                    blockUI.stop();
+                    return res.data;
+                })
+                .catch(function (error) {
+                    blockUI.stop();
+                    console.log(error);
+                })
+        };
     })

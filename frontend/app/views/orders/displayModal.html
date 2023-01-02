@@ -1,11 +1,11 @@
 <div class="w-100 d-flex justify-content-center align-items-center flex-column bg-light">
     <uib-tabset class="w-100 h-50 category" active="activeCategory" justified="true">
-        <uib-tab ng-repeat="categoryItems in orderedFoodItems" heading="{{categoryItems.category}}"
+        <uib-tab ng-repeat="(itemId,categoryItem) in orderedFoodItems" heading="{{categoryItem.name}}"
             classes="{{getActiveClass($index,'category')}}"
             select="setActiveClass($index,'category')">
             <uib-tabset active="activeSubcategory" justified="true">
-                <uib-tab ng-repeat="subCategoryItem in categoryItems.subCategoryItems"
-                    heading="{{subCategoryItem.subCategory}}"
+                <uib-tab ng-repeat="(subcategoryId,subCategoryItem) in categoryItem.subCategories"
+                    heading="{{subCategoryItem.name}}"
                     classes="{{getActiveClass($index)}}" select="setActiveClass($index)">
                     <ul class="w-100 d-flex justify-content-around align-items-center">
                         <li class="text-dark text-light border-0 list-group-item">Name</li>
@@ -13,7 +13,7 @@
                         <li class="text-dark text-light border-0 list-group-item">Quantity</li>
                     </ul>
                     <ul>
-                        <li ng-repeat="food in subCategoryItem.items"
+                        <li ng-repeat="food in subCategoryItem.subCategoryItems"
                             class="d-flex justify-content-around align-items-center list-group-item text-dark" ng-init="foodQuantity=food.quantity;">
 
                             <div class="text-dark">{{food.foodName}}</div>
@@ -66,7 +66,7 @@
         </div>
         <div class="w-75" ng-include="'views/taxes/taxBreakdown.html'" ng-init="items = selectedOrder.orderedItems">
         </div>
-        <div ng-show="userRole === 'outlet' && selectedOrder.orderType === 'Dine In'" class="d-flex justify-content-center w-100 align-items-start text-dark">
+        <div ng-show="permissionAuthorizations.userRole === 'outlet' && selectedOrder.orderType === 'Dine In'" class="d-flex justify-content-center w-100 align-items-start text-dark">
             <button ng-hide="isEditClicked" class="btn btn-primary" ng-click="makeOrderEditable()">Edit Order</button>
             <button ng-show="isEditClicked" class="btn btn-primary" ng-click="cancelEdit()">Cancel</button>
             <button ng-show="isEditClicked" class="btn btn-primary" ng-click="updateOrder(selectedOrder._id,orderedFoodItems,selectedOrder.assignedTable)">Update</button>

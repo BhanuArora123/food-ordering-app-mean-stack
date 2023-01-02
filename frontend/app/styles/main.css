@@ -83,6 +83,9 @@ body{
 .h-400p{
   height: 400px;
 }
+.mt-50p{
+  margin-top: 50px;
+}
 .btn-disabled,.disabled{
   cursor: not-allowed !important;
 }
@@ -205,4 +208,33 @@ oi-select .select-dropdown-optgroup-option.active:not(.disabled){
 }
 .h-700p{
   height: 700px;
+}
+.switch-brand,.switch-outlet{
+  height: 37px;
+  padding-left: 10px;
+  padding-right: 10px;
+  outline: none;
+  border: none;
+}
+
+/* speeding up ng-show and ng-hide */
+.ng-hide.ng-hide-animate {
+  display: none !important;
+}
+
+.ng-animate.no-animate {
+  transition: 0s none;
+  -webkit-transition: 0s none;
+  animation: 0s none;
+  -webkit-animation: 0s none;
+}
+
+/* styling pagination button */
+.page-item.active .page-link{
+  background-color: #1d2331 !important;
+  color: white !important;
+  border-color: white !important;
+}
+.page-link{
+  color: #1d2331 !important;
 }

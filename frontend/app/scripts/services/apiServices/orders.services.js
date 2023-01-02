@@ -1,7 +1,7 @@
 
 
 appModule
-    .service("orderService", function ($http, brandService, userService, blockUI) {
+    .service("orderService", function ($http, $rootScope, userService, blockUI) {
         this.placeOrder = function (customer, outletData, brandData, orderType, assignedTable, cart) {
             blockUI.start({
                 message: "Placing Order..."
@@ -44,10 +44,13 @@ appModule
                 message: "Loading..."
             })
             console.log(arguments);
-            var brand;
+            var brand,brandData,outletData;
             var userData = userService.userData();
-            var brandData = userData.brands ? userData.brands[0] : undefined;
-            var outletData = userData.outlets ? userData.outlets[0] : undefined;
+            if(userData){
+                console.log("brand index",$rootScope.currentBrandIndex);
+                brandData = userData.brands ? userData.brands[$rootScope.currentBrandIndex] : undefined;
+                outletData = userData.outlets ? userData.outlets[$rootScope.currentOutletIndex] : undefined;
+            }
             var queryParam = {
                 page: page,
                 limit: limit
@@ -60,7 +63,7 @@ appModule
             }
             if (outletData) {
                 brand = outletData.brand;
-                queryParam["outletId"] = outletData._id;
+                queryParam["outletId"] = outletData.id;
             }
             if (status) {
                 queryParam["status"] = status;
@@ -85,10 +88,11 @@ appModule
                     console.log(error);
                 })
         };
-        this.changeStatus = function (status, orderId) {
+        this.changeStatus = function (status, orderId,outletId) {
             return $http.put("http://localhost:8080/orders/changeStatus", {
                 status: status,
-                orderId: orderId
+                orderId: orderId,
+                outletId:outletId
             })
                 .then(function (res) {
                     return res.data;

@@ -1,11 +1,9 @@
 
 
-appModule.controller("outletController",function ($scope,NgTableParams,outletData,tablesData,outletService,utility,orderService,userService,outletUsers) {
+appModule.controller("outletController",function ($scope,$rootScope,NgTableParams,userData,tablesData,outletService,utility,orderService,userService,outletUsers,permission) {
     
 
-    $scope.tablesTable = new NgTableParams({},{
-        dataset:tablesData.tablesData
-    })
+    $scope.tablesTable = tablesData.tablesData;
 
     $scope.tablesData = tablesData.tablesData;
     $scope.totalTables = tablesData.totalTables;
@@ -13,7 +11,7 @@ appModule.controller("outletController",function ($scope,NgTableParams,outletDat
     $scope.outletUsers = outletUsers.outletUsers;
     $scope.totalOutletUsers = outletUsers.totalOutletUsers;
 
-    $scope.outletData = outletData;
+    $scope.userData = userData;
 
     $scope.allowEdit = function () {
         $scope.isEditClicked = true;
@@ -51,8 +49,8 @@ appModule.controller("outletController",function ($scope,NgTableParams,outletDat
     }
 
     $scope.getOutletUsers = function (page) {
-        var outletId = userService.userData().outlets[0].id;
-        return outletService.getOutletUsers(page, 9, outletId)
+        var outletData = userService.userData().outlets[$rootScope.currentOutletIndex];
+        return outletService.getOutletUsers(page, 9, outletData.id,undefined,outletData.brand.id)
             .then(function (data) {
                 $scope.outletUsers = data.outletUsers;
                 $scope.totalOutletUsers = data.outletUsersCount;
@@ -90,5 +88,53 @@ appModule.controller("outletController",function ($scope,NgTableParams,outletDat
         .catch(function (error) {
             console.log(error);
         })
+    }
+
+    // permissions 
+    $scope.getPermissions = function (role,subRoles) {
+        console.log(permission.getPermissions(role,subRoles));
+        return permission.getPermissions(role,subRoles);;
+    };
+
+    $scope.getRoles = function (role) {
+        return permission.getRoles(role);
+    }
+
+    $scope.updatePermissions = function (user,userIndex) {
+        // changing role make permission empty
+        if(userIndex !== undefined){
+            user.permissions = [];
+            $scope.brandUsers[userIndex].permissions = [];
+        }
+        var updatePermissionDebounce = utility.debounce(2000, function () {
+            userService
+                .editUser(user._id,{
+                    currentUserRole:user.role,
+                    userEmail:user.email,
+                    userName:user.name,
+                    permissions:user.permissions,
+                    role:user.role
+                })
+        })
+        updatePermissionDebounce();
+    }
+    $scope.updateUser = function (userData) {
+        return userService
+            .editUser(userData._id,{
+                userId:userData._id,
+                currentUserRole:userData.role,
+                brandsToAllot:userData.brands,
+                outletsToAllot:userData.outlets,
+                userEmail:userData.email,
+                userName:userData.name,
+                permissions: userData.permissions,
+                role:userData.role,
+            })
+            .then(function (data) {
+                return data.message;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
     }
 })

@@ -1,6 +1,7 @@
 
 
-appModule.controller("reportsController", function ($scope, utility) {
+appModule.controller("reportsController", function ($scope, utility, permission) {
+    $scope.permissionAuthorizations = permission.getPermissionAuthorizations();
     $scope.availableReports = [
         {
             name: "Brand/Outlet Items Sold Count",
@@ -50,7 +51,7 @@ appModule.controller("reportsController", function ($scope, utility) {
     }
 })
 
-appModule.controller("reportModalController", function ($scope, adminService, brandService, foodService, reportService, outletService, utility) {
+appModule.controller("reportModalController", function ($scope,$rootScope, userService, brandService, foodService, reportService, outletService, utility) {
     $scope.startDate = new Date();
     var endDate = new Date(new Date().setDate($scope.startDate.getDate() + 1));
     $scope.endDate = endDate;
@@ -84,17 +85,21 @@ appModule.controller("reportModalController", function ($scope, adminService, br
     $scope.getBrands = function (query) {
         var role = utility.getRole();
         if (role === 'brand' || role === 'outlet') {
-            var outletData = outletService.getServiceData().outletData;
-            var brandData = brandService.getServiceData().brandData;
+            var userData = userService.userData();
+            var brandData = userData.brands ? userData.brands[$rootScope.currentBrandIndex] : undefined;
+            var outletData = userData.outlets ? userData.outlets[$rootScope.currentOutletIndex] : undefined;
             return $scope.availableBrands = [
-                brandData ||
+                brandData?{
+                    _id:brandData.id,
+                    name:brandData.name
+                } :
                 {
                     _id: outletData.brand.id,
                     name: outletData.brand.name
                 }
             ];
         }
-        return adminService
+        return brandService
             .getBrands(1,9,query)
             .then(function (data) {
                 return data.brands;
@@ -106,10 +111,10 @@ appModule.controller("reportModalController", function ($scope, adminService, br
     $scope.getOutlets = function (query,brandId) {
         var role = utility.getRole();
         if(role === 'outlet'){
-            var outletData = outletService.getServiceData().outletData;
+            var outletData = userService.userData().outlets[$rootScope.currentOutletIndex];
             return $scope.availableOutlets = [outletData];
         }
-        return brandService
+        return outletService
             .getAllOutlets(1, 9, brandId,query)
             .then(function (data) {
                 $scope.availableOutlets = data.outlets;
@@ -148,7 +153,7 @@ appModule.controller("reportModalController", function ($scope, adminService, br
         reportService
             .getRequiredReport($scope.selectedReport.url, {
                 brandId: data.selectedBrand._id,
-                outletId: data.selectedOutlet ? data.selectedOutlet._id : undefined,
+                outletId: data.selectedOutlet ? data.selectedOutlet.id : undefined,
                 startDate: $scope.startDate,
                 endDate: $scope.endDate,
                 selectedFoodItems: JSON.stringify($scope.foodList),

@@ -1,17 +1,31 @@
 
 
 // home controller
-appModule.controller("homeController", function ($scope,$rootScope, userService,outletService,brandService , $uibModal,utility,permission) {
+appModule.controller("homeController", function ($scope,$rootScope, userService,socketService, userData, $uibModal,utility,permission) {
+
+    $rootScope.permissionAuthorizations = permission.getPermissionAuthorizations();
+    var outletsData = userService.userData()?.outlets;
+    if (outletsData && outletsData[$rootScope.currentOutletIndex]) {
+      socketService.emitEvent("connectOutlet", {
+        brandId: outletsData[0].brand.id
+      })
+    }
+
     // order creation progress bar 
     $rootScope.max = 100;
     $rootScope.progress = 0;
 
+    // switch brand conf.
+    $rootScope.userOutlets = userData?.outlets;
+    $rootScope.userBrands = userData?.brands;
+    
+    $scope.userData = userData;
+    $scope.currentBrand = "brand5999";
+    
     $rootScope.closeProgressBar = function () {
         $rootScope.displayProgressBar = false;
         $rootScope.progress = 100;
     }
-
-    $scope.isNavCollapsed = (screen.width <= 765 );
     // dismiss alerts 
     $scope.closeError = function () {
         $rootScope.error = undefined;
@@ -23,6 +37,8 @@ appModule.controller("homeController", function ($scope,$rootScope, userService,
 
     $scope.logoutHandler = function () {
         $rootScope.userRole = undefined;
+        permission.unsetAllAuthorizations();
+        $rootScope.permissionAuthorizations = permission.getPermissionAuthorizations();
         utility.logout();
     }
 

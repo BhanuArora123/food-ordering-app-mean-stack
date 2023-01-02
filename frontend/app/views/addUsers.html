@@ -2,7 +2,7 @@
     <div class="d-flex w-50 justify-content-around flex-column align-items-center">
         <div class="w-100 h-25 d-flex justify-content-center align-items-center" ng-show="role">
             <a class="w-50 d-flex justify-content-center fw-bold {{ getActiveCssClass('login') }}">
-                {{capitalize(role)}} User Signup
+                {{capitalize(role)}} {{subRole?capitalize(subRole):'User'}} Signup
             </a>
         </div>
         <form class="w-75 d-flex justify-content-around align-items-center flex-column h-75 mb-2" ng-show="role"
@@ -17,7 +17,7 @@
                 <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="email"
                     placeholder="Enter Email" name="email" ng-model="signup.email" ng-required="true">
             </div>
-            <div class="w-75 d-flex justify-content-around align-items-start flex-column user-role dark-theme">
+            <div ng-if="!subRole" class="w-75 d-flex justify-content-around align-items-start flex-column user-role dark-theme">
                 <label>Select Role</label>
                 <oi-select placeholder="Select Role" oi-options="role for role in roles | filter:$viewValue"
                     ng-model="signup.subRoles" ng-change="getUserPermissions(signup.subRoles)" ng-required="true"
@@ -25,20 +25,35 @@
 
                 </oi-select>
             </div>
-            <div class="w-75 d-flex justify-content-around align-items-start flex-column dark-theme mb-2">
+            <div class="w-75 d-flex justify-content-around align-items-start flex-column dark-theme mb-2" ng-init="getUserPermissions([subRole])">
                 <label>Select Permissions</label>
-                <oi-select ng-disabled="!signup.subRoles.length" class="{{(signup.subRoles.length)?'':'disabled'}}"
+                <oi-select ng-disabled="!subRole && !signup.subRoles.length" class="{{(subRole || signup.subRoles.length)?'':'disabled'}}"
                     placeholder="Select Permission"
                     oi-options="permission.permissionName for permission in permissions track by permission.permissionId"
                     ng-model="signup.permissions" multiple ng-required="true">
 
                 </oi-select>
             </div>
+
+            <div ng-if="subRole && role === 'brand'" class="w-75 d-flex justify-content-around align-items-start flex-column dark-theme mb-2">
+                <label>Select Brands</label>
+                <oi-select oi-options="brand.name for brand in getBrands($query)" ng-model="signup.selectedBrand"
+                    placeholder="Select Brand" class="h-50p" ng-required="true" name="brand">
+                </oi-select>
+            </div>
+            
+            <div ng-if="subRole && role === 'outlet'" class="w-75 d-flex justify-content-around align-items-start flex-column dark-theme mb-2">
+                <label>Select Outlets</label>
+                <oi-select oi-options="outlet.name for outlet in getOutlets($query)" ng-model="signup.selectedOutlet"
+                    placeholder="Select Outlets" class="h-50p" ng-required="true" name="outlet">
+                </oi-select>
+            </div>
+
             <div class="d-flex w-75 justify-content-between">
                 <button type="button"
                     class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (signupForm.email.$invalid || signupForm.name.$invalid)?'btn-disabled':'' }}"
                     ng-disabled="signupForm.email.$invalid || signupForm.name.$invalid"
-                    ng-click="signupHandler(signup.name,signup.email,role,signup.subRoles,signup.permissions)">Sign
+                    ng-click="signupHandler(signup.name,signup.email,role,(subRole?[subRole]:signup.subRoles),subRole?permissions:signup.permissions,signup.password,signup.selectedBrand,signup.selectedOutlet)">Sign
                     Up</button>
             </div>
         </form>

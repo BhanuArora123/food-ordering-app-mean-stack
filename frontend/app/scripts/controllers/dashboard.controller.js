@@ -1,8 +1,9 @@
 
 
-appModule.controller("dashboardController", function ($scope,$state, foodService,utility) {
+appModule.controller("dashboardController", function ($scope,$state, foodService,utility,permission) {
     
     $scope.getRole = utility.getRole;
+    $scope.permissionAuthorizations = permission.getPermissionAuthorizations();
 
     // for displaying food items
 
@@ -38,7 +39,7 @@ appModule.controller("dashboardController", function ($scope,$state, foodService
             return 'Order Now';
         }
         else if(role === 'brand'){
-            return 'Manage Outlets';
+            return 'Manage Outlet Users';
         }
         else{
             return 'Manage Brands';

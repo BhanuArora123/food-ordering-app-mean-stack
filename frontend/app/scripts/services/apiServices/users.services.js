@@ -84,6 +84,50 @@ appModule.service("userService", function ($http, blockUI, $state) {
                 console.log(error);
             })
     };
+    this.editPermissions = function (userId, permissions, role, userRole) {
+        blockUI.start({
+            message: "Updating...."
+        })
+        return $http
+        .put("http://localhost:8080/user/edit",{
+            userId:userId,
+            permissions: permissions,
+            role:role,
+            currentUserRole:userRole
+        })
+        .then(function (res) {
+            blockUI.stop();
+            return res.data;
+        })
+        .catch(function (error) {
+            blockUI.stop();
+            console.log(error);
+        })
+    }
+    this.editUser = function (userId,data) {
+        blockUI.start({
+            message: "Editing...."
+        })
+        return $http
+        .put("http://localhost:8080/user/edit",{
+            userId:userId,
+            currentUserRole:data.currentUserRole,
+            brandsToAllot:data.brandsToAllot,
+            outletsToAllot:data.outletsToAllot,
+            userEmail:data.userEmail,
+            userName:data.userName,
+            permissions: data.permissions,
+            role:data.role,
+        })
+        .then(function (res) {
+            blockUI.stop();
+            return res.data;
+        })
+        .catch(function (error) {
+            blockUI.stop();
+            console.log(error);
+        })
+    }
     this.adminCount = function () {
         return $http.get("http://localhost:8080/user/admin/count")
         .then(function (res) {

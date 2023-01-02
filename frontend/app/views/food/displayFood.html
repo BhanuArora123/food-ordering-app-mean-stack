@@ -1,13 +1,16 @@
 <div class="d-flex justify-content-around align-items-start flex-wrap w-100 h-600p bg-theme-dark"
-    ng-init="getFoodItems(availableCategories[0].category,availableCategories[0].subCategories[0],0,'category')">
+    ng-init="getFoodItems(availableCategories[0].category.name,availableCategories[0].subCategories[0].name,0,'category')">
+    <h4 ng-hide="availableCategories.length">
+        No Food Item Added yet
+    </h4>
     <uib-tabset class="w-100 category" active="activeCategory" justified="true">
-        <uib-tab ng-repeat="categoryItems in availableCategories" heading="{{categoryItems.category}}"
-            ng-click="getFoodItems(categoryItems.category,categoryItems.subCategories[0],$index,'category')"
+        <uib-tab ng-repeat="categoryItems in availableCategories" heading="{{categoryItems.category.name}}"
+            ng-click="getFoodItems(categoryItems.category.name,categoryItems.subCategories[0].name,$index,'category')"
             classes="fw-bold {{getActiveClass($index,'category')}}"
             ng-init="grandParentIndex = $index">
             <uib-tabset active="activeSubcategory" justified="true">
-                <uib-tab ng-repeat="subCategoryItem in categoryItems.subCategories" heading="{{subCategoryItem}}"
-                    ng-click="getFoodItems(categoryItems.category,subCategoryItem,$index)"
+                <uib-tab ng-repeat="subCategoryItem in categoryItems.subCategories" heading="{{subCategoryItem.name}}"
+                    ng-click="getFoodItems(categoryItems.category.name,subCategoryItem.name,$index)"
                     classes="fw-bold {{getActiveClass($index)}}" ng-init="parentIndex=$index">
                     <!-- <ul c -->
                     <table ng-table="foodItemsToDisplay" class="table table-striped w-100 food-items mb-2">
@@ -35,12 +38,12 @@
                             </td>
 
                             <td class="dark-theme text-center" data-title="'Actions'">
-                                <a class="btn btn-primary" ng-show="!presentInCart(food._id) && userRole === 'outlet'"
+                                <a class="btn btn-primary" ng-show="!presentInCart(food._id) && permissionAuthorizations.userRole === 'outlet'"
                                     ng-click="addToCart(food.name, food.price,food.subCategory,food.category,food.taxes,food._id)">Add
                                     To Cart</a>
                                 <!-- inc/dec button  -->
                                 <div class="input-group w-25"
-                                    ng-show="presentInCart(food._id) && userRole === 'outlet'">
+                                    ng-show="presentInCart(food._id) && permissionAuthorizations.userRole === 'outlet'">
                                     <span class="input-group-btn">
                                         <button type="button" class="quantity-right-plus btn btn-primary btn-number"
                                             data-type="plus" data-field="" ng-click="removeFromCart(food._id)">
@@ -58,7 +61,7 @@
                                     </span>
                                 </div>
                                 <!-- edit/delete actions for brand  -->
-                                <div ng-show="userRole === 'brand'">
+                                <div ng-show="permissionAuthorizations.userRole === 'brand'">
                                     <!-- edit -->
                                     <button ng-hide="editClicked && itemToEdit === $index" class="btn btn-primary"
                                         ng-click="setItemsForEditing($index)">
@@ -92,7 +95,7 @@
                     </table>
                     <ul ng-show="totalFoodItems" class="w-100" uib-pagination max-size="5" items-per-page="9"
                         total-items="totalFoodItems" items-per-page="9" ng-model="foodPagination[$index]"
-                        ng-change="getFoodItems(categoryItems.category,subCategoryItem,$index)"></ul>
+                        ng-change="getFoodItems(categoryItems.category.name,subCategoryItem.name,$index)"></ul>
                 </uib-tab>
             </uib-tabset>
         </uib-tab>

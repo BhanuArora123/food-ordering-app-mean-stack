@@ -93,7 +93,7 @@ appModule
             };
             this.editBrand = function (brand) {
                 blockUI.start({
-                    message:"Brand Updated Successfully...."
+                    message:"Brand Updating...."
                 })
                 return $http
                     .put("http://localhost:8080/admin/brand/edit", {
@@ -160,10 +160,4 @@ appModule
                     console.log(error);
                 })
             }
-            this.getServiceData = function () {
-                return {
-                    adminData: JSON.parse(localStorage.getItem("adminData")),
-                    role: localStorage.getItem("role")
-                }
-            };
     })

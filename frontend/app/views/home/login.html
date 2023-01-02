@@ -61,17 +61,9 @@
                 <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded" type="email"
                     placeholder="Enter Email" name="email" ng-model="signup.email" ng-required="true">
             </div>
-            <div ng-show="role" class="w-75 d-flex justify-content-around align-items-start flex-column dark-theme mb-2">
-                <label>Select Permissions</label>
-                <oi-select placeholder="Select Permission"
-                    oi-options="permission.permissionName for permission in permissions track by permission.permissionId"
-                    ng-model="signup.permissions" multiple ng-required="true">
-
-                </oi-select>
-            </div>
             <div class="d-flex w-75 justify-content-between">
                 <button type="button" class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (signupForm.email.$invalid || signupForm.name.$invalid)?'disabled':'' }}"
-                ng-disabled="signupForm.email.$invalid || signupForm.name.$invalid" ng-click="signupHandler(signup.name,signup.email,role,['admin'],signup.permissions)">Sign Up</button>
+                ng-disabled="signupForm.email.$invalid || signupForm.name.$invalid" ng-click="signupHandler(signup.name,signup.email,role,['admin'],permissions)">Sign Up</button>
             </div>
         </form>
         <div ng-hide="role || !adminCount" class="w-100 d-flex justify-content-end align-items-center p-3">

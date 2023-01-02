@@ -1,6 +1,6 @@
 <!-- alert -->
 <div class="position-absolute w-100 d-flex justify-content-center z-index-popover">
-    <div ng-show="error" dismiss-on-timeout="5" uib-alert
+    <div ng-if="error" dismiss-on-timeout="5" uib-alert
         class="alert-danger alert-dismissible position-absolute z-index-max w-256 text-dark" role="error"
         data-bs-dismiss="error">
         <div class="w-100 text-dark">
@@ -10,7 +10,7 @@
             <span class="text-dark" aria-hidden="true">&times;</span>
         </button>
     </div>
-    <div ng-show="success" dismiss-on-timeout="5" uib-alert
+    <div ng-if="success" dismiss-on-timeout="5" uib-alert
         class="alert-success alert-dismissible position-absolute z-index-max w-256 text-dark">
         <div class="w-100 text-dark">
             {{success}}
@@ -23,7 +23,8 @@
 
 <!-- progress bar for order creation -->
 
-<div ng-show="displayProgressBar" class="w-50 h-70p d-flex justify-content-between rounded align-items-center fixed-bottom ml-auto mb-2 mr-2 bg-theme-light text-dark p-2 z-index-popover">
+<div ng-if="displayProgressBar"
+    class="w-50 h-70p d-flex justify-content-between rounded align-items-center fixed-bottom ml-auto mb-2 mr-2 bg-theme-light text-dark p-2 z-index-popover">
     <div class="w-90 d-flex justify-content-around flex-column align-items-center h-100 ml-3">
         <div class="w-100 text-center">{{progressBarText}}</div>
         <uib-progressbar class="w-100 h-25" max="max" value="progress">
@@ -37,8 +38,11 @@
     </div>
 </div>
 
- <!-- nav bar  -->
-<nav class="navbar navbar-expand-md navbar-light bg-theme-darker w-100" role="navigation">
+<!-- margin - 60 px from top for fixed nav -->
+<div style="margin-top: 70px;"></div>
+
+<!-- nav bar  -->
+<nav class="navbar fixed-top navbar-expand-md navbar-light bg-theme-darker w-100" role="navigation">
     <div class="navbar-brand text-white" ui-sref="home.dashboard">FoodZ</div>
     <button class="navbar-toggler" type="button" ng-click="isNavCollapsed = !isNavCollapsed" aria-expanded="false"
         aria-label="Toggle navigation">
@@ -46,115 +50,180 @@
     </button>
 
     <div class="collapse navbar-collapse" uib-collapse="isNavCollapsed">
-        <ul class="navbar-nav ml-auto w-100 d-lg-flex justify-content-lg-around align-items-lg-center">
-            <li class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2" ng-show="userRole === 'outlet' || userRole === 'brand'">
+        <ul class="navbar-nav ml-auto w-100 h-100 d-lg-flex justify-content-lg-around align-items-lg-center">
+            <!-- isAuthorized(5,['brand','outlet']) -->
+            <li ng-if="permissionAuthorizations.manageDishes"
+                class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2"
+                ng-if="permissionAuthorizations.userRole === 'outlet' || permissionAuthorizations.userRole === 'brand'">
                 <a ui-sref="home.food.display"
                     class="d-flex justify-content-center align-items-center text-decoration-none text-white">
                     <i class="fas fa-pizza-slice" style="font-size: 18px;"></i>
                     <div class="ml-2 fw-bold">Food Search</div>
                 </a>
             </li>
-            <li class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2" ng-show="userRole === 'outlet'">
+            <!-- isAuthorized(5,['outlet']) -->
+            <li ng-if="permissionAuthorizations.manageDishesOutlets"
+                class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2">
                 <a ng-click="openModal('views/cart.html','cartController','cartModal')"
                     class="d-flex justify-content-center align-items-center text-decoration-none text-white">
                     <i class="fas fa-cart-plus" style="font-size: 18px;"></i>
                     <div class="ml-2 fw-bold">Cart</div>
                 </a>
             </li>
-            <div ng-show="isAuthorized(2,['superAdmin','admin']) || isAuthorized(1,['superAdmin','admin']) || userRole === 'brand' || userRole === 'outlet'" class="btn-group d-flex justify-content-around align-items-center" uib-dropdown>
+            <!-- isAuthorized(2,['superAdmin','admin']) || isAuthorized(1,['superAdmin','admin'])  -->
+            <div ng-if="permissionAuthorizations.manageAdmins || permissionAuthorizations.manageBrands || permissionAuthorizations.userRole === 'brand' || permissionAuthorizations.userRole === 'outlet'"
+                class="btn-group d-flex justify-content-around align-items-center" uib-dropdown>
                 <i class="fas fa-plus-square mr-2" style="font-size: 18px ;"></i>
                 <a id="single-button" type="button" class="text-decoration-none text-white fw-bold" uib-dropdown-toggle>
                     Add<span class="caret"></span>
                 </a>
                 <div dropdown-menu uib-dropdown-menu role="menu" aria-labelledby="single-button">
-                    <a ng-show="isAuthorized(1,['superAdmin','admin'])" ui-sref="home.add({role:'admin'})" class="dropdown-item d-flex justify-content-start align-items-center">
+                    <!-- isAuthorized(1,['superAdmin','admin']) -->
+                    <a ng-if="permissionAuthorizations.manageAdmins" ui-sref="home.add({role:'admin'})"
+                        class="dropdown-item d-flex justify-content-start align-items-center">
                         <i class="fa-sharp fa fa-user-plus text-dark mr-2" style="font-size: 18px;"></i>
                         <div class="ml-2 fw-bold text-dark">Admin</div>
                     </a>
-                    <a ng-show="isAuthorized(2,['superAdmin','admin'])" ui-sref="home.add({role:'brand'})" class="dropdown-item d-flex justify-content-start align-items-center">
+                    <a ng-if="permissionAuthorizations.manageBrands" ui-sref="home.add({role:'brand'})"
+                        class="dropdown-item d-flex justify-content-start align-items-center">
                         <i class="fa fa-utensils text-dark mr-2" style="font-size: 18px;"></i>
                         <div class="ml-2 fw-bold text-dark">Brand</div>
                     </a>
-                    <a ng-show="userRole === 'brand'" ui-sref="home.addUser({role:'brand'})" class="dropdown-item d-flex justify-content-start align-items-center">
+                    <!-- isAuthorized(7,['brand']) -->
+                    <a ng-if="permissionAuthorizations.manageBrandUsers" ui-sref="home.addUser({role:'brand'})"
+                        class="dropdown-item d-flex justify-content-start align-items-center">
                         <i class="fa fa-utensils text-dark mr-2" style="font-size: 18px;"></i>
                         <div class="ml-2 fw-bold text-dark">Brand User</div>
                     </a>
-                    <a ng-show="userRole === 'brand'" ui-sref="home.add({role:'outlet'})" class="dropdown-item d-flex justify-content-start align-items-center">
+                    <!-- isAuthorized(4,['brand']) -->
+                    <a ng-if="permissionAuthorizations.manageOutlets" ui-sref="home.add({role:'outlet'})"
+                        class="dropdown-item d-flex justify-content-start align-items-center">
                         <i class="fa-sharp fa fa-user-plus text-dark mr-2" style="font-size: 18px;"></i>
                         <div class="ml-2 fw-bold text-dark">Outlet</div>
                     </a>
-                    <a ng-show="userRole === 'outlet'" ui-sref="home.addUser({role:'outlet'})" class="dropdown-item d-flex justify-content-start align-items-center">
+                    <a ng-if="permissionAuthorizations.manageOutlets" ui-sref="home.addUser({role:'outlet',subRole:'admin'})"
+                        class="dropdown-item d-flex justify-content-start align-items-center">
+                        <i class="fa-sharp fa fa-user-plus text-dark mr-2" style="font-size: 18px;"></i>
+                        <div class="ml-2 fw-bold text-dark">Outlet Admin</div>
+                    </a>
+                    <a ng-if="permissionAuthorizations.manageBrands" ui-sref="home.addUser({role:'brand',subRole:'admin'})"
+                        class="dropdown-item d-flex justify-content-start align-items-center">
+                        <i class="fa-sharp fa fa-user-plus text-dark mr-2" style="font-size: 18px;"></i>
+                        <div class="ml-2 fw-bold text-dark">Brand Admin</div>
+                    </a>
+                    <!-- isAuthorized(6,['outlet']) -->
+                    <a ng-if="permissionAuthorizations.manageOutletUsers" ui-sref="home.addUser({role:'outlet'})"
+                        class="dropdown-item d-flex justify-content-start align-items-center">
                         <i class="fa-sharp fa fa-user-plus text-dark mr-2" style="font-size: 18px;"></i>
                         <div class="ml-2 fw-bold text-dark">Outlet User</div>
                     </a>
-                    <div ng-show="userRole === 'brand'" class="dropdown-divider"></div>
-                    <a ng-show="userRole === 'brand'" ui-sref="home.food.add" class="dropdown-item d-flex justify-content-start align-items-center">
+                    <div class="dropdown-divider"></div>
+                    <!-- isAuthorized(5,['brand']) -->
+                    <a ng-if="permissionAuthorizations.manageDishesBrand" ui-sref="home.food.add"
+                        class="dropdown-item d-flex justify-content-start align-items-center">
                         <i class="fas fa-hamburger text-dark mr-2" style="font-size: 18px;"></i>
                         <div class="ml-2 fw-bold text-dark">Add Food Item</div>
                     </a>
                 </div>
             </div>
-            <div ng-show="isAuthorized(2,['superAdmin','admin']) || isAuthorized(1,['superAdmin','admin']) || isAuthorized(3,['superAdmin','admin','brand','outlet']) || userRole === 'brand'" class="btn-group d-flex justify-content-around align-items-center" uib-dropdown>
+            <!-- isAuthorized(3,['superAdmin','admin','brand','outlet']) -->
+            <div ng-if="permissionAuthorizations.manageBrands || permissionAuthorizations.manageAdmins || permissionAuthorizations.manageAnalytics || permissionAuthorizations.userRole === 'brand'"
+                class="btn-group d-flex justify-content-around align-items-center" uib-dropdown>
                 <i class="fas fa-eye mr-2" style="font-size: 18px ;"></i>
                 <a id="single-button" type="button" class="text-decoration-none text-white fw-bold" uib-dropdown-toggle>
                     View<span class="caret"></span>
                 </a>
                 <div dropdown-menu uib-dropdown-menu role="menu" aria-labelledby="single-button">
-                    <a ng-show="isAuthorized(3,['brand','admin','outlet','superAdmin'])" ui-sref="home.reports" class="dropdown-item d-flex justify-content-start align-items-center">
+                    <a ng-if="permissionAuthorizations.manageAnalytics" ui-sref="home.reports"
+                        class="dropdown-item d-flex justify-content-start align-items-center">
                         <i class="fas fa-money-bill-wave-alt text-dark" style="font-size: 18px;"></i>
                         <div class="ml-2 fw-bold text-dark">Reports & Analytics</div>
                     </a>
-                    <a ng-show="userRole === 'brand' || userRole === 'outlet'" ui-sref="home.orders.display" class="dropdown-item d-flex justify-content-start align-items-center">
+                    <!-- isAuthorized(6,['brand']) -->
+                    <!-- isAuthorized(1,['outlet']) -->
+                    <a ng-if="permissionAuthorizations.manageOrdersBrand || permissionAuthorizations.manageOrdersOutlet" ui-sref="home.orders.display"
+                        class="dropdown-item d-flex justify-content-start align-items-center">
                         <i class="fas fa-file-invoice text-dark"></i>
                         <div class="ml-2 fw-bold text-dark">Orders</div>
                     </a>
-                    <a ng-show="isAuthorized(1,['brand'])" ui-sref="home.brand.display" class="dropdown-item d-flex justify-content-start align-items-center">
+                    <!-- isAuthorized(1,['brand']) -->
+                    <a ng-if="permissionAuthorizations.manageCustomers" ui-sref="home.brand.display"
+                        class="dropdown-item d-flex justify-content-start align-items-center">
                         <i class="fas fa-file-invoice text-dark"></i>
                         <div class="ml-2 fw-bold text-dark">Customer Management</div>
                     </a>
                 </div>
             </div>
-            <li class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2" ng-show="isAuthorized(2,['brand'])">
+            <!-- <li class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2"
+                ng-if="isAuthorized(2,['brand'])">
                 <a ui-sref="home.brand.display"
                     class="d-flex justify-content-center align-items-center text-decoration-none text-white">
                     <i class="fas fa-file-invoice"></i>
                     <div class="ml-2 fw-bold">Send Instruction</div>
                 </a>
-            </li>
-            <li class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2" ng-show="userRole === 'admin' || userRole === 'superAdmin'">
+            </li> -->
+            <li class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2"
+                ng-if="permissionAuthorizations.userRole === 'admin' || permissionAuthorizations.userRole === 'superAdmin'">
                 <a ui-sref="home.admin.display"
                     class="d-flex justify-content-center align-items-center text-decoration-none text-white">
                     <i class="fas fa-file-invoice"></i>
                     <div class="ml-2 fw-bold">Profile</div>
                 </a>
             </li>
-            <li class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2" ng-show="userRole === 'outlet'">
+            <li class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2"
+                ng-if="permissionAuthorizations.userRole === 'outlet'">
                 <a ui-sref="home.outlet.display"
                     class="d-flex justify-content-center align-items-center text-decoration-none text-white">
                     <i class="fas fa-file-invoice"></i>
                     <div class="ml-2 fw-bold">Profile</div>
                 </a>
             </li>
-            <li class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2" ng-show="userRole === 'brand'">
+            <li class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2"
+                ng-if="permissionAuthorizations.userRole === 'brand'">
                 <a ui-sref="home.brand.display"
                     class="d-flex justify-content-center align-items-center text-decoration-none text-white">
                     <i class="fas fa-file-invoice"></i>
                     <div class="ml-2 fw-bold">Profile</div>
                 </a>
             </li>
-            <li class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2" ng-show="getToken()">
+            <li ng-if="permissionAuthorizations.userRole === 'brand'"
+                class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2 h-100">
+                <div class="d-flex justify-content-center align-items-center text-decoration-none text-white h-100">
+                    <div class="ml-2 fw-bold dark-theme">
+                        <select class="switch-brand bg-theme-light text-white rounded" to-number ng-model="$root.currentBrandIndex">
+                            <option ng-repeat="brand in userBrands track by userData.brands.id" ng-if="!brand.isDisabled" value="{{$index}}">
+                                {{brand.name}}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </li>
+            <li ng-if="permissionAuthorizations.userRole === 'outlet'"
+                class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2 h-100">
+                <div class="d-flex justify-content-center align-items-center text-decoration-none text-white h-100">
+                    <div class="ml-2 fw-bold dark-theme">
+                        <select class="switch-outlet bg-theme-light text-white rounded" to-number ng-model="$root.currentOutletIndex">
+                            <option ng-repeat="outlet in userOutlets" ng-if="!outlet.isDisabled" value="{{$index}}">
+                                {{outlet.name}}
+                            </option>
+                        </select>
+                    </div>
+                </div>
+            </li>
+            <li class="nav-item list-style-none d-flex justify-content-sm-start align-items-center m-2"
+                ng-if="getToken()">
                 <a ng-click="logoutHandler()"
                     class="d-flex justify-content-center align-items-center text-decoration-none text-white">
                     <i class="fas fa-sign-out-alt" style="font-size: 18px;"></i>
                     <div class="ml-2 fw-bold">Logout</div>
                 </a>
             </li>
-            <li class="nav-item list-style-none m-2" ng-show="!getToken()">
+            <li class="nav-item list-style-none m-2" ng-if="!getToken()">
                 <a ui-sref="home.login"
-                class="d-flex justify-content-center align-items-center text-decoration-none text-white">
-                <i class="fas fa-user" style="font-size: 18px;"></i>
-                <div class="ml-2 fw-bold">Login</div>
-            </a>
+                    class="d-flex justify-content-center align-items-center text-decoration-none text-white">
+                    <i class="fas fa-user" style="font-size: 18px;"></i>
+                    <div class="ml-2 fw-bold">Login</div>
+                </a>
             </li>
         </ul>
     </div>

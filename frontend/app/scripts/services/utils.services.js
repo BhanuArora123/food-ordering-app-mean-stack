@@ -1,106 +1,49 @@
 
 
 appModule
-    .factory("utility", function ($uibModal, $state, userService, $rootScope) {
+    .factory("utility", function ($uibModal, $state, permission, userService, $rootScope) {
         return {
             categorizeItems: function (data) {
                 // categorize by sub category 
-                var subCategorizedItems = {};
-
-                data.forEach(function (items) {
-                    console.log(items.subCategory);
-                    if (!subCategorizedItems[items.subCategory]) {
-                        subCategorizedItems[items.subCategory] = [];
-                    }
-                    subCategorizedItems[items.subCategory].push(items);
-                })
-
-                // category 
                 var categorizedItems = {};
 
-                for (var items in subCategorizedItems) {
-                    if (Object.hasOwnProperty.call(subCategorizedItems, items)) {
-                        var itemSubCategorized = subCategorizedItems[items];
-                        var category = itemSubCategorized[0].category;
-                        if (!categorizedItems[category]) {
-                            categorizedItems[category] = [];
+                data.forEach(function (items) {
+                    console.log(items.category.name);
+                    if (!categorizedItems[items.category.id]) {
+                        categorizedItems[items.category.id] = {
+                            name: items.category.name,
+                            items: []
+                        };
+                    }
+                    categorizedItems[items.category.id].items.push(items);
+                })
+
+                // var categorizedItemsArray = [];
+                console.log(categorizedItems);
+
+                for (var categoryId in categorizedItems) {
+                    var categoryItems = categorizedItems[categoryId];
+                    var categorizedItemsArray = categoryItems.items;
+                    console.log(categorizedItemsArray);
+                    var subCategorizedItems = {};
+                    categorizedItemsArray.forEach(function (categoryItem) {
+                        if (!subCategorizedItems[categoryItem.category.subCategory.id]) {
+                            subCategorizedItems[categoryItem.category.subCategory.id] = {
+                                name: categoryItem.category.subCategory.name,
+                                subCategoryItems: []
+                            };
                         }
-                        var subCategoryItems = {};
-
-                        categorizedItems[category].push({
-                            subCategory: items,
-                            items: subCategorizedItems[items]
-                        });
-                    }
+                        subCategorizedItems[categoryItem.category.subCategory.id].subCategoryItems.push(categoryItem);
+                    })
+                    categorizedItems[categoryId].subCategories = subCategorizedItems;
                 }
-
-                var categorizedItemsArray = [];
-
-                for (var items in categorizedItems) {
-                    if (Object.hasOwnProperty.call(categorizedItems, items)) {
-                        var subCategoryItems = categorizedItems[items];
-                        categorizedItemsArray.push({
-                            category: items,
-                            subCategoryItems: subCategoryItems
-                        });
-                    }
-                }
-
-                return categorizedItemsArray;
+                return categorizedItems;
             },
             getRole: function () {
                 var userData = userService.userData();
-                $rootScope.userRole = userData?userData.role.name:undefined;
-            },
-            getPermissions : function (role) {
-                if(role === 'Admin'){
-                    return [
-                        {
-                            permissionId:1,
-                            permissionName:'Manage Admin'
-                        },
-                        {
-                            permissionId:2,
-                            permissionName:'Manage Brand'
-                        },
-                        {
-                            permissionId:3,
-                            permissionName:'Manage Analytics'
-                        }
-                    ];
-                }
-                else if(role === 'Brand'){
-                    return [
-                        {
-                            permissionId:1,
-                            permissionName:'Manage Customers'
-                        },
-                        {
-                            permissionId:2,
-                            permissionName:'Send Outlet Instructions'
-                        },
-                        {
-                            permissionId:3,
-                            permissionName:'View Analytics'
-                        }
-                    ]
-                }
-                else{
-                    return [
-                        {
-                            permissionId:1,
-                            permissionName:'Manage Food Items'
-                        },
-                        {
-                            permissionId:2,
-                            permissionName:'Allow Take Away Orders'
-                        },
-                        {
-                            permissionId:3,
-                            permissionName:'View Analytics'
-                        }
-                    ]
-                }
+                var userRole = userData ? userData.role.name: localStorage.getItem("role");
+                console.log("role - ",userRole);
+                return userRole;
             },
             decategorizeItems: function (categorizedItems) {
                 var items = [];
@@ -135,8 +78,7 @@ appModule
             },
             logout: function () {
                 localStorage.clear();
-                $rootScope.userRole = undefined;
-                console.log($rootScope.userRole);
+                permission.unsetAllAuthorizations();
                 $state.go("home.login");
             },
             calculateAmount: function (items) {
@@ -144,7 +86,7 @@ appModule
                 var totalFoodAmount = 0;
                 var totalTaxAmount = 0;
                 items.forEach(function (item) {
-                    totalFoodAmount += (item.foodPrice*item.quantity);
+                    totalFoodAmount += (item.foodPrice * item.quantity);
                     item.taxes.forEach(function (tax) {
                         var taxLevied = item.foodPrice * 0.01 * tax.percentage * item.quantity;
                         console.log(taxLevied);
@@ -165,18 +107,41 @@ appModule
                     totalTaxAmount: totalTaxAmount
                 }
             },
-            debounce: function (delay,cb) {
+            debounce: function (delay, cb) {
                 var timeout;
                 return function () {
                     var argumentsList = arguments;
                     clearTimeout(timeout);
                     setTimeout(function () {
                         cb(argumentsList);
-                    },delay);
+                    }, delay);
                 }
             },
-            getCurrentTimezone : function () {
+            getCurrentTimezone: function () {
                 return Intl.DateTimeFormat().resolvedOptions().timeZone;
-            }
+            },
+            setPermissionAuthorization: function () {
+                var userData = userService.userData();
+                if (!userData) {
+                    return;
+                }
+                var permissions = userData.permissions;
+                var role = userData.role.name;
+                permission.setPermissionAuthorization("manageDishes", permission.isAuthorized(permissions, 5, ['brand', 'outlet'], role))
+                permission.setPermissionAuthorization("manageDishesOutlets", permission.isAuthorized(permissions, 5, ['outlet'], role))
+                permission.setPermissionAuthorization("manageDishesBrand", permission.isAuthorized(permissions, 5, ['brand'], role))
+                permission.setPermissionAuthorization("manageAdmins", permission.isAuthorized(permissions, 1, ['superAdmin', 'admin'], role))
+                permission.setPermissionAuthorization("manageBrands", permission.isAuthorized(permissions, 2, ['superAdmin', 'admin'], role))
+                permission.setPermissionAuthorization("manageBrandUsers", permission.isAuthorized(permissions, 7, ['brand'], role))
+                permission.setPermissionAuthorization("manageOutlets", permission.isAuthorized(permissions, 7, ['brand'], role))
+                permission.setPermissionAuthorization("manageOutletUsers", permission.isAuthorized(permissions, 6, ['outlet'], role))
+                permission.setPermissionAuthorization("manageAnalytics", permission.isAuthorized(permissions, 3, ['superAdmin', 'admin', 'brand', 'outlet'], role))
+                permission.setPermissionAuthorization("manageOrdersBrand", permission.isAuthorized(permissions, 6, ['brand'], role))
+                permission.setPermissionAuthorization("manageOrdersOutlet", permission.isAuthorized(permissions, 1, ['outlet'], role))
+                permission.setPermissionAuthorization("manageCustomers", permission.isAuthorized(permissions, 1, ['brand'], role))
+                permission.setPermissionAuthorization("userRole", userData.role.name)
+                console.log(permission.getPermissionAuthorizations());
+            },
+            
         }
     })

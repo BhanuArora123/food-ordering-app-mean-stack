@@ -1,7 +1,7 @@
 
 
 appModule
-    .service("foodService", function ($http, blockUI, outletService, userService) {
+    .service("foodService", function ($http, blockUI, $rootScope, userService) {
         this.getFoodItems = function (data) {
             // blockUI.start({
             //     message: "Loading..."
@@ -9,15 +9,14 @@ appModule
             var userData = userService.userData();
             var brandData, outletData;
             if (userData && userData.brands) {
-                brandData = userData.brands[0];
+                brandData = userData.brands[$rootScope.currentBrandIndex];
             }
             else if (userData && userData.outlets) {
-                outletData = userData.outlets[0];
+                outletData = userData.outlets[$rootScope.currentOutletIndex];
             }
-            console.log(brandData?brandData._id:outletData.brand.id);
             return $http.get("http://localhost:8080/food/getFoodItems",{
                 params: {
-                    brandId: brandData?brandData._id:outletData.brand.id,
+                    brandId: (data.brandId?data.brandId:(brandData?brandData.id:outletData.brand.id)),
                     minPrice: data.minPrice,
                     maxPrice: data.maxPrice,
                     minRating: data.minRating,
@@ -60,7 +59,7 @@ appModule
             foodData.append("isVeg", isVeg);
             foodData.append("foodImage", data.foodImage);
             foodData.append("subCategory", data.subCategory);
-            foodData.append("category", data.category);
+            foodData.append("category", JSON.stringify(data.category));
             foodData.append("brand", JSON.stringify(data.brand));
             foodData.append("taxes", JSON.stringify(taxes));
             console.log("fooddata - ", foodData);
@@ -146,17 +145,15 @@ appModule
                     console.log(error);
                 })
         };
-        this.getSubCategories = function (category) {
+        this.getSubCategories = function (categoryId) {
             return $http
                 .get("http://localhost:8080/category/sub/get", {
                     params: {
-                        category: category
+                        categoryId: categoryId
                     }
                 })
                 .then(function (res) {
-                    return res.data.subCategories.map(function (subCategory) {
-                        return subCategory.name;
-                    });
+                    return res.data.subCategories;
                 })
                 .catch(function (error) {
                     console.log(error);
@@ -166,10 +163,10 @@ appModule
             var userData = userService.userData();
             var brandData, outletDetails;
             if (userData && userData.brands) {
-                brandData = userData.brands[0];
+                brandData = userData.brands[$rootScope.currentBrandIndex];
             }
             else if (userData && userData.outlets) {
-                outletDetails = userData.outlets[0];
+                outletDetails = userData.outlets[$rootScope.currentOutletIndex];
             }
             return $http
                 .get("http://localhost:8080/category/availableCategories", {

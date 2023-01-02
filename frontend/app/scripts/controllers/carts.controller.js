@@ -43,8 +43,8 @@ appModule.controller("cartController", function ($scope, $rootScope, orderServic
     // place order 
     $scope.placeOrder = function () {
         var userData = userService.userData();
-        var brandData = userData.brands ? userData.brands[0] : userData.outlets[0];
-        var outletData = userData.outlets ? userData.outlets[0] : undefined;
+        var brandData = userData.brands ? userData.brands[$rootScope.currentBrandIndex] : userData.outlets[$rootScope.currentOutletIndex].brand;
+        var outletData = userData.outlets ? userData.outlets[$rootScope.currentOutletIndex] : undefined;
         var cart = Object.values($scope.getCart());
         return orderService.placeOrder($scope.customer, outletData, brandData, $scope.orderType, $scope.assignedTable,cart)
             .then(function (data) {
@@ -95,12 +95,13 @@ appModule.controller("cartController", function ($scope, $rootScope, orderServic
     }
 
     $scope.isAuthorized = function (requiredPermissionId, allowedRoles) {
-        var outletData = outletService.getServiceData().outletData;
+        var userData = userService.userData();
+        var outletData = userData.outlets[$rootScope.currentOutletIndex];
         if (!outletData) {
             return false;
         }
-        var userPermissions = outletData.permissions;
-        var role = localStorage.getItem("role");
+        var userPermissions = userData.permissions;
+        var role = utility.getRole();
         return permission.isAuthorized(userPermissions, requiredPermissionId, allowedRoles, role);
     }
 })

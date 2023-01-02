@@ -1,7 +1,9 @@
 
 
 appModule
-    .controller("ordersController", function ($scope, $rootScope, outletOrders, orderService, outletService, utility,socketService,brandService, blockUI) {
+    .controller("ordersController", function ($scope, $rootScope, outletOrders, orderService, outletService, utility,socketService,permission, blockUI, userService) {
+        
+        $scope.permissionAuthorizations = permission.getPermissionAuthorizations();
         // current order status
         $scope.currentOrderStatus = "All";
 
@@ -67,10 +69,12 @@ appModule
         }
 
         $scope.changeOrderStatus = function (status, orderId) {
+            var userData = userService.userData();
+            var outletData = userData.outlets?userData.outlets[$rootScope.currentOutletIndex]:undefined;
             return orderService
-                .changeStatus(status, orderId)
+                .changeStatus(status, orderId,outletData.id)
                 .then(function (data) {
-                    return $scope.getOrders($scope.currentOrderStatus);
+                    // return $scope.getOrders($scope.currentOrderStatus);
                 })
                 .catch(function (error) {
                     console.log(error);
@@ -78,8 +82,9 @@ appModule
         }
 
         $scope.viewDetails = function (index, assignedTable) {
-            var brandData = brandService.getServiceData().brandData;
-            
+            var userData = userService.userData();
+            var brandData = userData.brands?userData.brands[$rootScope.currentBrandIndex]:undefined;
+            console.log(brandData);
             if(brandData){
                 return utility.openModal(
                     'views/orders/displayModal.html',
@@ -119,7 +124,9 @@ appModule
         }
     })
 
-appModule.controller("orderDetailsController", function ($scope, utility, orderService) {
+appModule.controller("orderDetailsController", function ($scope, utility, orderService,permission) {
+
+    $scope.permissionAuthorizations = permission.getPermissionAuthorizations();
 
     var selectedOrder = $scope.$parent.getAllOutletOrders[$scope.$parent.extraData.currentIndex];
 

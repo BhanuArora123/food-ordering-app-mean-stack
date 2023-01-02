@@ -1,10 +1,9 @@
 
 
-appModule.controller("adminController", function ($scope,$rootScope, userService, allAdmins, adminService, brandService, adminData, brandsData, blockUI, NgTableParams, utility,permission) {
+appModule.controller("adminController", function ($scope, userService, allAdmins, brandService, adminData, brandsData, allBrandAdmins, blockUI, NgTableParams,permission) {
     // setting value for default value
     var allBrands = brandsData.allBrands;
-    console.log($rootScope.userRole);
-
+    
     // displaying admin profile 
     $scope.adminData = adminData;
 
@@ -12,24 +11,83 @@ appModule.controller("adminController", function ($scope,$rootScope, userService
     $scope.allBrands = allBrands;
     $scope.totalBrands = brandsData.totalBrands;
 
+    $scope.allBrandAdmins = allBrandAdmins.brandAdmins;
+    $scope.totalBrandAdmins = allBrandAdmins.totalBrandAdmins;
+
     $scope.allAdmins = allAdmins.admins;
     $scope.totalAdmins = allAdmins.totalAdmins;
 
-    $scope.allBrandsData = new NgTableParams({}, {
-        dataset: allBrands,
-    })
+    $scope.allBrandsData = allBrandAdmins.brandAdmins;
 
-    $scope.getBrands = function (page) {
-        brandService
-        .getBrands(page,9)
+    $scope.getBrands = function (page,query) {
+        return brandService
+        .getBrands(page,9,query)
         .then(function (data) {
             $scope.allBrands = data.brands;
+            return data.brands;
         })
         .catch(function (error) {
             console.log(error);
         })
     }
 
+    $scope.getBrandAdmins = function (page,brandId) {
+        return brandService.getBrandUsers(page, 9, brandId,"admin")
+            .then(function (data) {
+                $scope.allBrandAdmins = data.brandUsers;
+                $scope.totalBrandAdmins = data.brandUsersCount;
+                return data.brandUsers;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+    }
+
+    $scope.updateAllotedBrands = function (brandAdmin) {
+        if(!brandAdmin.brands.length){
+            alert("there must be atleast one brand alloted to a admin");
+            return ;
+        }
+        return userService.editUser(brandAdmin._id,{
+            brandsToAllot:brandAdmin.brands.map(function (brand) {
+                return {
+                    id:brand._id,
+                    name:brand.name
+                }
+            }),
+            currentUserRole:brandAdmin.role,
+            role:brandAdmin.role,
+            permissions:brandAdmin.permissions,
+            userName:brandAdmin.name,
+            userEmail:brandAdmin.email,
+        })
+        .then(function (data) {
+            console.log(data);
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
+    }
+
+    $scope.updateUser = function (userData) {
+        return userService
+            .editUser({
+                userId:userData._id,
+                currentUserRole:userData.role,
+                brandsToAllot:userData.brands,
+                outletsToAllot:userData.outlets,
+                userEmail:userData.email,
+                userName:userData.name,
+                permissions: userData.permissions,
+                role:userData.role,
+            })
+            .then(function (data) {
+                return data.message;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+    }
     // editing password 
     $scope.allowEdit = function () {
         $scope.isEditClicked = true;
@@ -65,7 +123,7 @@ appModule.controller("adminController", function ($scope,$rootScope, userService
     }
 
     $scope.updateBrand = function (brand) {
-        return adminService
+        return brandService
             .editBrand(brand)
             .then(function (data) {
                 $scope.editElementIndex = -1;
@@ -78,7 +136,7 @@ appModule.controller("adminController", function ($scope,$rootScope, userService
 
     $scope.toggleBrandAccess = function (brand) {
         console.log(brand);
-        adminService
+        brandService
             .editBrand({
                 _id: brand._id,
                 isDisabled: !brand.isDisabled
@@ -90,29 +148,6 @@ appModule.controller("adminController", function ($scope,$rootScope, userService
             .catch(function (error) {
                 console.log(error);
             })
-    }
-
-    $scope.getPermissions = function (role) {
-        return utility.getPermissions(role);
-    }
-
-    $scope.updatePermissions = function (userId, permissions, type) {
-        var updatePermissionDebounce = utility.debounce(2000,function () {
-            if (type === 'brand') {
-                brandService.editPermissions({
-                    brandId: userId,
-                    permissions: permissions
-                })
-            }
-            else {
-                adminService
-                    .editPermissions({
-                        adminId: userId,
-                        permissions: permissions
-                    })
-            }
-        })
-        updatePermissionDebounce();
     }
 
     // admin permissions
@@ -132,8 +167,9 @@ appModule.controller("adminController", function ($scope,$rootScope, userService
                 blockUI.stop();
             })
     }
-    $scope.isAuthorized = function (currentPermissions,requiredPermissionId,role) {
-        var allowedRoles = ["superAdmin","admin"];
-        return permission.isAuthorized(currentPermissions,requiredPermissionId,allowedRoles,role);
-    }
+    // permissions 
+    $scope.getPermissions = function (role,subRoles) {
+        console.log(permission.getPermissions(role,subRoles));
+        return permission.getPermissions(role,subRoles);;
+    };
 })
