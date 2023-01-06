@@ -57,7 +57,7 @@ exports.deleteValue = function (key) {
 }
 exports.storeHashMap = function (key,dataObject) {
     try {
-        for (const keyValue in dataObject) {
+        for (var keyValue in dataObject) {
             var value = dataObject[keyValue];
             if(typeof(value) !== "string" && typeof(value) !== "number"){
                 value = JSON.stringify(value);

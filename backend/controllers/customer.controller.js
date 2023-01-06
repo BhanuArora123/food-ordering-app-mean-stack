@@ -4,7 +4,7 @@ var throwError = require("../utils/errors");
 
 var async = require("async");
 
-require("dotenv").config("../.env");
+var config = require("../config/config");
 
 var jwt = require("jsonwebtoken");
 
@@ -15,14 +15,19 @@ var utils = require("../utils/utils");
 exports.getCustomerData = function (req, res, next) {
     try {
         var phoneNumber = req.query.phoneNumber ? req.query.phoneNumber : req.user.phoneNumber;
+        var brandId = req.query.brandId;
+        var matchQuery = {
+            phoneNumber:phoneNumber
+        };
+        if(brandId){
+            matchQuery["brandId"] = brandId;
+        }
 
         redisUtils
-            .getValue(`customer-${phoneNumber}`)
+            .getValue(`customer_${phoneNumber}_${brandId}`)
             .then(function (customerData) {
                 if (!customerData) {
-                    return customerModel.findOne({
-                        phoneNumber: phoneNumber
-                    })
+                    return customerModel.findOne(matchQuery)
                 }
                 req.isRedisResponse = true;
                 return JSON.parse(customerData);
@@ -56,12 +61,10 @@ exports.getAllCustomers = function (req, res, next) {
     try {
         var role = req.user.role;
         var permissions = req.user.permissions;
-        var brandId = req.query.userId;
+        var brandId = req.query.brandId;
         var page = parseInt(req.query.page);
         var limit = parseInt(req.query.limit);
         var skip = (page - 1) * limit;
-        var totalCustomers;
-
         var isUserAuthorized = utils.isUserAuthorized(role, permissions, {
             name: "customer"
         }, "Manage Brands");
@@ -131,8 +134,9 @@ exports.login = function (req, res, next) {
                 var token = jwt.sign({
                     phoneNumber: phoneNumber,
                     role: "customer",
-                    userId: customerData._id
-                }, process.env.AUTH_SECRET, {
+                    userId: customerData._id,
+                    brandId:customerData.brandId
+                }, config.authSecret, {
                     expiresIn: "15h"
                 })
                 return res.status(200).json({

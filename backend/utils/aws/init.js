@@ -1,12 +1,12 @@
 var aws = require("aws-sdk");
 
-require("dotenv").config("../../.env");
+var config = require("../../config/config");
 
 aws.config.update({
-    secretAccessKey: process.env.AWS_SECRET_ACCESSKEY,
-    accessKeyId: process.env.ACCESS_KEY_ID,
-    region: process.env.REGION,
-    signatureVersion: process.env.SIGNATURE_VERSION,
+    secretAccessKey: config.awsSecretKey,
+    accessKeyId: config.awskeyId,
+    region: config.awsRegion,
+    signatureVersion: config.awsSignatureVersion,
 });
 
 module.exports = {

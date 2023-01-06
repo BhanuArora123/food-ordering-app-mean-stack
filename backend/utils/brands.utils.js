@@ -15,11 +15,6 @@ exports.changeNotificationForOutlets = function (title, content, brandId) {
                     return outletData.email;
                 })
                 // send email to brand 
-                console.log({
-                    email: outletEmails,
-                    subject: title,
-                    content: content
-                });
                 addTaskToQueue("SEND_EMAIL", {
                     MessageBody: {
                         email: outletEmails,

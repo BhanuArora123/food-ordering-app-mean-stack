@@ -74,7 +74,6 @@ exports.createSubCategory = function (req, res, next) {
                 parentCategory: category
             })
             .then(function (subCategory) {
-                console.log(subCategory);
                 if (subCategory) {
                     throwError("category already exist", 409);
                 }
@@ -134,7 +133,7 @@ exports.getSubCategories = function (req, res, next) {
 
 exports.getCategoriesForBrand = function (req, res, next) {
     try {
-        var brandId = req.query.brandId || req.user.userId;
+        var brandId = req.query.brandId;
 
         foodModel.aggregate([
             {

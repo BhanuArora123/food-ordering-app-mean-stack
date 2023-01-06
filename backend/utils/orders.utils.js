@@ -22,7 +22,6 @@ var updateTable = function (outletId,tableId,dataToUpdate) {
             ]
         })
         .then(function (data) {
-            console.log(tableId,dataToUpdate);
             console.log(data);
         })
         .catch(function (error) {

@@ -1,8 +1,10 @@
 var aws = require("../init").getAwsSdk();
 
+var config = require("../../../config/config");
+
 var sqs = new aws.SQS({
     apiVersion: '2012-11-05',
-    region: process.env.REGION
+    region: config.awsRegion
 });
 
 var consumer = require("sqs-consumer").Consumer;
@@ -54,7 +56,7 @@ var createTaskQueue = function (queueName, processNextTask) {
 var addTaskToQueue = function (queueName, params) {
     try {
         var taskParams = {
-            QueueUrl: `https://sqs.us-east-1.amazonaws.com/${process.env.ACCOUNT_ID}/${queueName}`,
+            QueueUrl: `https://sqs.us-east-1.amazonaws.com/${config.awsAccountId}/${queueName}`,
             MessageBody: JSON.stringify(params.MessageBody)
         }
         sqs.sendMessage(taskParams, function (err, data) {
@@ -74,7 +76,7 @@ var processTask = function (queueName, worker, processNextTask) {
     try {
 
         var taskConsumer = consumer.create({
-            queueUrl: `https://sqs.us-east-1.amazonaws.com/${process.env.ACCOUNT_ID}/${queueName}`,
+            queueUrl: `https://sqs.us-east-1.amazonaws.com/${config.awsAccountId}/${queueName}`,
             handleMessage: function (data) {
                 worker(data);
             },

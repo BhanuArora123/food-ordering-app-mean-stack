@@ -20,7 +20,7 @@ var customerSchema = new schema({
     outletId:{
         type:ObjectId,
         required:true
-    }
+    }// add name 
 },
 {
     timestamps:true

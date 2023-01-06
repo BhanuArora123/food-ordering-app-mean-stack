@@ -33,7 +33,8 @@ exports.createOrderWorker = function (messageData) {
         var orderType = messageConfig.orderType;
 
         customerModel.findOne({
-            phoneNumber:customer.customer.phoneNumber.toString()
+            phoneNumber:customer.customer.phoneNumber.toString(),
+            brandId:brand.id
         })
         .then(function (customerData) {
             if(customerData){

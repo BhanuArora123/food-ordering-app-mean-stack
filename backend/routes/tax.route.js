@@ -5,6 +5,7 @@ var taxController = require("../controllers/taxes.controller");
 var passport = require("passport");
 
 var body = require("express-validator").body;
+var query = require("express-validator").query;
 var validate = require("../middleware/validation.middleware").validate;
 
 router.post("/add",passport.authenticate("jwt",{ session:false }),[
@@ -15,6 +16,8 @@ router.post("/add",passport.authenticate("jwt",{ session:false }),[
 validate,
 taxController.addTax);
 
-router.get("/get/all",passport.authenticate("jwt",{ session:false }),taxController.getAllTaxes);
+router.get("/get/all",
+passport.authenticate("jwt",{ session:false }),
+taxController.getAllTaxes);
 
 module.exports = router;

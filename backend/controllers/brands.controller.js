@@ -1,26 +1,20 @@
+var async = require("async");
+// models
 var brands = require("../models/brands.model");
 var users = require("../models/users.model");
-var async = require("async");
-
-var throwError = require("../utils/errors");
 var outletsModel = require("../models/outlets.model");
-
-var brandUtils = require("../utils/brands.utils");
-
-var redisUtils = require("../utils/redis/redis.utils");
-
-require("dotenv").config("./.env");
-
-var utils = require("../utils/utils");
-
 var orderModel = require("../models/order.model");
-
+// utils 
+var brandUtils = require("../utils/brands.utils");
+var redisUtils = require("../utils/redis/redis.utils");
+var utils = require("../utils/utils");
+var throwError = require("../utils/errors");
+// data type 
 var ObjectId = require("mongoose").Types.ObjectId;
 
 exports.getAllBrands = function (req, res, next) {
     try {
         var role = req.user.role;
-
         var permissions = req.user.permissions;
 
         var search = req.query.search;
@@ -257,6 +251,7 @@ exports.getBrandUsers = function (req, res, next) {
                 }
             }
         }
+        console.log(query);
         async.parallel([
             function (cb) {
                 users

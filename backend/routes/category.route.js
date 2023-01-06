@@ -1,6 +1,7 @@
 var router = require("express").Router();
 
 var body = require("express-validator").body;
+var query = require("express-validator").query;
 var passport = require("passport");
 var categoryController = require("../controllers/category.controller");
 var validate = require("../middleware/validation.middleware").validate;
@@ -28,8 +29,20 @@ router.post("/sub/create",
     validate,
     categoryController.createSubCategory);
 
-router.get("/sub/get", passport.authenticate("jwt", { session: false }), categoryController.getSubCategories);
+router.get("/sub/get", 
+passport.authenticate("jwt", { session: false }),
+    [
+        query("categoryId").notEmpty().isString()
+    ],
+    validate,
+ categoryController.getSubCategories);
 
-router.get("/availableCategories",passport.authenticate("jwt", { session: false }), categoryController.getCategoriesForBrand);
+router.get("/availableCategories",
+passport.authenticate("jwt", { session: false }),
+[
+    query("brandId").notEmpty().isString()
+],
+validate,
+ categoryController.getCategoriesForBrand);
 
 module.exports = router;

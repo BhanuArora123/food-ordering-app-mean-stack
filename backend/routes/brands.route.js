@@ -5,9 +5,29 @@ var brandsController = require("../controllers/brands.controller");
 var body = require("express-validator").body;
 var validate = require("../middleware/validation.middleware").validate;
 
-router.get("/getAll", passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }), brandsController.getAllBrands)
+var query = require("express-validator").query;
 
-router.get("/users/get", passport.authenticate("jwt", { failureMessage: "unauthorized!", session: false }), brandsController.getBrandUsers);
+router.get("/getAll",
+    passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),
+    [
+        query("search").optional().isString(),
+        query("limit").notEmpty().isNumeric(),
+        query("page").notEmpty().isNumeric()
+    ],
+    validate,
+    brandsController.getAllBrands
+)
+
+router.get("/users/get", 
+passport.authenticate("jwt", { failureMessage: "unauthorized!", session: false }), 
+[
+    query("brandId").optional().isString(),
+    query("subRole").optional().isString(),
+    query("page").notEmpty().isNumeric(),
+    query("limit").notEmpty().isNumeric(),
+],
+validate,
+brandsController.getBrandUsers);
 
 router.put("/edit",
     passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),

@@ -4,6 +4,7 @@ var users = require("../models/users.model");
 var customerModel = require("../models/customer.model").model;
 var redisUtils = require("../utils/redis/redis.utils");
 var utils = require("../utils/utils");
+var config = require("../config/config");
 
 var JwtStrategy = passportJwt.Strategy;
 
@@ -12,19 +13,20 @@ var ExtractStrategy = passportJwt.ExtractJwt;
 exports.applyJwtStrategy = function () {
     var options = {
         jwtFromRequest: ExtractStrategy.fromAuthHeaderAsBearerToken(),
-        secretOrKey: process.env.AUTH_SECRET
+        secretOrKey: config.authSecret
     };
     return new JwtStrategy(options, function (jwtPayload, done) {
         var email = jwtPayload.email;
         var phoneNumber = jwtPayload.phoneNumber;
         var role = jwtPayload.role;
         var userId = jwtPayload.userId;
+        var customerBrandId = jwtPayload.brandId;
         var isRedisResponse;
 
         // customer authentication
         if (role === 'customer') {
             return redisUtils
-                .getValue(userId)
+                .getValue(`customer_${phoneNumber}_${customerBrandId}`)
                 .then(function (customerData) {
                     if (!customerData) {
                         return customerModel
@@ -38,7 +40,6 @@ exports.applyJwtStrategy = function () {
                 .then(function (customerData) {
                     if (customerData) {
                         if (!isRedisResponse) {
-                            console.log("customerData", customerData);
                             redisUtils.setValue(customerData._id.toString(), JSON.stringify(customerData._doc));
                         }
                         return done(null, {
@@ -69,15 +70,8 @@ exports.applyJwtStrategy = function () {
             .then(function (userData) {
                 if (userData && utils.blockDisabledBrands(userData)) {
                     if (!isRedisResponse) {
-                        redisUtils.setValue(userData._id, JSON.stringify(userData._doc));
+                        redisUtils.setValue(userData._id.toString(), JSON.stringify(userData._doc));
                     }
-                    console.log(userData);
-                    console.log("hey!",{
-                        email: email,
-                        userId: userData._id,
-                        role: userData.role,
-                        permissions: userData.permissions
-                    });
                     return done(null, {
                         email: email,
                         userId: userData._id,

@@ -242,10 +242,9 @@ exports.editFoodItem = function (req, res, next) {
         var foodPrice = req.body.price;
         var foodDesc = req.body.foodDesc;
         var category = req.body.category;
-        var subCategory = req.body.subCategory;
         var foodItemId = req.body.foodItemId;
 
-        var brandId = req.query.brandId;
+        var brandId = req.body.brandId;
         var foodData;
 
         foodModel
@@ -266,8 +265,7 @@ exports.editFoodItem = function (req, res, next) {
                         name: foodName,
                         price: foodPrice,
                         description: foodDesc,
-                        category: category,
-                        subCategory: subCategory
+                        category: category
                     }
                 })
             })
@@ -310,7 +308,7 @@ exports.deleteFoodItem = function (req, res, next) {
                 message: "Access Denied!"
             })
         }
-        var foodItemId = req.query.foodItemId;
+        var foodItemId = req.body.foodItemId;
         foodModel.updateOne({
             _id: ObjectId(foodItemId),
             isDeleted: false

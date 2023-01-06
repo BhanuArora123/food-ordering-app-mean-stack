@@ -6,11 +6,26 @@ var router = express.Router();
 var foodController = require("../controllers/food.controller");
 
 var body = require("express-validator").body;
+var query = require("express-validator").query;
 
 var fileUpload = require("express-fileupload");
 var validate = require("../middleware/validation.middleware").validate;
 
-router.get("/getFoodItems", foodController.displayFoodItem);
+router.get("/getFoodItems",
+[
+    query("brandId").optional().isString(),
+    query("minPrice").optional().isNumeric(),
+    query("maxPrice").optional().isNumeric(),
+    query("minRating").optional().isNumeric(),
+    query("isVeg").optional().isBoolean(),
+    query("foodName").optional().isString(),
+    query("subCategory").optional().isString(),
+    query("category").optional().isString(),
+    query("page").notEmpty().isNumeric(),
+    query("limit").notEmpty().isNumeric()
+],
+validate,
+ foodController.displayFoodItem);
 router.post("/addFoodItem",
     passport.authenticate("jwt", { failureMessage: false, session: false }),
     fileUpload({
@@ -35,9 +50,12 @@ router.put("/editFoodItem", passport.authenticate("jwt", { session: false }),
         body("foodName").isString().optional(),
         body("foodPrice").isNumeric().optional(),
         body("foodDesc").isString().optional(),
-        body("category").isString().optional(),
-        body("subCategory").isString().optional(),
-        body("foodItemId").notEmpty().isString()
+        body("category.name").notEmpty().isString(),
+        body("category.id").notEmpty().isString(),
+        body("category.subCategory.name").notEmpty().isString(),
+        body("category.subCategory.id").notEmpty().isString(),
+        body("foodItemId").notEmpty().isString(),
+        body("brandId").notEmpty().isString()
     ],
     validate
     , foodController.editFoodItem);

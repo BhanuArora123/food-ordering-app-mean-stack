@@ -5,12 +5,25 @@ var router = express.Router();
 var passport = require("passport");
 
 var body = require("express-validator").body;
+var query = require("express-validator").query;
 
 var validate = require("../middleware/validation.middleware").validate;
 
 var ordersController = require("../controllers/orders.controller");
 
-router.get("/getAllOrders", passport.authenticate("jwt", { session: false }), ordersController.getAllOrders);
+router.get("/getAllOrders", 
+passport.authenticate("jwt", { session: false }), 
+[
+    query("brandId").optional().isString(),
+    query("customerId").optional().isString(),
+    query("status").optional().isString(),
+    query("orderType").optional().isString(),
+    query("limit").notEmpty().isNumeric(),
+    query("page").notEmpty().isNumeric(),
+    query("outletId").optional().isString(),
+],
+validate,
+ordersController.getAllOrders);
 
 router.post("/placeOrder",passport.authenticate("jwt",{session:false}),
 [

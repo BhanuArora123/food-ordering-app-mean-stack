@@ -28,7 +28,7 @@ exports.getTables = function (req, res, next) {
 
         var totalTables;
 
-        var outletId = req.query.outletId || req.user.userId;
+        var outletId = req.query.outletId;
 
         var isUserAuthorized = utils.isUserAuthorized(role, permissions, {
             name: "outlet"
@@ -116,7 +116,6 @@ exports.addTable = function (req, res, next) {
                     tableId: tableId,
                     assignedOrderId: assignedOrderId
                 })
-                console.log(outletData.tables);
                 return outletData.save();
             })
             .then(function (outletData) {
@@ -243,13 +242,11 @@ exports.getAllOutlets = function (req, res, next) {
     try {
         var role = req.user.role;
         var permissions = req.user.permissions;
-        var brandId = req.query.brandId || req.user.userId;
+        var brandId = req.query.brandId;
         var search = req.query.search;
         var page = parseInt(req.query.page);
         var limit = parseInt(req.query.limit);
         var skip = (page - 1) * limit;
-        var totalOutlets;
-
         var isUserAuthorized = utils.isUserAuthorized(role, permissions, {
             name: "brand"
         }, "Manage Outlets");

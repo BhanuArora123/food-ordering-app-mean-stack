@@ -7,8 +7,7 @@ var blueBird = require("bluebird");
 var cors = require("cors");
 
 var socketUtils = require("./utils/socket/socket.utils");
-// using .env
-require("dotenv").config("./.env");
+var connectDB = require("./utils/db/config").connectDB;
 
 var passport = require("passport");
 
@@ -44,9 +43,6 @@ app.use(cors({
     origin: "*"
 }));
 
-// serving files statically
-app.use("/public", express.static('public'));
-
 // parsing json req.
 app.use(express.json());
 
@@ -75,8 +71,7 @@ app.use("/user",userRouter);
 mongoose.Promise = blueBird;
 
 // connecting to database
-mongoose
-    .connect(process.env.DB_URL, {})
+connectDB()
     .then(function () {
         console.log("database connected!");
         var server = app.listen(8080);

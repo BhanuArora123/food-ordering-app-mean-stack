@@ -4,6 +4,7 @@ var passport = require("passport");
 var usersController = require("../controllers/users.controller");
 
 var body = require("express-validator").body;
+var query = require("express-validator").query;
 
 var validate = require("../middleware/validation.middleware").validate;
 
@@ -40,11 +41,25 @@ router.post("/login",
     , validate
     , usersController.loginUser);
 
-router.get("/profile", passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }), usersController.getUserData);
+router.get("/profile",
+    passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),
+    [
+        query("userId").notEmpty().isString()
+    ],
+    validate,
+    usersController.getUserData);
 
-router.get("/admin/all", passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }), usersController.getAllAdmins);
+router.get("/admin/all",
+    passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),
+    [
+        query("page").notEmpty().isNumeric(),
+        query("limit").notEmpty().isNumeric()
+    ],
+    validate,
+    usersController.getAllAdmins
+);
 
-router.get("/admin/count",usersController.getAdminCount);
+router.get("/admin/count", usersController.getAdminCount);
 
 router.put("/updatePassword",
     passport.authenticate("jwt", { failureMessage: "unauthorised!", session: false }),

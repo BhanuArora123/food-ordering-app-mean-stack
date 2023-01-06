@@ -71,7 +71,6 @@ exports.setTimeInDate = function (date, currentTimezone, timezone, hour) {
     try {
         var currentDate = exports.convertTimezone(date, currentTimezone, timezone).setHours(hour, 0, 0, 0);
         var requiredDate = exports.convertTimezone(moment(currentDate), currentTimezone, timezone);
-        console.log(requiredDate);
         return requiredDate;
     } catch (error) {
         console.log(error);
@@ -173,7 +172,6 @@ exports.registerBrandOrOutlet = function (role, brand, outlet,adminName,adminEma
                     return newOutlet
                         .save()
                         .then(function (outletData) {
-                            console.log(outletData);
                             return {
                                 id: outletData._id,
                                 name: outletData.name,

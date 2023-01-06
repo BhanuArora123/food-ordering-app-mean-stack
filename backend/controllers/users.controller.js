@@ -6,7 +6,7 @@ var outlets = require("../models/outlets.model");
 
 var throwError = require("../utils/errors");
 
-require("dotenv").config("../.env");
+var config = require("../config/config");
 
 var bcrypt = require("bcryptjs");
 
@@ -68,7 +68,6 @@ exports.registerUser = function (req, res, next) {
                 return utils.registerBrandOrOutlet(role.name, brand, outlet, name, email);
             })
             .then(function (registeredEntity) {
-                console.log(registeredEntity);
                 var newUser = new users({
                     name: name,
                     email: email,
@@ -131,7 +130,7 @@ exports.loginUser = function (req, res, next) {
                     email: email,
                     role: userDetails.role.name,
                     userId: userDetails._id
-                }, process.env.AUTH_SECRET, {
+                }, config.authSecret, {
                     expiresIn: "15h"
                 })
             })
@@ -387,8 +386,6 @@ exports.editUser = function (req, res, next) {
 
         users.findOne({
             _id: userId
-        }, {
-            email: 1
         })
             .then(function (userData) {
                 if (!userData) {
@@ -404,11 +401,12 @@ exports.editUser = function (req, res, next) {
                 userData.name = userName;
                 userData.role = userRole;
                 userData.permissions = userPermissions;
+                console.log(userData);
                 return userData.save();
             })
             .then(function (userData) {
                 redisUtils.deleteValue(userId);
-                if (userData.role.subRoles.includes("admin")) {
+                if (userData.role.subRoles.includes("admin") && (brandsToAllot || outletsToAllot)) {
                     var entityToUpdate = brandsToAllot || outletsToAllot;
                     var modelToUpdate = brandsToAllot ? brands : outlets;
                     var entityIds = entityToUpdate.map(function (entity) {
@@ -434,6 +432,7 @@ exports.editUser = function (req, res, next) {
                 })
             })
             .catch(function (error) {
+                console.log(error);
                 var statusCode = error.cause ? error.cause.statusCode : 500;
                 return res.status(statusCode).json({
                     message: error.message

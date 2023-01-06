@@ -8,8 +8,8 @@ var utils = require("../utils/utils");
 
 var async = require("async");
 
-const sqsUtils = require("../utils/aws/sqs/utils");
-const getSocketInstance = require("../utils/socket/socket.utils").getSocketInstance;
+var sqsUtils = require("../utils/aws/sqs/utils");
+var getSocketInstance = require("../utils/socket/socket.utils").getSocketInstance;
 
 var ObjectId = require("mongoose").Types.ObjectId;
 
@@ -97,6 +97,9 @@ exports.getAllOrders = function (req, res, next) {
         }
 
         var matchQuery = {};
+        if (outletId) {
+            matchQuery["outlet.id"] = outletId;
+        }
         if (brandId) {
             matchQuery["brand.id"] = brandId;
         }
@@ -106,19 +109,16 @@ exports.getAllOrders = function (req, res, next) {
         if (status) {
             matchQuery["status"] = status;
         }
-        if (outletId) {
-            matchQuery["outlet.id"] = outletId;
-        }
         if (customerId) {
             matchQuery["customer.customer._id"] = customerId;
         }
-        
+        console.log(matchQuery);
         async.parallel([
             function (cb) {
                 return orders
                     .countDocuments(matchQuery)
                     .then(function (availableOrdersCount) {
-                        cb(null,availableOrdersCount);
+                        cb(null, availableOrdersCount);
                     })
                     .catch(function (error) {
                         cb(error);
@@ -130,13 +130,13 @@ exports.getAllOrders = function (req, res, next) {
                     .skip(skip)
                     .limit(limit)
                     .then(function (availableOrders) {
-                        cb(null,availableOrders);
+                        cb(null, availableOrders);
                     })
                     .catch(function (error) {
                         cb(error);
                     })
             }
-        ],function (error, ordersData) {
+        ], function (error, ordersData) {
             if (error) {
                 console.log(error);
                 var statusCode = error.cause ? error.cause.statusCode : 500;
