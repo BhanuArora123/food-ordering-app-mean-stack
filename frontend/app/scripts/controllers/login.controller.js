@@ -13,10 +13,13 @@ appModule.controller("loginSignupController", function ($scope, $rootScope, $sta
     $scope.roles = permission.getRoles(role);
 
     $scope.getUserPermissions = function (subRoles) {
-        if (!role) {
+        // console.log($scope.signup.subRoles);
+        if (!role || !subRoles || !subRoles[0]) {
             return;
         }
+        console.log(subRoles);
         $scope.permissions = permission.getPermissions(role, subRoles);
+        $scope.subRoles = subRoles;
         console.log("permission",permission.getPermissions(role, subRoles));
     };
     // login handler 

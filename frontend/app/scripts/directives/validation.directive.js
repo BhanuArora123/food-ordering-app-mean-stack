@@ -30,7 +30,7 @@ appModule
 
           var isPasswordValid = passwordValidator.test(modelValue);
 
-          console.log(isPasswordValid, modelValue);
+          // console.log(isPasswordValid, modelValue);
 
           return (isPasswordValid && modelValue.length >= 6 && modelValue.length <= 16);
         }

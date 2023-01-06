@@ -63,7 +63,7 @@ appModule.controller("foodController", function ($scope, $rootScope,$state, food
             .getFoodItems({
                 category:category,
                 subCategory:subCategory,
-                page:(type === 'category'?1:$scope.foodPagination[index]),
+                page:($scope.foodPagination[index] || 1),
                 limit:9
             })
             .then(function (data) {
@@ -77,6 +77,7 @@ appModule.controller("foodController", function ($scope, $rootScope,$state, food
 
     $scope.editFoodItem = function (food) {
         food.foodItemId = food._id;
+        food.brandId = userData.brands[$rootScope.currentBrandIndex].id;
         foodService
             .editFoodItem(food)
             .then(function () {

@@ -156,6 +156,9 @@ appModule
             getPermissions: function (role, subRoles) {
                 var netPermissions = {};
                 subRoles.forEach(function (subRole) {
+                    if(!subRole){
+                        return;
+                    }
                     permissions[role][subRole].forEach(function (permission) {
                         netPermissions[permission.permissionId] = permission;
                     })

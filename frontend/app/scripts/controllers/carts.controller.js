@@ -93,15 +93,4 @@ appModule.controller("cartController", function ($scope, $rootScope, orderServic
         })
         updatePermissionDebounce();
     }
-
-    $scope.isAuthorized = function (requiredPermissionId, allowedRoles) {
-        var userData = userService.userData();
-        var outletData = userData.outlets[$rootScope.currentOutletIndex];
-        if (!outletData) {
-            return false;
-        }
-        var userPermissions = userData.permissions;
-        var role = utility.getRole();
-        return permission.isAuthorized(userPermissions, requiredPermissionId, allowedRoles, role);
-    }
 })

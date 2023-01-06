@@ -36,6 +36,10 @@ appModule.factory("intercepterService", function ($q, $state,$rootScope,$timeout
             if (!shouldIntercept(res.config.url)) {
                 return res;
             }
+            var errorMsg;
+            if(res.data.errors){
+                errorMsg = res.data.errors[0].msg;
+            }
             if (res.status !== 201 && res.status !== 200) {
                 console.log(res.data);
                 if (res.data === 'Unauthorized' && res.status === 401) {
@@ -44,9 +48,10 @@ appModule.factory("intercepterService", function ($q, $state,$rootScope,$timeout
                     alert("Unauthorized! Logging Out!");
                     return $q.reject();
                 }
-                alert(res.data.message || res.data);
+                
+                // alert(errorMsg || res.data.message || res.data);
             }
-            $rootScope.error = res.data.message;
+            $rootScope.error = errorMsg || res.data.message;
             $rootScope.success = undefined;
             $timeout(function () {
                 $rootScope.error = undefined;

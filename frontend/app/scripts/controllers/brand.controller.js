@@ -173,8 +173,9 @@ appModule.controller("brandsController", function ($scope, userData,outletServic
             })
     }
     $scope.getCustomers = function (page) {
+        var brandId = userService.userData().brands[$rootScope.currentBrandIndex].id;
         customerService
-            .getAllCustomers(page, 9)
+            .getAllCustomers(page, 9,brandId)
             .then(function (data) {
                 $scope.allCustomers = data.customers;
                 $scope.totalCustomers = data.totalCustomers;

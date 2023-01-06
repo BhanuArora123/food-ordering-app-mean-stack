@@ -20,14 +20,14 @@
             <div ng-if="!subRole" class="w-75 d-flex justify-content-around align-items-start flex-column user-role dark-theme">
                 <label>Select Role</label>
                 <oi-select placeholder="Select Role" oi-options="role for role in roles | filter:$viewValue"
-                    ng-model="signup.subRoles" ng-change="getUserPermissions(signup.subRoles)" ng-required="true"
+                    ng-model="subRoles" ng-change="getUserPermissions(subRoles)" ng-required="true"
                     multiple>
 
                 </oi-select>
             </div>
             <div class="w-75 d-flex justify-content-around align-items-start flex-column dark-theme mb-2" ng-init="getUserPermissions([subRole])">
                 <label>Select Permissions</label>
-                <oi-select ng-disabled="!subRole && !signup.subRoles.length" class="{{(subRole || signup.subRoles.length)?'':'disabled'}}"
+                <oi-select ng-disabled="!subRole && !subRoles.length" class="{{(subRole || subRoles.length)?'':'disabled'}}"
                     placeholder="Select Permission"
                     oi-options="permission.permissionName for permission in permissions track by permission.permissionId"
                     ng-model="signup.permissions" multiple ng-required="true">
@@ -53,7 +53,7 @@
                 <button type="button"
                     class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (signupForm.email.$invalid || signupForm.name.$invalid)?'btn-disabled':'' }}"
                     ng-disabled="signupForm.email.$invalid || signupForm.name.$invalid"
-                    ng-click="signupHandler(signup.name,signup.email,role,(subRole?[subRole]:signup.subRoles),subRole?permissions:signup.permissions,signup.password,signup.selectedBrand,signup.selectedOutlet)">Sign
+                    ng-click="signupHandler(signup.name,signup.email,role,(subRole?[subRole]:subRoles),subRole?permissions:signup.permissions,signup.password,signup.selectedBrand,signup.selectedOutlet)">Sign
                     Up</button>
             </div>
         </form>

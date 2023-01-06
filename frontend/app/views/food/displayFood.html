@@ -6,12 +6,12 @@
     <uib-tabset class="w-100 category" active="activeCategory" justified="true">
         <uib-tab ng-repeat="categoryItems in availableCategories" heading="{{categoryItems.category.name}}"
             ng-click="getFoodItems(categoryItems.category.name,categoryItems.subCategories[0].name,$index,'category')"
-            classes="fw-bold {{getActiveClass($index,'category')}}"
+            classes="fw-bold border-1 border-white {{getActiveClass($index,'category')}}"
             ng-init="grandParentIndex = $index">
             <uib-tabset active="activeSubcategory" justified="true">
                 <uib-tab ng-repeat="subCategoryItem in categoryItems.subCategories" heading="{{subCategoryItem.name}}"
                     ng-click="getFoodItems(categoryItems.category.name,subCategoryItem.name,$index)"
-                    classes="fw-bold {{getActiveClass($index)}}" ng-init="parentIndex=$index">
+                    classes="fw-bold border-1 border-white {{getActiveClass($index)}}" ng-init="parentIndex=$index">
                     <!-- <ul c -->
                     <table ng-table="foodItemsToDisplay" class="table table-striped w-100 food-items mb-2">
 
@@ -37,12 +37,12 @@
                                     type="number" ng-model="food.price" ng-required="true">
                             </td>
 
-                            <td class="dark-theme text-center" data-title="'Actions'">
+                            <td class="dark-theme text-center w-40" data-title="'Actions'">
                                 <a class="btn btn-primary" ng-show="!presentInCart(food._id) && permissionAuthorizations.userRole === 'outlet'"
                                     ng-click="addToCart(food.name, food.price,food.subCategory,food.category,food.taxes,food._id)">Add
                                     To Cart</a>
                                 <!-- inc/dec button  -->
-                                <div class="input-group w-25"
+                                <div class="input-group w-25 mx-auto"
                                     ng-show="presentInCart(food._id) && permissionAuthorizations.userRole === 'outlet'">
                                     <span class="input-group-btn">
                                         <button type="button" class="quantity-right-plus btn btn-primary btn-number"

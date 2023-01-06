@@ -22,14 +22,14 @@
             </div>
             <div class="w-75 d-flex justify-content-around align-items-start flex-column">
                 <label>Password</label>
-                <input class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded"
+                <input valid-password class="outline-none bg-theme-light border-0 w-100 h-50p p-2 rounded"
                     type="password" placeholder="Enter Password" name="password" ng-model="login.password"
                     ng-required="true">
             </div>
             <div class="d-flex w-75 justify-content-between">
                 <button type="button"
                     class="bg-white text-dark w-25 h-40p rounded fw-bold {{ (loginForm.email.$invalid || loginForm.password.$invalid)?'btn-disabled':'' }}"
-                    ng-click="loginHandler(login.email,login.password)" >Login</button>
+                    ng-click="loginHandler(login.email,login.password)" ng-disabled="loginForm.email.$invalid || loginForm.password.$invalid" >Login</button>
             </div>
         </form>
         <form class="w-75 d-flex justify-content-around align-items-center flex-column h-75 mb-2" ng-show="!role && !adminCount"

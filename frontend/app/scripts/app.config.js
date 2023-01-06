@@ -4,7 +4,7 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
 
   oiSelectProvider.options.debounce = 500;
   // spinner config 
-  // blockUIConfig.autoBlock = false;
+  blockUIConfig.autoBlock = false;
   $stateProvider
     .state({
       name: "home",
@@ -348,9 +348,10 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
               console.log(error);
             });
         },
-        customersData: function (customerService) {
+        customersData: function (customerService,userService,$rootScope) {
+          var brandId = userService.userData().brands[$rootScope.currentBrandIndex].id;
           return customerService
-            .getAllCustomers(1, 9)
+            .getAllCustomers(1, 9,brandId)
             .then(function (data) {
               return {
                 allCustomers: data.customers,
@@ -473,8 +474,8 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
           return customerService
             .getCustomerByPhone()
             .then(function (data) {
-              socketService.emitEvent("customerJoined", data.customerData._id);
-              return data.customerData;
+              socketService.emitEvent("customerJoined", data?.customerData?._id);
+              return data?.customerData;
             })
             .catch(function (error) {
               console.log(error);
@@ -505,19 +506,21 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
   // adding interceptor
   $httpProvider.interceptors.push('intercepterService');
 })
-  .run(function ($location, $state, $rootScope, socketService, blockUI) {
+  .run(function ($state, $rootScope, socketService, blockUI) {
 
     // route safety 
 
     var token = localStorage.getItem("token");
-    // $rootScope.$on("$stateChangeStart",function () {
-    //   blockUI.start();
-    // })
-    // $rootScope.$on("$stateChangeSuccess",function () {
-    //   blockUI.stop();
-    // })
+    $rootScope.$on("$stateChangeStart",function (event, toState) {
+      blockUI.start();
+      $rootScope.toState = toState;
+    })
+    $rootScope.$on("$stateChangeSuccess",function () {
+      blockUI.stop();
+    })
     $state.defaultErrorHandler(function (error) {
       console.log(error);
+      blockUI.stop();
       if(error.detail === "Not Authenticated"){
         return $state.go("home.login")
       }

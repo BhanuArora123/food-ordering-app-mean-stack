@@ -153,7 +153,7 @@ appModule.controller("reportModalController", function ($scope,$rootScope, userS
         reportService
             .getRequiredReport($scope.selectedReport.url, {
                 brandId: data.selectedBrand._id,
-                outletId: data.selectedOutlet ? data.selectedOutlet.id : undefined,
+                outletId: data.selectedOutlet ? data.selectedOutlet._id : undefined,
                 startDate: $scope.startDate,
                 endDate: $scope.endDate,
                 selectedFoodItems: JSON.stringify($scope.foodList),
