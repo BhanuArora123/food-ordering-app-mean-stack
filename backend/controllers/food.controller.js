@@ -86,7 +86,7 @@ exports.addFoodItem = function (req, res, next) {
                     category: category,
                     subCategory: subCategory,
                     isVeg: isVeg,
-                    taxes: taxes
+                    taxes: taxes,
                 });
                 foodItemData
                     .save()

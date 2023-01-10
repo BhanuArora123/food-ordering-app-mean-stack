@@ -31,6 +31,8 @@ var customerRouter = require("./routes/customer.route");
 
 var userRouter = require("./routes/users.route");
 
+var offerRouter = require("./routes/offers.route");
+
 // passport configuration
 var applyJwtStrategy = require("./middleware/auth.verification").applyJwtStrategy();
 
@@ -66,6 +68,8 @@ app.use("/customer",customerRouter);
 app.use("/reports",reportRouter);
 
 app.use("/user",userRouter);
+
+app.use("/offer",offerRouter);
 
 // mongoose config
 mongoose.Promise = blueBird;

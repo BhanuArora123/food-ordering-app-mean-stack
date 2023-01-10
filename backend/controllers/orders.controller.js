@@ -2,11 +2,14 @@ var orders = require("../models/order.model");
 
 var outlets = require("../models/outlets.model");
 
+var offers = require("../models/offers.model");
+
 var throwError = require("../utils/errors");
 var orderUtils = require("../utils/orders.utils");
 var utils = require("../utils/utils");
 
 var async = require("async");
+var moment = require("moment");
 
 var sqsUtils = require("../utils/aws/sqs/utils");
 var getSocketInstance = require("../utils/socket/socket.utils").getSocketInstance;
@@ -24,6 +27,7 @@ exports.placeOrder = function (req, res, next) {
         var orderType = req.body.orderType;
         var assignedTable = req.body.assignedTable;
         var cartItems = req.body.cart;
+        var offersUsed = req.body.offersUsed;
 
         var isUserAuthorized = utils.isUserAuthorized(role, permissions, {
             name: "outlet"
@@ -50,7 +54,8 @@ exports.placeOrder = function (req, res, next) {
                         customer: customer,
                         cartItems: cartItems,
                         assignedTable: assignedTable ? parseInt(assignedTable) : undefined,
-                        orderType: orderType
+                        orderType: orderType,
+                        offersUsed:offersUsed
                     }
                 });
                 return res.status(201).json({

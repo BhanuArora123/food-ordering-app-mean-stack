@@ -147,6 +147,7 @@ exports.editOutlet = function (req, res, next) {
         var brandId = req.body.brandId;
         var outletId = req.body.outletId;
         var name = req.body.name;
+        var offers = req.body.offers;
         var isDisabled = req.body.isDisabled;
 
         var isUserAuthorized = utils.isUserAuthorized(role, permissions, {
@@ -165,11 +166,12 @@ exports.editOutlet = function (req, res, next) {
                 }, {
                     $set: {
                         name: name,
-                        isDeleted: (isDisabled ? true : false)
+                        isDeleted: (isDisabled ? true : false),
+                        offers:offers
                     }
                 }, function (error, outletData) {
                     if (error) {
-                        cb(error);
+                        return cb(error);
                     }
                     if (!outletData) {
                         return cb(new Error("outlet doesn't exist", {
@@ -288,7 +290,8 @@ exports.getAllOutlets = function (req, res, next) {
                     admin: 1,
                     name: 1,
                     brand: 1,
-                    isDeleted: 1
+                    isDeleted: 1,
+                    offers:1
                 })
                     .skip(skip)
                     .limit(limit)

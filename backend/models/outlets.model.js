@@ -2,6 +2,8 @@ var mongoose = require("mongoose");
 
 var schema = mongoose.Schema;
 
+var offerSchema = require("../models/offers.model").schema;
+
 var ObjectId = mongoose.Schema.Types.ObjectId;
 
 
@@ -49,6 +51,12 @@ var outletSchema = new schema({
             }
         }
     ],
+    offers:{
+        type:[
+            offerSchema
+        ],
+        default:[]
+    },
     isDeleted:{
         type:Boolean,
         default:false

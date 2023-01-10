@@ -6,6 +6,7 @@ var ObjectId = mongoose.Schema.Types.ObjectId;
 
 var customerSchema = require("./customer.model").schema;
 
+var offerSchema = require("../models/offers.model").schema;
 
 var ordersSchema = new schema({
     brand:{
@@ -80,7 +81,14 @@ var ordersSchema = new schema({
             taxes:[]
         }
     ],
+    offersUsed:{
+        type:[ offerSchema ]
+    },
     amountPaid:{
+        type:Number,
+        default:0
+    },
+    discountApplied:{
         type:Number,
         default:0
     },

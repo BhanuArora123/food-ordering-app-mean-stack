@@ -31,6 +31,7 @@ exports.createOrderWorker = function (messageData) {
         var outlet = messageConfig.outlet;
         var brand = messageConfig.brand;
         var orderType = messageConfig.orderType;
+        var offersUsed = messageConfig.offersUsed;
 
         customerModel.findOne({
             phoneNumber:customer.customer.phoneNumber.toString(),
@@ -52,6 +53,11 @@ exports.createOrderWorker = function (messageData) {
             var totalPrice = cartItems.reduce(function (priceTillNow, currentCartItem) {
                 return priceTillNow + (currentCartItem.quantity * currentCartItem.foodPrice)
             }, 0);
+            var totalDiscount = offersUsed.reduce(function (discountTillNow,currentDiscount) {
+                console.log(currentDiscount);
+                return discountTillNow + (totalPrice*(currentDiscount.discount)*0.01);
+            },0);
+            console.log("totalDiscount - ",totalDiscount);
             var orderedItems = cartItems.map(function (cartItem) {
                 return {
                     foodName: cartItem.foodName,
@@ -75,7 +81,9 @@ exports.createOrderWorker = function (messageData) {
                 },
                 brand: brand,
                 orderType: orderType ? orderType : "Dine In",
-                assignedTable:assignedTable
+                assignedTable:assignedTable,
+                offersUsed:offersUsed,
+                discountApplied:totalDiscount
             });
             return newOrder.save();
         })
