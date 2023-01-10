@@ -1,7 +1,8 @@
-<div class="w-100 bg-light d-flex justify-content-around flex-column align-items-center" ng-init="cart = getCart(); currencySymbol = '$'"
-    style="height: {{setHeight()}};">
+<div class="w-100 bg-light d-flex justify-content-around flex-column align-items-center"
+    ng-init="cart = getCart();setHeight(); currencySymbol = '$'" ng-style="styleObj">
     <h3 class="bg-light text-dark d-flex justify-content-center align-items-center w-100 m-2">Welcome to cart</h3>
-    <div ng-hide="getCartLength(cart)" class="bg-light text-dark d-flex justify-content-center align-items-center w-100">Cart is
+    <div ng-hide="getCartLength(cart)"
+        class="bg-light text-dark d-flex justify-content-center align-items-center w-100">Cart is
         Empty</div>
     <div ng-show="getCartLength(cart)" ng-repeat="(foodItemId, cartItem) in cart"
         class="text-dark bg-light d-flex justify-content-around align-items-center w-75 h-75">
@@ -13,45 +14,69 @@
         <div class="text-dark bg-light">=</div>
         <div class="text-dark bg-light">${{cartItem.foodPrice * cartItem.quantity}}</div>
     </div>
-    <div ng-show="getCartLength(cart)" class="w-75" ng-include="'views/taxes/taxBreakdown.html'" ng-init="items = cart"></div>
+    <div ng-show="getCartLength(cart)" class="w-75" ng-include="'views/taxes/taxBreakdown.html'" ng-init="items = cart;amount = calculateAmount(cart)">
+    </div>
     <hr>
-    <div ng-show="getCartLength(cart)" class="text-dark w-100 h-400p d-flex justify-content-center align-items-center flex-column">
+    <div ng-show="getCartLength(cart)"
+        class="text-dark w-100 h-500p d-flex justify-content-center align-items-center flex-column">
         <!-- Customer Details form -->
         <h6 class="w-100 d-flex justify-content-center align-items-start">Customer Details</h6>
-        <form novalidate class="w-100 d-flex justify-content-around align-items-start p-5 bg-light flex-column" name="customerForm">
+        <form novalidate class="w-100 d-flex justify-content-around align-items-start p-5 bg-light flex-column"
+            name="customerForm">
             <div class="w-100  d-flex justify-content-around align-items-start flex-column">
                 <label class="text-dark w-50">Name</label>
-                <input class="w-100 text-dark p-2 border border-secondary outline-none bg-light h-40p {{readOnlyCustomerName?'disabled':''}}" type="text" name="name" ng-required="true" placeholder="Name" ng-model="customer.name" ng-readonly="readOnlyCustomerName">
+                <input
+                    class="w-100 text-dark p-2 border border-secondary outline-none bg-light h-40p {{readOnlyCustomerName?'disabled':''}}"
+                    type="text" name="name" ng-required="true" placeholder="Name" ng-model="customer.name"
+                    ng-readonly="readOnlyCustomerName">
             </div>
             <div class="w-100 d-flex justify-content-around align-items-start flex-column">
                 <label class="text-dark w-50">Phone Number</label>
-                <input class="w-100 text-dark p-2 border border-secondary outline-none bg-light h-40p" type="number" placeholder="Phone Number" ng-required="true" ng-change="getCustomerData(customer.phoneNumber)" ng-model="customer.phoneNumber" name="phoneNumber">
+                <input class="w-100 text-dark p-2 border border-secondary outline-none bg-light h-40p" type="number"
+                    placeholder="Phone Number" ng-required="true" ng-change="getCustomerData(customer.phoneNumber)"
+                    ng-model="customer.phoneNumber" name="phoneNumber">
             </div>
             <div class="w-100 d-flex justify-content-around align-items-start flex-column">
                 <label class="text-dark w-50">Paid Via</label>
-                <select class="tex text-dark p-2 outline-none bg-light h-40p text-dark w-100" ng-required="true" ng-model="customer.paidVia" name="paidVia">
+                <select class="tex text-dark p-2 outline-none bg-light h-40p text-dark w-100" ng-required="true"
+                    ng-model="customer.paidVia" name="paidVia">
                     <option class="text-dark" value="Cash">Cash</option>
                     <option selected class="text-dark" value="Card">Card</option>
                 </select>
             </div>
             <div class="w-100 d-flex justify-content-around align-items-start flex-column">
                 <label class="text-dark w-50">Order Type</label>
-                <select class="text-dark p-2 outline-none bg-light h-40p text-dark w-100" ng-required="true" ng-model="orderType" name="orderType">
+                <select class="text-dark p-2 outline-none bg-light h-40p text-dark w-100" ng-required="true" ng-change="getAllApplicableOffers(1)"
+                    ng-model="orderType" name="orderType">
                     <option ng-show="isAuthorized(2,['outlet'])" class="text-dark" value="Take Away">Take Away</option>
                     <option selected class="text-dark" value="Dine In">Dine In</option>
                 </select>
             </div>
-            <div ng-show="orderType === 'Dine In'" class="w-100 d-flex justify-content-around align-items-start flex-column">
+            <div class="w-100 d-flex justify-content-around align-items-start flex-column">
+                <label class="text-dark w-50">Applicable Coupons (optional)</label>
+                <oi-select class="w-100" placeholder="Select Coupon (optional)"
+                    oi-options="offer.name for offer in getApplicableCoupons(1,$query)" ng-change="applyCoupon(selectedCoupon)" ng-model="selectedCoupon" uib-popover="Please Enter customer details to get applicable offers!" popover-enable="!customerId && customer.phoneNumber.toString().length !== 10" popover-trigger="'mouseenter'" ng-disabled="!customerId && customer.phoneNumber.toString().length !== 10">
+                </oi-select>
+            </div>
+            <div ng-show="orderType === 'Dine In'"
+                class="w-100 d-flex justify-content-around align-items-start flex-column">
                 <label class="text-dark w-50">Select Table</label>
-                <select class="text-dark p-2 outline-none bg-light h-40p text-dark w-100" ng-required="true" ng-model="assignedTable" name="assignedTable">
+                <select class="text-dark p-2 outline-none bg-light h-40p text-dark w-100" ng-required="true"
+                    ng-model="assignedTable" name="assignedTable">
                     <option class="text-dark" value="None">None</option>
-                    <option ng-repeat="table in tables" class="text-dark" value="{{table.tableId}}">table - {{table.tableId}}</option>
+                    <option ng-repeat="table in tables" class="text-dark" value="{{table.tableId}}">table -
+                        {{table.tableId}}</option>
                 </select>
             </div>
         </form>
     </div>
 
-    <div ng-show="getCartLength(cart)" class="w-100 d-flex justify-content-center align-items-center bg-light m-2 text-dark">
-        <button class="btn btn-primary {{(customerForm.name.$invalid || customerForm.phoneNumber.$invalid || customerForm.paidVia.$invalid)?'btn-disabled':''}}" ng-click="placeOrder()"  ng-disabled="(customerForm.name.$invalid || customerForm.phoneNumber.$invalid || customerForm.paidVia.$invalid)">Order Now</button>
+    <div ng-show="getCartLength(cart)"
+        class="w-100 d-flex justify-content-center align-items-center bg-light m-2 text-dark">
+        <button
+            class="btn btn-primary {{(customerForm.name.$invalid || customerForm.phoneNumber.$invalid || customerForm.paidVia.$invalid)?'btn-disabled':''}}"
+            ng-click="placeOrder()"
+            ng-disabled="(customerForm.name.$invalid || customerForm.phoneNumber.$invalid || customerForm.paidVia.$invalid)">Order
+            Now</button>
     </div>
 </div>

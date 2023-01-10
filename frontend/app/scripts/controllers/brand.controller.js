@@ -1,7 +1,7 @@
 
 
 
-appModule.controller("brandsController", function ($scope, userData,outletService,brandService,allOutletAdmins, brandUsers, outletsData, utility, $rootScope, customersData, permission, customerService, userService) {
+appModule.controller("brandsController", function ($scope, userData, outletService, brandService, allOutletAdmins, brandUsers, outletsData, utility, $rootScope, customersData, permission, customerService, userService, offerService) {
     var allCustomers = customersData.allCustomers;
     $scope.userData = userData;
 
@@ -40,9 +40,12 @@ appModule.controller("brandsController", function ($scope, userData,outletServic
             })
     }
 
-    $scope.getOutletAdmins = function (page,outletId) {
+    $scope.getOutletAdmins = function (page, outletId) {
+        if(!page){
+            page = 1;
+        }
         var brandId = userService.userData().brands[$rootScope.currentBrandIndex].id;
-        return outletService.getOutletUsers(page, 9, outletId,"admin",brandId,outletId)
+        return outletService.getOutletUsers(page, 9, outletId, "admin", brandId, outletId)
             .then(function (data) {
                 $scope.allOutletAdmins = data.outletUsers;
                 $scope.totalOutletAdmins = data.outletUsersCount;
@@ -60,10 +63,10 @@ appModule.controller("brandsController", function ($scope, userData,outletServic
         $scope.editElementIndex = -1;
     }
 
-    $scope.getOutlets = function (page,query) {
+    $scope.getOutlets = function (page, query) {
         var brandId = userService.userData().brands[$rootScope.currentBrandIndex].id;
         return outletService
-            .getAllOutlets(page, 9,brandId,query)
+            .getAllOutlets(page, 9, brandId, query)
             .then(function (data) {
                 $scope.allOutlets = data.outlets;
                 $scope.totalOutlets = data.totalOutlets;
@@ -75,30 +78,30 @@ appModule.controller("brandsController", function ($scope, userData,outletServic
     }
 
     $scope.updateAllotedOutlets = function (outletAdmin) {
-        if(!outletAdmin.outlets && !outletAdmin.outlets.length){
+        if (!outletAdmin.outlets && !outletAdmin.outlets.length) {
             alert("there must be atleast one brand alloted to a admin");
-            return ;
+            return;
         }
-        return userService.editUser(outletAdmin._id,{
-            outletsToAllot:outletAdmin.outlets.map(function (outlet) {
+        return userService.editUser(outletAdmin._id, {
+            outletsToAllot: outletAdmin.outlets.map(function (outlet) {
                 return {
-                    id:outlet._id,
-                    name:outlet.name,
-                    brand:outlet.brand
+                    id: outlet._id,
+                    name: outlet.name,
+                    brand: outlet.brand
                 }
             }),
-            currentUserRole:outletAdmin.role,
-            role:outletAdmin.role,
-            permissions:outletAdmin.permissions,
-            userName:outletAdmin.name,
-            userEmail:outletAdmin.email,
+            currentUserRole: outletAdmin.role,
+            role: outletAdmin.role,
+            permissions: outletAdmin.permissions,
+            userName: outletAdmin.name,
+            userEmail: outletAdmin.email,
         })
-        .then(function (data) {
-            console.log(data);
-        })
-        .catch(function (error) {
-            console.log(error);
-        })
+            .then(function (data) {
+                console.log(data);
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
     }
 
     $scope.getBrandUsers = function (page) {
@@ -112,8 +115,8 @@ appModule.controller("brandsController", function ($scope, userData,outletServic
                 console.log(error);
             })
     }
-    $scope.updateOutlet = function (outlet,disabled) {
-        outlet.isDeleted = (disabled?true:false);
+    $scope.updateOutlet = function (outlet, disabled) {
+        outlet.isDeleted = (disabled ? true : false);
         return outletService
             .editOutlet(outlet)
             .then(function (data) {
@@ -125,45 +128,45 @@ appModule.controller("brandsController", function ($scope, userData,outletServic
     }
 
     // permissions 
-    $scope.getPermissions = function (role,subRoles) {
-        console.log(permission.getPermissions(role,subRoles));
-        return permission.getPermissions(role,subRoles);;
+    $scope.getPermissions = function (role, subRoles) {
+        console.log(permission.getPermissions(role, subRoles));
+        return permission.getPermissions(role, subRoles);;
     };
 
     $scope.getRoles = function (role) {
         return permission.getRoles(role);
     }
 
-    $scope.updatePermissions = function (user,userIndex) {
+    $scope.updatePermissions = function (user, userIndex) {
         // changing role make permission empty
-        if(userIndex !== undefined){
+        if (userIndex !== undefined) {
             user.permissions = [];
             $scope.brandUsers[userIndex].permissions = [];
             return;
         }
         var updatePermissionDebounce = utility.debounce(2000, function () {
             userService
-                .editUser(user._id,{
-                    currentUserRole:user.role,
-                    userEmail:user.email,
-                    userName:user.name,
-                    permissions:user.permissions,
-                    role:user.role
+                .editUser(user._id, {
+                    currentUserRole: user.role,
+                    userEmail: user.email,
+                    userName: user.name,
+                    permissions: user.permissions,
+                    role: user.role
                 })
         })
         updatePermissionDebounce();
     }
     $scope.updateUser = function (userData) {
         return userService
-            .editUser(userData._id,{
-                userId:userData._id,
-                currentUserRole:userData.role,
-                brandsToAllot:userData.brands,
-                outletsToAllot:userData.outlets,
-                userEmail:userData.email,
-                userName:userData.name,
+            .editUser(userData._id, {
+                userId: userData._id,
+                currentUserRole: userData.role,
+                brandsToAllot: userData.brands,
+                outletsToAllot: userData.outlets,
+                userEmail: userData.email,
+                userName: userData.name,
                 permissions: userData.permissions,
-                role:userData.role,
+                role: userData.role,
             })
             .then(function (data) {
                 return data.message;
@@ -175,7 +178,7 @@ appModule.controller("brandsController", function ($scope, userData,outletServic
     $scope.getCustomers = function (page) {
         var brandId = userService.userData().brands[$rootScope.currentBrandIndex].id;
         customerService
-            .getAllCustomers(page, 9,brandId)
+            .getAllCustomers(page, 9, brandId)
             .then(function (data) {
                 $scope.allCustomers = data.customers;
                 $scope.totalCustomers = data.totalCustomers;
@@ -185,6 +188,20 @@ appModule.controller("brandsController", function ($scope, userData,outletServic
             })
     }
 
+    $scope.getOffers = function (searchQuery,isEditAllowed) {
+        if(!isEditAllowed){
+            return;
+        }
+        var brandId = userService.userData().brands[$rootScope.currentBrandIndex].id;
+        return offerService
+            .getOffersForBrand(1, 9, brandId)
+            .then(function (data) {
+                return data.offers;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
+    }
     $scope.sendInstruction = function (title, content) {
         brandService
             .sendInstructionsToOutlets(title, content)

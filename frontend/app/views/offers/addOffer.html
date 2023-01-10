@@ -1,0 +1,92 @@
+<div class="m-3">
+    <h1 class="w-100 m-2 d-flex justify-content-center align-items-center text-dark">Add Offer</h1>
+    <form class="w-100 d-flex justify-content-around align-items-center flex-column h-75 mb-2" name="offerForm"
+        novalidate>
+        <div class="w-75 d-flex justify-content-around align-items-start flex-column">
+            <label class="text-dark">Name</label>
+            <input class="text-dark outline-none border-gray-1 border-secondary w-100 h-50p p-2 rounded {{(mode === 'edit')?'disabled':''}}" type="text"
+                placeholder="Enter Offer Name" name="name" ng-model="offer.name" ng-required="true" ng-readonly="mode === 'edit'">
+        </div>
+        <div class="w-75 d-flex justify-content-around align-items-start flex-column">
+            <label class="text-dark">Discount</label>
+            <input class="text-dark outline-none border-gray-1 border-secondary w-100 h-50p p-2 rounded" type="number"
+                placeholder="Enter Offer Discount" min="1" name="discount" ng-model="offer.discount" ng-required="true">
+        </div>
+        <div class="w-75 d-flex justify-content-around align-items-start flex-column">
+            <label class="text-dark">Maximum Allowed Use(per customer)</label>
+            <input class="text-dark outline-none border-gray-1 border-secondary w-100 h-50p p-2 rounded" type="number"
+                placeholder="Enter Maximum Allowed Use" min="1" name="maximumUse" ng-model="offer.maximumUse"
+                ng-required="true">
+        </div>
+        <div class="w-75 d-flex justify-content-around align-items-start flex-column">
+            <label class="text-dark">Description</label>
+            <textarea class="text-dark outline-none border-gray-1 border-secondary w-100 h-50p p-2 rounded"
+                placeholder="Enter Offer Description" name="description" ng-model="offer.description"
+                ng-required="true"></textarea>
+        </div>
+        <div class="w-75 d-flex justify-content-around align-items-start flex-column">
+            <label class="text-dark">Select Allowed Order Type</label>
+            <div class="btn-group">
+                <label class="btn btn-primary" ng-model="offer.orderType" uib-btn-radio="'Dine In'">Dine In</label>
+                <label class="btn btn-primary" ng-model="offer.orderType" uib-btn-radio="'Take Away'">Take Away</label>
+                <label class="btn btn-primary" ng-model="offer.orderType" uib-btn-radio="'Both'">Both</label>
+            </div>
+        </div>
+        <div class="w-75 d-flex justify-content-around align-items-start flex-column">
+            <label class="text-dark">Select Date Range</label>
+            <div class="d-flex justify-content-around align-items-center mt-2" style="height: 35px;">
+                <p class="input-group">
+                    <input type="text" class="form-control" uib-datepicker-popup ng-model="offerStartDate"
+                        is-open="popup1.opened" datepicker-options="dateOptions" ng-required="true" close-text="Close"
+                        alt-input-formats="altInputFormats" name="startDate" />
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-secondary" ng-click="openStartDate()">
+                            <i class="fa-svg-icon">
+                                <svg width="1792" height="1792" viewBox="0 0 1792 1792"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M192 1664h288v-288h-288v288zm352 0h320v-288h-320v288zm-352-352h288v-320h-288v320zm352 0h320v-320h-320v320zm-352-384h288v-288h-288v288zm736 736h320v-288h-320v288zm-384-736h320v-288h-320v288zm768 736h288v-288h-288v288zm-384-352h320v-320h-320v320zm-352-864v-288q0-13-9.5-22.5t-22.5-9.5h-64q-13 0-22.5 9.5t-9.5 22.5v288q0 13 9.5 22.5t22.5 9.5h64q13 0 22.5-9.5t9.5-22.5zm736 864h288v-320h-288v320zm-384-384h320v-288h-320v288zm384 0h288v-288h-288v288zm32-480v-288q0-13-9.5-22.5t-22.5-9.5h-64q-13 0-22.5 9.5t-9.5 22.5v288q0 13 9.5 22.5t22.5 9.5h64q13 0 22.5-9.5t9.5-22.5zm384-64v1280q0 52-38 90t-90 38h-1408q-52 0-90-38t-38-90v-1280q0-52 38-90t90-38h128v-96q0-66 47-113t113-47h64q66 0 113 47t47 113v96h384v-96q0-66 47-113t113-47h64q66 0 113 47t47 113v96h128q52 0 90 38t38 90z" />
+                                </svg>
+                            </i>
+                        </button>
+                    </span>
+                </p>
+                <div class="text-dark ml-3 mr-3 d-flex justify-content-center align-items-center h-100">
+                    <i class="fas fa-arrow-right h-100 text-dark" style="font-size: 18px;"></i>
+                </div>
+                <p class="input-group">
+                    <input type="text" class="form-control" uib-datepicker-popup ng-model="offerEndDate"
+                        is-open="popup2.opened" datepicker-options="dateOptions" ng-required="true" close-text="Close"
+                        name="endDate" />
+                    <span class="input-group-btn">
+                        <button type="button" class="btn btn-secondary" ng-click="openEndDate()">
+                            <i class="fa-svg-icon">
+                                <svg width="1792" height="1792" viewBox="0 0 1792 1792"
+                                    xmlns="http://www.w3.org/2000/svg">
+                                    <path
+                                        d="M192 1664h288v-288h-288v288zm352 0h320v-288h-320v288zm-352-352h288v-320h-288v320zm352 0h320v-320h-320v320zm-352-384h288v-288h-288v288zm736 736h320v-288h-320v288zm-384-736h320v-288h-320v288zm768 736h288v-288h-288v288zm-384-352h320v-320h-320v320zm-352-864v-288q0-13-9.5-22.5t-22.5-9.5h-64q-13 0-22.5 9.5t-9.5 22.5v288q0 13 9.5 22.5t22.5 9.5h64q13 0 22.5-9.5t9.5-22.5zm736 864h288v-320h-288v320zm-384-384h320v-288h-320v288zm384 0h288v-288h-288v288zm32-480v-288q0-13-9.5-22.5t-22.5-9.5h-64q-13 0-22.5 9.5t-9.5 22.5v288q0 13 9.5 22.5t22.5 9.5h64q13 0 22.5-9.5t9.5-22.5zm384-64v1280q0 52-38 90t-90 38h-1408q-52 0-90-38t-38-90v-1280q0-52 38-90t90-38h128v-96q0-66 47-113t113-47h64q66 0 113 47t47 113v96h384v-96q0-66 47-113t113-47h64q66 0 113 47t47 113v96h128q52 0 90 38t38 90z" />
+                                </svg>
+                            </i>
+                        </button>
+                    </span>
+                </p>
+            </div>
+        </div>
+        <div ng-if="mode === 'add'" class="d-flex w-75 justify-content-between mt-2">
+            <button type="button"
+                class="btn btn-primary rounded fw-bold {{ (offerForm.name.$invalid || offerForm.discount.$invalid || offerForm.description.$invalid || offerForm.maximumUse.$invalid || offerForm.startDate.$invalid || offerForm.endDate.$invalid)?'btn-disabled':'' }}"
+                ng-click="createOffer(offer,offerStartDate,offerEndDate)"
+                ng-disabled="offerForm.name.$invalid || offerForm.discount.$invalid || offerForm.description.$invalid || offerForm.maximumUse.$invalid || offerForm.startDate.$invalid || offerForm.endDate.$invalid">
+                Create Offer
+            </button>
+        </div>
+        <div ng-show="mode === 'edit'" class="d-flex w-75 justify-content-between mt-2">
+            <button type="button"
+                class="btn btn-primary rounded fw-bold {{ (offerForm.name.$invalid || offerForm.discount.$invalid || offerForm.description.$invalid || offerForm.maximumUse.$invalid || offerForm.startDate.$invalid || offerForm.endDate.$invalid)?'btn-disabled':'' }}"
+                ng-click="editOffer(offer,offerStartDate,offerEndDate)"
+                ng-disabled="offerForm.name.$invalid || offerForm.discount.$invalid || offerForm.description.$invalid || offerForm.maximumUse.$invalid || offerForm.startDate.$invalid || offerForm.endDate.$invalid">
+                Edit Offer
+            </button>
+        </div>
+    </form>
+</div>

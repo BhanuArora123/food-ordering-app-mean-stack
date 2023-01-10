@@ -72,19 +72,19 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
       resolve: {
         params: function ($stateParams) {
           return {
-            role:$stateParams.role,
-            subRole:$stateParams.subRole
+            role: $stateParams.role,
+            subRole: $stateParams.subRole
           };
         },
-        adminCount:function (userService) {
+        adminCount: function (userService) {
           return userService
-          .adminCount()
-          .then(function (data) {
-            return data.totalAdmins
-          })
-          .catch(function (error) {
-            console.log(error);
-          })
+            .adminCount()
+            .then(function (data) {
+              return data.totalAdmins
+            })
+            .catch(function (error) {
+              console.log(error);
+            })
         }
       }
     })
@@ -178,7 +178,7 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
               console.log(error);
             })
         },
-        allBrandAdmins:function (brandService) {
+        allBrandAdmins: function (brandService) {
           return brandService.getBrandUsers(1, 9, undefined, "admin")
             .then(function (data) {
               return {
@@ -284,11 +284,11 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
               console.log(error);
             })
         },
-        outletUsers: function (outletService, userService,$rootScope) {
-          console.log("current index - ",$rootScope.currentOutletIndex);
+        outletUsers: function (outletService, userService, $rootScope) {
+          console.log("current index - ", $rootScope.currentOutletIndex);
           var outletData = userService.userData().outlets[$rootScope.currentOutletIndex];
           return outletService
-            .getOutletUsers(1, 9, outletData.id,undefined,outletData.brand.id)
+            .getOutletUsers(1, 9, outletData.id, undefined, outletData.brand.id)
             .then(function (data) {
               return {
                 outletUsers: data.outletUsers,
@@ -330,7 +330,7 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
               console.log(error);
             })
         },
-        outletsData: function (outletService, userService,$rootScope) {
+        outletsData: function (outletService, userService, $rootScope) {
           var userData = userService.userData();
           if (!userData || !userData.brands) {
             return [];
@@ -348,10 +348,10 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
               console.log(error);
             });
         },
-        customersData: function (customerService,userService,$rootScope) {
+        customersData: function (customerService, userService, $rootScope) {
           var brandId = userService.userData().brands[$rootScope.currentBrandIndex].id;
           return customerService
-            .getAllCustomers(1, 9,brandId)
+            .getAllCustomers(1, 9, brandId)
             .then(function (data) {
               return {
                 allCustomers: data.customers,
@@ -362,9 +362,9 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
               console.log(error);
             })
         },
-        allOutletAdmins:function (outletService,userService,$rootScope) {
+        allOutletAdmins: function (outletService, userService, $rootScope) {
           var brandId = userService.userData().brands[$rootScope.currentBrandIndex].id;
-          return outletService.getOutletUsers(1, 9, undefined, "admin",brandId)
+          return outletService.getOutletUsers(1, 9, undefined, "admin", brandId)
             .then(function (data) {
               return {
                 outletAdmins: data.outletUsers,
@@ -375,7 +375,7 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
               console.log(error);
             })
         },
-        brandUsers: function (brandService, userService,$rootScope) {
+        brandUsers: function (brandService, userService, $rootScope) {
           var brandId = userService.userData().brands[$rootScope.currentBrandIndex].id;
           return brandService.getBrandUsers(1, 9, brandId)
             .then(function (data) {
@@ -401,19 +401,19 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
         },
         params: function ($stateParams) {
           return {
-            role:$stateParams.role,
-            subRole:$stateParams.subRole
+            role: $stateParams.role,
+            subRole: $stateParams.subRole
           };
         },
-        adminCount:function (userService) {
+        adminCount: function (userService) {
           return userService
-          .adminCount()
-          .then(function (data) {
-            return data.totalAdmins
-          })
-          .catch(function (error) {
-            console.log(error);
-          })
+            .adminCount()
+            .then(function (data) {
+              return data.totalAdmins
+            })
+            .catch(function (error) {
+              console.log(error);
+            })
         }
       }
     })
@@ -428,19 +428,19 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
         },
         params: function ($stateParams) {
           return {
-            role:$stateParams.role,
-            subRole:$stateParams.subRole
+            role: $stateParams.role,
+            subRole: $stateParams.subRole
           };
         },
-        adminCount:function (userService) {
+        adminCount: function (userService) {
           return userService
-          .adminCount()
-          .then(function (data) {
-            return data.totalAdmins
-          })
-          .catch(function (error) {
-            console.log(error);
-          })
+            .adminCount()
+            .then(function (data) {
+              return data.totalAdmins
+            })
+            .catch(function (error) {
+              console.log(error);
+            })
         }
       }
     })
@@ -490,6 +490,34 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
       templateUrl: "views/customer/login.html",
     })
     .state({
+      name: "home.offers",
+      url: "/offers",
+      templateUrl: "views/offers/index.html",
+    })
+    .state({
+      name: "home.offers.display",
+      url: "/display",
+      templateUrl: "views/offers/display.html",
+      controller: "offersController",
+      resolve: {
+        offers: function (offerService, userService, $rootScope) {
+          var userData = userService.userData();
+          var brandId = userData.brands[$rootScope.currentBrandIndex].id;
+          return offerService
+            .getOffersForBrand(1, 9, brandId)
+            .then(function (data) {
+              return {
+                offers:data.offers,
+                totalOffers:data.totalOffers
+              };
+            })
+            .catch(function (error) {
+              console.log(error);
+            })
+        }
+      }
+    })
+    .state({
       name: "home.sendInstructions",
       url: "/send/instructions",
       // controller:"emailController",
@@ -511,20 +539,20 @@ appModule.config(function ($stateProvider, $httpProvider, $urlRouterProvider, bl
     // route safety 
 
     var token = localStorage.getItem("token");
-    $rootScope.$on("$stateChangeStart",function (event, toState) {
+    $rootScope.$on("$stateChangeStart", function (event, toState) {
       blockUI.start();
       $rootScope.toState = toState;
     })
-    $rootScope.$on("$stateChangeSuccess",function () {
+    $rootScope.$on("$stateChangeSuccess", function () {
       blockUI.stop();
     })
     $state.defaultErrorHandler(function (error) {
       console.log(error);
       blockUI.stop();
-      if(error.detail === "Not Authenticated"){
+      if (error.detail === "Not Authenticated") {
         return $state.go("home.login")
       }
-      else if(error.detail === "Not Authorized"){
+      else if (error.detail === "Not Authorized") {
         return $state.go("home.dashboard");
       }
       return $state.go("home.dashboard");

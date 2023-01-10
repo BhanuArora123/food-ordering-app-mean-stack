@@ -20,6 +20,9 @@ body{
 .fw-bold{
   font-weight: bold;
 }
+.text-theme-light{
+  color:rgb(45,50,63) !important;
+}
 .bg-theme-light{
   background-color: rgb(45,50,63) !important;
 }
@@ -31,6 +34,9 @@ body{
 }
 .bg-theme-secondary{
   background-color: #d1333c;
+}
+.border-gray-1{
+  border: 1px solid gray;
 }
 .h-50p{
   height: 50px;

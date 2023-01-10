@@ -97,6 +97,12 @@
                             {{outlet.admin.email}}
                         </div>
                     </td>
+                    <td class="dark-theme" data-title="'Offers Available'">
+                        <oi-select placeholder="Select Offers"
+                            oi-options="offer.name for offer in getOffers($query,$index === outlet.editElementIndex)" ng-model="outlet.offers"
+                            ng-readonly="$index !== outlet.editElementIndex" ng-disabled="$index !== outlet.editElementIndex" multiple ng-required="true">
+                        </oi-select>
+                    </td>
                     <td class="text-center" data-title="'Actions'">
                         <button ng-hide="$index === outlet.editElementIndex" class="btn btn-primary"
                             ng-click="outlet.editElementIndex = $index">Edit</button>

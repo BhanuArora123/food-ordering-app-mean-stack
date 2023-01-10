@@ -183,8 +183,8 @@ appModule.controller("orderDetailsController", function ($scope, utility, orderS
             })
     }
 
-    $scope.calculateAmount = function (items) {
-        return utility.calculateAmount(items);
+    $scope.calculateAmount = function (items,offer) {
+        return utility.calculateAmount(items,offer?.discount);
     }
 
     $scope.tables = $scope.$parent.tablesData;

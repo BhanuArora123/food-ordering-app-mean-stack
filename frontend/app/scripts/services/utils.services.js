@@ -81,7 +81,7 @@ appModule
                 permission.unsetAllAuthorizations();
                 $state.go("home.login");
             },
-            calculateAmount: function (items) {
+            calculateAmount: function (items,discount = 0) {
                 var taxesMap = new Map();
                 var totalFoodAmount = 0;
                 var totalTaxAmount = 0;
@@ -94,17 +94,20 @@ appModule
                         taxesMap[tax.tax.name] = (taxesMap[tax.tax.name] ? taxesMap[tax.tax.name] : 0) + (taxLevied);
                     })
                 })
+                var totalOfferDiscount = (totalFoodAmount*0.01*discount);
                 console.log({
                     totalPayable: totalFoodAmount + totalTaxAmount,
                     taxesMap: taxesMap,
                     totalFoodAmount: totalFoodAmount,
-                    totalTaxAmount: totalTaxAmount
+                    totalTaxAmount: totalTaxAmount,
+                    totalOfferDiscount:totalOfferDiscount
                 });
                 return {
-                    totalPayable: totalFoodAmount + totalTaxAmount,
+                    totalPayable: totalFoodAmount + totalTaxAmount - totalOfferDiscount,
                     taxesMap: taxesMap,
                     totalFoodAmount: totalFoodAmount,
-                    totalTaxAmount: totalTaxAmount
+                    totalTaxAmount: totalTaxAmount,
+                    totalOfferDiscount:totalOfferDiscount
                 }
             },
             debounce: function (delay, cb) {

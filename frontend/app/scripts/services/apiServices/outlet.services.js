@@ -120,7 +120,8 @@ appModule
                         outletId: outlet._id,
                         name: outlet.name,
                         brandId:outlet.brand.id,
-                        isDisabled:outlet.isDeleted
+                        isDisabled:outlet.isDeleted,
+                        offers:outlet.offers
                     })
                 .then(function (res) {
                     blockUI.stop();

@@ -64,7 +64,7 @@
                 <option ng-repeat="table in tables" class="text-dark" value="{{table.tableId}}">table - {{table.tableId}}</option>
             </select>
         </div>
-        <div class="w-75" ng-include="'views/taxes/taxBreakdown.html'" ng-init="items = selectedOrder.orderedItems">
+        <div class="w-75" ng-include="'views/taxes/taxBreakdown.html'" ng-init="amount = calculateAmount(selectedOrder.orderedItems,selectedOrder.offersUsed[0])">
         </div>
         <div ng-show="permissionAuthorizations.userRole === 'outlet' && selectedOrder.orderType === 'Dine In'" class="d-flex justify-content-center w-100 align-items-start text-dark">
             <button ng-hide="isEditClicked" class="btn btn-primary" ng-click="makeOrderEditable()">Edit Order</button>

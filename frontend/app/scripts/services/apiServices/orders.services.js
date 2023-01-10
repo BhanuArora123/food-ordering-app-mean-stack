@@ -2,7 +2,7 @@
 
 appModule
     .service("orderService", function ($http, $rootScope, userService, blockUI) {
-        this.placeOrder = function (customer, outletData, brandData, orderType, assignedTable, cart) {
+        this.placeOrder = function (customer, outletData, brandData, orderType, assignedTable, cart, offers) {
             blockUI.start({
                 message: "Placing Order..."
             })
@@ -26,7 +26,8 @@ appModule
                     name: outletData.name
                 },
                 orderType: orderType,
-                assignedTable: (assignedTable === 'None' ? undefined : assignedTable)
+                assignedTable: (assignedTable === 'None' ? undefined : assignedTable),
+                offersUsed:offers
             })
                 .then(function (res) {
                     blockUI.stop();

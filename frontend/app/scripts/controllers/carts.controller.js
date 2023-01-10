@@ -1,5 +1,5 @@
 
-appModule.controller("cartController", function ($scope, $rootScope, orderService, outletService, customerService, utility, permission, socketService,$location,userService) {
+appModule.controller("cartController", function ($scope, $rootScope, orderService, outletService, customerService, utility, offerService, socketService, $location, userService) {
 
 
     (function () {
@@ -15,8 +15,8 @@ appModule.controller("cartController", function ($scope, $rootScope, orderServic
 
     // binding assignedTable 
 
-    if($location.url() !== "/orders/display"){
-        socketService.recieveEvent("orderCreation",function (data) {
+    if ($location.url() !== "/orders/display") {
+        socketService.recieveEvent("orderCreation", function (data) {
             $rootScope.progress = 100;
             $rootScope.progressBarText = "Order Created Successfully - Preparing Your Order";
         })
@@ -46,7 +46,13 @@ appModule.controller("cartController", function ($scope, $rootScope, orderServic
         var brandData = userData.brands ? userData.brands[$rootScope.currentBrandIndex] : userData.outlets[$rootScope.currentOutletIndex].brand;
         var outletData = userData.outlets ? userData.outlets[$rootScope.currentOutletIndex] : undefined;
         var cart = Object.values($scope.getCart());
-        return orderService.placeOrder($scope.customer, outletData, brandData, $scope.orderType, $scope.assignedTable,cart)
+        if($scope.selectedCoupon){
+            $scope.selectedCoupon.brand = {
+                id:brandData.id,
+                name:brandData.name
+            };
+        }
+        return orderService.placeOrder($scope.customer, outletData, brandData, $scope.orderType, $scope.assignedTable, cart,[$scope.selectedCoupon])
             .then(function (data) {
                 $rootScope.progressBarText = data.message;
                 $rootScope.displayProgressBar = true;
@@ -61,13 +67,28 @@ appModule.controller("cartController", function ($scope, $rootScope, orderServic
     $scope.calculateAmount = function (items) {
         console.log(Object.values(items));
         console.log(items);
-        return utility.calculateAmount(Object.values(items));
+        return utility.calculateAmount(Object.values(items),$scope.selectedCoupon?.discount);
     }
 
     $scope.setHeight = function () {
-        var cart = $scope.getCart();
+        var cart = Object.keys($scope.getCart());
+        $scope.styleObj = {
+            "height":(100 * cart.length + 800) + 'px'
+        };
+    }
 
-        return (100 * cart.length + 700) + 'px;';
+    $scope.getApplicableCoupons = function (page, search) {
+        var brandId = userService.userData().outlets[$rootScope.currentOutletIndex].brand.id;
+        var outletId = userService.userData().outlets[$rootScope.currentOutletIndex].id;
+        return offerService
+            .getAllApplicableOffers(page, 9, brandId, outletId, $scope.customerId,$scope.orderType)
+            .then(function (data) {
+                console.log(data.applicableOffers);
+                return data.applicableOffers;
+            })
+            .catch(function (error) {
+                console.log(error);
+            })
     }
 
     $scope.getCustomerData = function (phoneNumber) {
@@ -79,18 +100,35 @@ appModule.controller("cartController", function ($scope, $rootScope, orderServic
             customerService
                 .getCustomerByPhone(phoneNumber)
                 .then(function (data) {
-                    if (!data.customerData) {
+                    if (!data || !data.customerData) {
                         $scope.readOnlyCustomerName = false;
                         return;
                     }
                     console.log(data.customerData)
                     $scope.customer.name = data.customerData.name;
+                    $scope.customerId = data.customerData._id;
                     $scope.readOnlyCustomerName = true;
+                    $scope.getApplicableCoupons(1)
                 })
                 .catch(function (error) {
                     console.log(error);
                 })
         })
         updatePermissionDebounce();
+    }
+
+    $scope.applyCoupon = function (offer) {
+        var brandId = userService.userData().outlets[$rootScope.currentOutletIndex].brand.id;
+        var outletId = userService.userData().outlets[$rootScope.currentOutletIndex].id;
+        offerService
+            .applyCoupon(offer._id, outletId, brandId, $scope.customerId,$scope.orderType)
+            .then(function (data) {
+                console.log($scope.amount);
+                $scope.amount = utility.calculateAmount(Object.values($scope.getCart()),$scope.selectedCoupon.discount);
+            })
+            .catch(function (error) {
+                $scope.selectedCoupon = {};
+                console.log(error);
+            })
     }
 })

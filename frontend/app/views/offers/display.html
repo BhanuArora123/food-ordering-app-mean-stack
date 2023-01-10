@@ -1,0 +1,57 @@
+<div class="w-100 p-2 ">
+    <div class="w-100 d-flex justify-content-between align-items-center pl-3 pr-3">
+        <h1>Offers</h1>
+        <a class="btn btn-light text-theme-light fw-bold cursor-pointer mr-2" ng-click="openCreateOfferModal()">
+            <i class="fas fa-plus-square mr-2 text-theme-light" style="font-size:18px;"></i>
+            Create One
+        </a>
+    </div>
+    <div class="w-100 d-flex justify-content-around align-items-start flex-column flex-wrap p-2">
+        <div ng-if="!offers.length" class="d-flex align-items-end p-2">
+            <span class="mr-2">
+                No offers added yet!
+            </span>
+            <a class="fw-bold text-secondary cursor-pointer mr-2" ng-click="openCreateOfferModal()">
+                <u class="text-secondary">Create One</u>
+            </a>
+            <span>here</span>
+        </div>
+        <div ng-if="offers.length" ng-repeat="offer in offers"
+            class="w-100 justify-content-around bg-theme-light align-items-start p-3 flex-column rounded m-2">
+            <h4 class="w-100 d-flex justify-content-center align-items-center p-2">{{offer.name.toUpperCase()}} ({{offer.discount}}%)</h4>
+            <!-- <span ng-show="" class="rounded bg-success" style="width: 18px; height: 18px;"></span>  -->
+            <div ng-if="offer.orderType !== 'Both'" class="w-100 p-2">
+                Valid for {{offer.orderType}} orders only
+            </div>
+            <div class="w-100 p-2">
+                {{offer.description}}
+            </div>
+            <div class="w-100 d-flex justify-content-between align-items-center p-2">
+                <div class="d-flex justify-content-start align-items-center">
+                    <button class="btn btn-light text-theme-light mr-2" ng-click="editOffer(offer)">
+                        <i class="fas fa-edit text-theme-light ml-2" style="font-size:18px;"></i>
+                        Edit
+                    </button>
+                    <!-- cancel edit -->
+                    <button class="btn btn-light text-theme-light" ng-click="deleteOffer(offer._id,$index)">
+                        <i class="fas fa-trash text-theme-light" style="font-size:18px;"></i>
+                        Delete
+                    </button>
+                </div>
+                <div class="d-flex justify-content-around align-items-end flex-column w-50">
+                    <div class="d-flex justify-content-around">
+                        <div class="mr-2">Valid From :</div>
+                        <div>{{offer.startFrom.split("T")[0]}}</div>
+                    </div>
+                    <div class="d-flex justify-content-around">
+                        <div class="mr-2">Till :</div>
+                        <div>{{offer.validTill.split("T")[0]}}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <ul ng-show="totalOffers" class="w-100" uib-pagination max-size="5" items-per-page="9"
+            total-items="totalOffers" ng-model="offers.currentPage" ng-change="getOffers(offers.currentPage)">
+        </ul>
+    </div>
+</div>
